@@ -1,0 +1,60 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>    
+    <TargetFramework>net472</TargetFramework>
+    <AssemblyName>Seff.Rhino</AssemblyName>   
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+
+    <Version>0.0.1</Version>
+    <Authors>Goswin Rothemthal</Authors>
+    <Description>F# Scripring Editor for Rhino</Description>
+    <Copyright>Goswin Rothenthal 2019</Copyright>
+    <NeutralLanguage>en</NeutralLanguage>
+    
+  </PropertyGroup>
+
+
+  <ItemGroup>
+    <Compile Include="PlugIn.fs" />
+    <Compile Include="Commands.fs" />
+ </ItemGroup>
+
+
+  <ItemGroup>
+    <PackageReference Update="FSharp.Core" Version="4.7.0" />
+    <PackageReference Include="AvalonEdit" Version="6.0.0-rc1" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="WindowsBase" />
+
+    <Reference Include="RhinoCommon">
+      <HintPath>C:\Program Files\Rhino 6\System\RhinoCommon.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+
+    <Reference Include="Seff">
+      <HintPath>..\Seff\bin\Debug\net472\Seff.exe</HintPath> <!-- TODO: use Release ?-->
+    </Reference>
+    
+  </ItemGroup>
+
+
+  <!-- Replaces AfterBuild target, 
+    see    https://stackoverflow.com/questions/43921992/how-can-i-use-beforebuild-and-afterbuild-targets-with-visual-studio-2017
+    tasks: https://docs.microsoft.com/en-us/visualstudio/msbuild/msbuild-task-reference?view=vs-2019
+    better https://stackoverflow.com/questions/44043918/running-a-target-before-the-corebuild
+    -->
+  <Target Name="RenameToRhp" BeforeTargets="AfterBuild">
+    <Move SourceFiles="$(TargetPath)"  DestinationFiles="$(TargetDir)$(ProjectName).rhp" ContinueOnError="true" />
+  </Target>
+
+  <!-- TODO: do only if missing or changed ?-->
+  <Target Name="CopySynatxHighlighter" BeforeTargets="AfterBuild">
+    <Copy SourceFiles="D:\Git\Seff\FSharpSynatxHighlighterExtended.xshd"  DestinationFiles="$(TargetDir)FSharpSynatxHighlighterExtended.xshd" ContinueOnError="true" />
+  </Target>
+
+</Project>
