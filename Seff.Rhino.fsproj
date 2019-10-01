@@ -22,7 +22,7 @@
 
   <ItemGroup>
     <PackageReference Update="FSharp.Core" Version="4.7.0" />
-    <PackageReference Include="AvalonEdit" Version="6.0.0-rc1" />
+    <PackageReference Include="AvalonEdit" Version="6.0.0" />
   </ItemGroup>
 
 
@@ -49,12 +49,12 @@
     better https://stackoverflow.com/questions/44043918/running-a-target-before-the-corebuild
     -->
   <Target Name="RenameToRhp" BeforeTargets="AfterBuild">
-    <Move SourceFiles="$(TargetPath)"  DestinationFiles="$(TargetDir)$(ProjectName).rhp" ContinueOnError="true" />
+    <Move SourceFiles="$(TargetPath)" DestinationFiles="$(TargetDir)$(ProjectName).rhp" ContinueOnError="true" />
   </Target>
 
   <!-- TODO: do only if missing or changed ?-->
   <Target Name="CopySynatxHighlighter" BeforeTargets="AfterBuild">
-    <Copy SourceFiles="D:\Git\Seff\FSharpSynatxHighlighterExtended.xshd"  DestinationFiles="$(TargetDir)FSharpSynatxHighlighterExtended.xshd" ContinueOnError="true" />
+    <Copy SourceFiles="D:\Git\Seff\FSharpSynatxHighlighterExtended.xshd" DestinationFiles="$(TargetDir)FSharpSynatxHighlighterExtended.xshd" ContinueOnError="true" />
   </Target>
 
 </Project>
