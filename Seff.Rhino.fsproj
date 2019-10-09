@@ -2,6 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>    
     <TargetFramework>net472</TargetFramework>
+    <LangVersion>preview</LangVersion>
     <AssemblyName>Seff.Rhino</AssemblyName>   
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
 
@@ -10,7 +11,9 @@
     <Description>F# Scripring Editor for Rhino</Description>
     <Copyright>Goswin Rothenthal 2019</Copyright>
     <NeutralLanguage>en</NeutralLanguage>
+    <ProjectGuid>{DE417D77-E80A-472B-9D16-2FFFA284E245}</ProjectGuid>
     
+    <Win32Resource>D:\Git\Seff\Media\AppIcon.res</Win32Resource>
   </PropertyGroup>
 
 
@@ -23,6 +26,7 @@
   <ItemGroup>
     <PackageReference Update="FSharp.Core" Version="4.7.0" />
     <PackageReference Include="AvalonEdit" Version="6.0.0" />
+    <PackageReference Include="FSharp.Compiler.Service" Version="32.0.0" />
   </ItemGroup>
 
 
@@ -37,13 +41,15 @@
     </Reference>
 
     <Reference Include="Seff">
-      <HintPath>..\Seff\bin\Debug\net472\Seff.exe</HintPath> <!-- TODO: use Release ?-->
+      <HintPath>..\Seff\bin\Debug\net472\Seff.exe</HintPath>
+      <Private>true</Private> <!-- TODO: use Release ?-->
     </Reference>
     
   </ItemGroup>
 
 
   <!-- Replaces AfterBuild target, 
+    help: https://docs.microsoft.com/en-us/visualstudio/msbuild/msbuild-well-known-item-metadata?view=vs-2015&redirectedfrom=MSDN
     see    https://stackoverflow.com/questions/43921992/how-can-i-use-beforebuild-and-afterbuild-targets-with-visual-studio-2017
     tasks: https://docs.microsoft.com/en-us/visualstudio/msbuild/msbuild-task-reference?view=vs-2019
     better https://stackoverflow.com/questions/44043918/running-a-target-before-the-corebuild
