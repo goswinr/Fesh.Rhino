@@ -15,6 +15,8 @@ type LoadEditor () =
     override this.RunCommand (doc, mode)  =
         if isNull SeffPlugin.Instance.Window then // set up window on first run
             rh.print  "*loading Seff - Fsharp Scripting Editor Window..."
+            Seff.Config.fileDefaultCode <- "#r @\"C:\Program Files\Rhinoceros 6\System\RhinoCommon.dll\"\r\n" + Seff.Config.fileDefaultCode + "\r\nopen Rhino\r\n"
+            
             let win = 
                 Seff.App.runEditorHostedWithUndo(
                     RhinoApp.MainWindowHandle(),
@@ -25,7 +27,7 @@ type LoadEditor () =
 
             SeffPlugin.Instance.Window <- win
             win.Closing.Add (fun e -> win.Visibility <- Visibility.Hidden ; e.Cancel <- true)
-            Seff.Config.fileDefaultCode <- "#r @\"C:\Program Files\Rhinoceros 5 (64-bit)\System\RhinoCommon.dll\"\r\n" + Seff.Config.fileDefaultCode + "\r\nopen Rhino\r\n"
+            
             //Seff.Config.codeToAppendEvaluations <- "\r\nRhino.RhinoDoc.ActiveDoc.Views.Redraw()"
             win.Show()
             rh.print  "*Seff Editor Window loaded."
@@ -55,7 +57,7 @@ type RunCurrentScript () =
                 rh.print  "*Seff, ran current script." // this non-modal ? print another msg when completed
                 Commands.Result.Success
             |None -> 
-                rh.print "There is no active document in Seff editor"
+                rh.print "There is no active script file in Seff editor"
                 Commands.Result.Failure
         
         |Visibility.Hidden -> 
@@ -66,7 +68,7 @@ type RunCurrentScript () =
                 | MessageBoxResult.Yes -> this.RunCommand (doc, mode) 
                 | _ -> Commands.Result.Failure
             |None -> 
-                rh.print "There is no active Document in Seff editor"
+                rh.print "There is no active script file in Seff editor"
                 Commands.Result.Failure
                 
         | _ -> Commands.Result.Failure // only needed to make F# compiler happy

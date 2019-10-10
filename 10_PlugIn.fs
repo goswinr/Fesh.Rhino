@@ -4,11 +4,14 @@ open Rhino
 open System
 open System.Windows
 open Rhino.Runtime
+open Seff
 
 module rh = 
     let print a    = RhinoApp.WriteLine a    ; RhinoApp.Wait()
     let print2 a b = RhinoApp.WriteLine (a+b); RhinoApp.Wait()   
     
+module Sync =
+    let syncContext = Threading.SynchronizationContext.Current
 
 module Debugging = 
     open rh
@@ -92,11 +95,16 @@ type SeffPlugin () =
 
     override this.OnLoad refErrs =         
         if not Runtime.HostUtils.RunningOnWindows then 
-            rh.print "Seff FSharp Scripting Editor Plugin only works on Windows. It needs WPF"
+            rh.print "Seff FSharp Scripting Editor PlugIn only works on Windows. It needs WPF"
             PlugIns.LoadReturnCode.ErrorNoDialog
         else
             rh.print  "*Seff.Rhino Plugin loaded..."      
             RhinoApp.Closing.Add (fun (e:EventArgs) -> Seff.FileDialogs.closeWindow() |> ignore)
+            RhinoDoc.CloseDocument.Add (fun (e:DocumentEventArgs) ->    match Fsi.FsiStatus.Evaluation with
+                                                                        |Fsi.Ready |Fsi.HadError -> ()
+                                                                        |Fsi.Evaluating ->  
+                                                                        rh.print "Canceling currently running FSharp Interacitve Script for opening new file.. "
+                                                                        Fsi.agent.Post Fsi.AgentMessage.Cancel )
             //Debugging.printAssemblyInfo(this)
             PlugIns.LoadReturnCode.Success
     

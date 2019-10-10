@@ -4,22 +4,24 @@
     <TargetFramework>net472</TargetFramework>
     <LangVersion>preview</LangVersion>
     <AssemblyName>Seff.Rhino</AssemblyName>   
-    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
-    <Version>0.0.1</Version>
+    <Version>0.1.0.0</Version>
     <Authors>Goswin Rothemthal</Authors>
-    <Description>F# Scripring Editor for Rhino</Description>
+    <Description>an F# Scripring Editor for Rhino</Description>
     <Copyright>Goswin Rothenthal 2019</Copyright>
     <NeutralLanguage>en</NeutralLanguage>
-    <ProjectGuid>{DE417D77-E80A-472B-9D16-2FFFA284E245}</ProjectGuid>
+    <!-- <ProjectGuid>{DE417D77-E80A-472B-9D16-2FFFA284E245}</ProjectGuid> seems to be ignored in buildprocess use assembly info fcode instead-->
+
+    <Win32Resource>D:\Git\Seff\Media\AppIcon.res</Win32Resource> <!-- needed?-->
     
-    <Win32Resource>D:\Git\Seff\Media\AppIcon.res</Win32Resource>
   </PropertyGroup>
 
 
   <ItemGroup>
-    <Compile Include="PlugIn.fs" />
-    <Compile Include="Commands.fs" />
+    <Compile Include="00_AssemblyInfo.fs" />
+    <Compile Include="10_PlugIn.fs" />
+    <Compile Include="20_Commands.fs" />
  </ItemGroup>
 
 
@@ -31,6 +33,7 @@
 
 
   <ItemGroup>
+    
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="WindowsBase" />
@@ -41,8 +44,8 @@
     </Reference>
 
     <Reference Include="Seff">
-      <HintPath>..\Seff\bin\Debug\net472\Seff.exe</HintPath>
-      <Private>true</Private> <!-- TODO: use Release ?-->
+      <HintPath>..\Seff\bin\Debug\net472\Seff.exe</HintPath> <!-- TODO: use Release ?-->
+      <Private>true</Private> 
     </Reference>
     
   </ItemGroup>
