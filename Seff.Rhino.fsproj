@@ -1,9 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>    
+    
     <TargetFramework>net472</TargetFramework>
+    
     <LangVersion>preview</LangVersion>
-    <AssemblyName>Seff.Rhino</AssemblyName>   
+    <AssemblyName>Seff.Rhino</AssemblyName>
+    <RootNamespace>Seff.Rhino</RootNamespace>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
     <Version>0.1.0.0</Version>
@@ -11,17 +14,26 @@
     <Description>an F# Scripring Editor for Rhino</Description>
     <Copyright>Goswin Rothenthal 2019</Copyright>
     <NeutralLanguage>en</NeutralLanguage>
-    <!-- <ProjectGuid>{DE417D77-E80A-472B-9D16-2FFFA284E245}</ProjectGuid> seems to be ignored in buildprocess use assembly info fcode instead-->
+    <!-- <ProjectGuid>{DE417D77-E80A-472B-9D16-2FFFA284E245}</ProjectGuid> seems to be ignored in buildprocess use assembly info code instead-->
 
-    <Win32Resource>D:\Git\Seff\Media\AppIcon.res</Win32Resource> <!-- needed?-->
-    
+
+    <ApplicationIcon>Media\LogoFSharp.ico</ApplicationIcon>
+    <Win32Resource>Media\AppIcon.res</Win32Resource> <!--  for Application Icon in explorer, adapt path as needed-->
   </PropertyGroup>
+    
 
 
   <ItemGroup>
     <Compile Include="00_AssemblyInfo.fs" />
     <Compile Include="10_PlugIn.fs" />
     <Compile Include="20_Commands.fs" />
+
+
+    <EmbeddedResource Include="Media\AppIcon.res" />
+    <Resource Include="Media\LogoFSharp.ico" />
+
+    <!--<None Include="FSharpSynatxHighlighterExtended.xshd"><CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory> </None>  copy it directly from Seff folder below in afterbuild -->
+    
  </ItemGroup>
 
 
@@ -63,7 +75,7 @@
 
   <!-- TODO: do only if missing or changed ?-->
   <Target Name="CopySynatxHighlighter" BeforeTargets="AfterBuild">
-    <Copy SourceFiles="D:\Git\Seff\FSharpSynatxHighlighterExtended.xshd" DestinationFiles="$(TargetDir)FSharpSynatxHighlighterExtended.xshd" ContinueOnError="true" />
+    <Copy SourceFiles="..\Seff\FSharpSynatxHighlighterExtended.xshd" DestinationFiles="$(TargetDir)FSharpSynatxHighlighterExtended.xshd" ContinueOnError="true" />
   </Target>
 
 </Project>
