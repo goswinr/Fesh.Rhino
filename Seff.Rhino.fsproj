@@ -5,6 +5,7 @@
     <TargetFramework>net472</TargetFramework>
     
     <LangVersion>preview</LangVersion>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages> <!--to only have the english resources-->
     <AssemblyName>Seff.Rhino</AssemblyName>
     <RootNamespace>Seff.Rhino</RootNamespace>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
