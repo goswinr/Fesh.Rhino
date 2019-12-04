@@ -15,7 +15,7 @@ type LoadEditor () =
     override this.RunCommand (doc, mode)  =
         if isNull SeffPlugin.Instance.Window then // set up window on first run
             rh.print  "*loading Seff - Fsharp Scripting Editor Window..."
-            Seff.Config.fileDefaultCode <- "#r @\"C:\Program Files\Rhinoceros 6\System\RhinoCommon.dll\"\r\n" + Seff.Config.fileDefaultCode + "\r\nopen Rhino\r\n"
+            //Seff.Config.fileDefaultCode <- "#r @\"C:\Program Files\Rhinoceros 6\System\RhinoCommon.dll\"\r\n" + Seff.Config.fileDefaultCode + "\r\nopen Rhino\r\n" //TODO fix !
             
             let win = 
                 Seff.App.runEditorHostedWithUndo(
