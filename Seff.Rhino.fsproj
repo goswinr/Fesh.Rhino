@@ -41,7 +41,7 @@
   <ItemGroup>
     <PackageReference Update="FSharp.Core" Version="4.7.0" />
     <PackageReference Include="AvalonEdit" Version="6.0.0" />
-    <PackageReference Include="FSharp.Compiler.Service" Version="32.0.0" />
+    <PackageReference Include="FSharp.Compiler.Service" Version="33.0.0" />
   </ItemGroup>
 
 
