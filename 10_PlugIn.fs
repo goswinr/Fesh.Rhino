@@ -10,8 +10,8 @@ module rh =
     let print a    = RhinoApp.WriteLine a    ; RhinoApp.Wait()
     let print2 a b = RhinoApp.WriteLine (a+b); RhinoApp.Wait()   
     
-module Sync =
-    let syncContext = Threading.SynchronizationContext.Current
+module Sync = //Don't change name  its used in Rhino.Scripting.dll via reflection
+    let syncContext = Threading.SynchronizationContext.Current //Don't change name  its used in Rhino.Scripting.dll via reflection
 
 module Debugging = 
     open rh
@@ -60,14 +60,15 @@ type SeffPlugin () =
     
     //PlugIns.PlugInType.Utility how to set this ?
 
-    static member val Instance = SeffPlugin() 
+    static member val Instance = SeffPlugin() // singelton pattern neded for Rhino
     
     //member this.Folder = IO.Path.GetDirectoryName(this.Assembly.Location) // for debug only
 
     // You can override methods here to change the plug-in behavior on
     // loading and shut down, add options pages to the Rhino _Option command
     // and mantain plug-in wide options in a document.
-    
+
+        
     override this.CreateCommands() = //to add script files as custom commands
         base.CreateCommands()
         //for file in commandsfiles do
@@ -95,20 +96,36 @@ type SeffPlugin () =
 
     override this.OnLoad refErrs =         
         if not Runtime.HostUtils.RunningOnWindows then 
-            rh.print "Seff FSharp Scripting Editor PlugIn only works on Windows. It needs WPF"
+            rh.print "Seff FSharp Scripting Editor PlugIn only works on Windows. It needs the WPF framework "
             PlugIns.LoadReturnCode.ErrorNoDialog
         else
-            rh.print  "*Seff.Rhino Plugin loaded..."      
-            RhinoApp.Closing.Add (fun (e:EventArgs) -> Seff.FileDialogs.closeWindow() |> ignore)
-            RhinoDoc.CloseDocument.Add (fun (e:DocumentEventArgs) ->    match Fsi.FsiStatus.Evaluation with
-                                                                        |Fsi.Ready |Fsi.HadError -> ()
-                                                                        |Fsi.Evaluating ->  
-                                                                        rh.print "Canceling currently running FSharp Interacitve Script for opening new file.. "
-                                                                        Fsi.agent.Post Fsi.AgentMessage.Cancel )
+            rh.print  "*Seff.Rhino Plugin loaded..."
+            
+                   
+            RhinoApp.Closing.Add (fun (e:EventArgs) -> 
+                Seff.FileDialogs.closeWindow() |> ignore)
+            
+            RhinoDoc.CloseDocument.Add (fun (e:DocumentEventArgs) ->    
+                match Fsi.FsiStatus.Evaluation with
+                |Fsi.Ready |Fsi.HadError -> ()
+                |Fsi.Evaluating ->  
+                    Fsi.agent.Post Fsi.AgentMessage.Cancel 
+                    rh.print "* Closing current file. Canceled currently running FSharp Interacitve Script."
+                    
+                )
+            
+            RhinoApp.EscapeKeyPressed.Add ( fun (e:EventArgs) ->
+                match Fsi.FsiStatus.Evaluation with
+                |Fsi.Ready |Fsi.HadError -> ()
+                |Fsi.Evaluating ->  
+                    Fsi.agent.Post Fsi.AgentMessage.Cancel
+                    rh.print "* 'Esc' was pressed. Canceled currently running FSharp Interacitve Script."
+                     )
+
             //Debugging.printAssemblyInfo(this)
             PlugIns.LoadReturnCode.Success
     
     //override this.LoadAtStartup = true //obsolete??//Seff.Fsi.agent.Post Seff.Fsi.AgentMessage.Done // load FSI already at Rhino startup ??
     
-    member val Window: Window = null with get, set // will be set on first loading editor. to keep a refrence of the Editor window around
+    member val Window: Window = null with get, set // will be set on first loading editor. To keep a refrence of the Editor window around
     
