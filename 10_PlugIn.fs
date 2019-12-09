@@ -121,6 +121,10 @@ type SeffPlugin () =
                     Fsi.agent.Post Fsi.AgentMessage.Cancel
                     rh.print "* 'Esc' was pressed. Canceled currently running FSharp Interacitve Script."
                      )
+            
+            if not <|  ApplicationSettings.CommandAliasList.IsAlias("sr") then 
+                if ApplicationSettings.CommandAliasList.Add("sr","SeffRunCurrentScript")then 
+                    rh.print  "*Seff.Rhino Plugin added the comand alias 'sr' for 'SeffRunCurrentScript'"
 
             //Debugging.printAssemblyInfo(this)
             PlugIns.LoadReturnCode.Success
