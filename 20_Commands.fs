@@ -73,6 +73,20 @@ type RunCurrentScript () =
                 
         | _ -> Commands.Result.Failure // only needed to make F# compiler happy
 
+
+
+type Redraw () = 
+    inherit Commands.Command()    
+    static member val Instance = Redraw() 
+            
+    override this.EnglishName = "Redraw" //The command name as it appears on the Rhino command line.
+                   
+    override this.RunCommand (doc, mode)  =        
+        RhinoDoc.ActiveDoc.Views.RedrawEnabled <- true
+        RhinoDoc.ActiveDoc.Views.Redraw()
+        Commands.Result.Success
+
+
 //TODO mouse focus: https://discourse.mcneel.com/t/can-rhinocommon-be-used-with-wpf/12/7
 (*
 a python script loadad from a file as command:

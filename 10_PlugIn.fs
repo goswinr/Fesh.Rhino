@@ -99,9 +99,17 @@ type SeffPlugin () =
             rh.print "Seff FSharp Scripting Editor PlugIn only works on Windows. It needs the WPF framework "
             PlugIns.LoadReturnCode.ErrorNoDialog
         else
-            rh.print  "*Seff.Rhino Plugin loaded..."
             
-                   
+            Fsi.Events.RuntimeError.Add ( fun e -> // to unsure UI does not stay frozen if RedrawEnabled is false
+                RhinoDoc.ActiveDoc.Views.RedrawEnabled <- true
+                RhinoDoc.ActiveDoc.Views.Redraw()
+                )
+            
+            Fsi.Events.Canceled.Add ( fun e -> // to unsure UI does not stay frozen if RedrawEnabled is false
+                RhinoDoc.ActiveDoc.Views.RedrawEnabled <- true
+                RhinoDoc.ActiveDoc.Views.Redraw()
+                )
+            
             RhinoApp.Closing.Add (fun (e:EventArgs) -> 
                 Seff.FileDialogs.closeWindow() |> ignore)
             
@@ -127,6 +135,8 @@ type SeffPlugin () =
                     rh.print  "*Seff.Rhino Plugin added the comand alias 'sr' for 'SeffRunCurrentScript'"
 
             //Debugging.printAssemblyInfo(this)
+            
+            rh.print  "*Seff.Rhino Plugin loaded..."
             PlugIns.LoadReturnCode.Success
     
     //override this.LoadAtStartup = true //obsolete??//Seff.Fsi.agent.Post Seff.Fsi.AgentMessage.Done // load FSI already at Rhino startup ??
