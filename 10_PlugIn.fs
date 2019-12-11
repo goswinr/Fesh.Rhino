@@ -12,6 +12,8 @@ module rh =
     
 module Sync = //Don't change name  its used in Rhino.Scripting.dll via reflection
     let syncContext = Threading.SynchronizationContext.Current //Don't change name  its used in Rhino.Scripting.dll via reflection
+    let mutable window = null : Window //Don't change name  its used in Rhino.Scripting.dll via reflection
+    
 
 module Debugging = 
     open rh
@@ -52,15 +54,15 @@ module Debugging =
 // Every RhinoCommon .rhp assembly must have one and only one PlugIn-derived
 // class. DO NOT create instances of this class yourself. It is the
 // responsibility of Rhino to create an instance of this class.
-// do not use "private" keyword on singelton constructor
-// singeltons: http://stackoverflow.com/questions/2691565/how-to-implement-singleton-pattern-syntax
+// do not use "private" keyword on (singelton) constructor
 type SeffPlugin () =  
 
     inherit PlugIns.PlugIn()
     
     //PlugIns.PlugInType.Utility how to set this ?
 
-    static member val Instance = SeffPlugin() // singelton pattern neded for Rhino
+    static let instance = new SeffPlugin()
+    static member Instance = instance // singelton pattern neded for Rhino. http://stackoverflow.com/questions/2691565/how-to-implement-singleton-pattern-syntax
     
     //member this.Folder = IO.Path.GetDirectoryName(this.Assembly.Location) // for debug only
 
@@ -103,12 +105,22 @@ type SeffPlugin () =
             Fsi.Events.RuntimeError.Add ( fun e -> // to unsure UI does not stay frozen if RedrawEnabled is false
                 RhinoDoc.ActiveDoc.Views.RedrawEnabled <- true
                 RhinoDoc.ActiveDoc.Views.Redraw()
+                Sync.window.Show()
                 )
             
             Fsi.Events.Canceled.Add ( fun e -> // to unsure UI does not stay frozen if RedrawEnabled is false
                 RhinoDoc.ActiveDoc.Views.RedrawEnabled <- true
                 RhinoDoc.ActiveDoc.Views.Redraw()
+                Sync.window.Show()
                 )
+            
+            Fsi.Events.Completed.Add ( fun e -> // to unsure UI does not stay frozen if RedrawEnabled is false
+                RhinoDoc.ActiveDoc.Views.RedrawEnabled <- true
+                RhinoDoc.ActiveDoc.Views.Redraw()
+                //Sync.window.Show()
+                )
+
+
             
             RhinoApp.Closing.Add (fun (e:EventArgs) -> 
                 Seff.FileDialogs.closeWindow() |> ignore)
@@ -118,17 +130,14 @@ type SeffPlugin () =
                 |Fsi.Ready |Fsi.HadError -> ()
                 |Fsi.Evaluating ->  
                     Fsi.agent.Post Fsi.AgentMessage.Cancel 
-                    rh.print "* Closing current file. Canceled currently running FSharp Interacitve Script."
-                    
-                )
+                    rh.print "* Closing current file. Canceled currently running FSharp Interacitve Script." )
             
             RhinoApp.EscapeKeyPressed.Add ( fun (e:EventArgs) ->
                 match Fsi.FsiStatus.Evaluation with
                 |Fsi.Ready |Fsi.HadError -> ()
                 |Fsi.Evaluating ->  
                     Fsi.agent.Post Fsi.AgentMessage.Cancel
-                    rh.print "* 'Esc' was pressed. Canceled currently running FSharp Interacitve Script."
-                     )
+                    rh.print "* 'Esc' was pressed. Canceled currently running FSharp Interacitve Script." )
             
             if not <|  ApplicationSettings.CommandAliasList.IsAlias("sr") then 
                 if ApplicationSettings.CommandAliasList.Add("sr","SeffRunCurrentScript")then 
@@ -140,6 +149,4 @@ type SeffPlugin () =
             PlugIns.LoadReturnCode.Success
     
     //override this.LoadAtStartup = true //obsolete??//Seff.Fsi.agent.Post Seff.Fsi.AgentMessage.Done // load FSI already at Rhino startup ??
-    
-    member val Window: Window = null with get, set // will be set on first loading editor. To keep a refrence of the Editor window around
     

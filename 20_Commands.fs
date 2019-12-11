@@ -3,6 +3,7 @@
 open Rhino
 open System
 open System.Windows
+open Seff.Util
 
 //the Command Singelton classes:
 
@@ -13,7 +14,7 @@ type LoadEditor () =
     override this.EnglishName = "Seff" //The command name as it appears on the Rhino command line.
            
     override this.RunCommand (doc, mode)  =
-        if isNull SeffPlugin.Instance.Window then // set up window on first run
+        if isNull Sync.window then // set up window on first run
             rh.print  "*loading Seff - Fsharp Scripting Editor Window..."
             //Seff.Config.fileDefaultCode <- "#r @\"C:\Program Files\Rhinoceros 6\System\RhinoCommon.dll\"\r\n" + Seff.Config.fileDefaultCode + "\r\nopen Rhino\r\n" //TODO fix !
             
@@ -25,15 +26,17 @@ type LoadEditor () =
                     (fun i  -> RhinoDoc.ActiveDoc.EndUndoRecord(i) |> ignore )
                     )        
 
-            SeffPlugin.Instance.Window <- win
+            Sync.window <- win
             win.Closing.Add (fun e -> win.Visibility <- Visibility.Hidden ; e.Cancel <- true)
+
+            Seff.Menu.addToAboutMenu ("Seff.Rhino Build Time "+ Seff.Util.Time.nowStrMenu)  // add one mor item to about menu
             
-            //Seff.Config.codeToAppendEvaluations <- "\r\nRhino.RhinoDoc.ActiveDoc.Views.Redraw()"
             win.Show()
+
             rh.print  "*Seff Editor Window loaded."
             Commands.Result.Success
         else
-            SeffPlugin.Instance.Window.Visibility <- Visibility.Visible
+            Sync.window.Visibility <- Visibility.Visible
             Commands.Result.Success
 
 
@@ -47,12 +50,12 @@ type RunCurrentScript () =
            
     override this.RunCommand (doc, mode)  =
         
-        match SeffPlugin.Instance.Window.Visibility with
+        match Sync.window.Visibility with
         | Visibility.Visible | Visibility.Collapsed -> 
             match Seff.Tab.current with 
             | Some t -> 
                 rh.print  "*Seff, running the current script.."
-                let _,_,cmd,_ = Seff.Commands.RunAllText
+                let _,_,cmd,_ = Seff.Commands.RunAllText //TODO or trigger directly via agent post to distinguish triggers from commandline and seff ui?
                 cmd.Execute(null) // the argumnent can be any obj, its ignored
                 rh.print  "*Seff, ran current script." // this non-modal ? print another msg when completed
                 Commands.Result.Success
@@ -61,7 +64,7 @@ type RunCurrentScript () =
                 Commands.Result.Failure
         
         |Visibility.Hidden -> 
-            SeffPlugin.Instance.Window.Visibility <- Visibility.Visible
+            Sync.window.Visibility <- Visibility.Visible
             match Seff.Tab.current with 
             | Some t -> 
                 match MessageBox.Show("Run Script from current Tab?", "Run Script from current Tab?", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.Yes) with
