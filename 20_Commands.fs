@@ -29,7 +29,7 @@ type LoadEditor () =
             Sync.window <- win
             win.Closing.Add (fun e -> win.Visibility <- Visibility.Hidden ; e.Cancel <- true)
 
-            Seff.Menu.addToAboutMenu ("Seff.Rhino Build Time "+ Seff.Util.Time.nowStrMenu)  // add one mor item to about menu
+            //Seff.Menu.addToAboutMenu ("Seff.Rhino Build Time "+ Seff.Util.Time.)  // add one mor item to about menu
             
             win.Show()
 

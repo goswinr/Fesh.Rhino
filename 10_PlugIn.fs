@@ -102,25 +102,32 @@ type SeffPlugin () =
             PlugIns.LoadReturnCode.ErrorNoDialog
         else
             
-            Fsi.Events.RuntimeError.Add ( fun e -> // to unsure UI does not stay frozen if RedrawEnabled is false
-                RhinoDoc.ActiveDoc.Views.RedrawEnabled <- true
-                RhinoDoc.ActiveDoc.Views.Redraw()
-                Sync.window.Show()
+            Fsi.Events.RuntimeError.Add ( fun (ex:Exception) -> // to unsure UI does not stay frozen if RedrawEnabled is false
+                async{
+                    do! Async.SwitchToContext Sync.syncContext
+                    RhinoDoc.ActiveDoc.Views.RedrawEnabled <- true
+                    RhinoDoc.ActiveDoc.Views.Redraw()
+                    Sync.window.Show() //because it might crash during UI interaction wher it is hidden
+                    } |> Async.StartImmediate
                 )
             
-            Fsi.Events.Canceled.Add ( fun e -> // to unsure UI does not stay frozen if RedrawEnabled is false
-                RhinoDoc.ActiveDoc.Views.RedrawEnabled <- true
-                RhinoDoc.ActiveDoc.Views.Redraw()
-                Sync.window.Show()
+            Fsi.Events.Canceled.Add ( fun () -> // to unsure UI does not stay frozen if RedrawEnabled is false
+                async{
+                    do! Async.SwitchToContext Sync.syncContext
+                    RhinoDoc.ActiveDoc.Views.RedrawEnabled <- true
+                    RhinoDoc.ActiveDoc.Views.Redraw()
+                    Sync.window.Show() //because it might crash during UI interaction wher it is hidden
+                    } |> Async.StartImmediate
                 )
             
-            Fsi.Events.Completed.Add ( fun e -> // to unsure UI does not stay frozen if RedrawEnabled is false
-                RhinoDoc.ActiveDoc.Views.RedrawEnabled <- true
-                RhinoDoc.ActiveDoc.Views.Redraw()
-                //Sync.window.Show()
+            Fsi.Events.Completed.Add ( fun () -> // to unsure UI does not stay frozen if RedrawEnabled is false
+                async{
+                    do! Async.SwitchToContext Sync.syncContext
+                    RhinoDoc.ActiveDoc.Views.RedrawEnabled <- true
+                    RhinoDoc.ActiveDoc.Views.Redraw()
+                    //Sync.window.Show() // might be running in background mode from rhino command line
+                    } |> Async.StartImmediate
                 )
-
-
             
             RhinoApp.Closing.Add (fun (e:EventArgs) -> 
                 Seff.FileDialogs.closeWindow() |> ignore)
