@@ -35,8 +35,10 @@ type LoadEditor () =
 
             rh.print  "*Seff Editor Window loaded."
             Commands.Result.Success
-        else
+        else            
+            if Sync.window.WindowState = WindowState.Minimized then Sync.window.WindowState <- WindowState.Normal 
             Sync.window.Visibility <- Visibility.Visible
+            Sync.window.Show()
             Commands.Result.Success
 
 
