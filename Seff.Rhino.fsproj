@@ -68,12 +68,13 @@
     better https://stackoverflow.com/questions/44043918/running-a-target-before-the-corebuild
     -->
   <Target Name="RenameToRhp" BeforeTargets="AfterBuild">
-    <Move SourceFiles="$(TargetPath)" DestinationFiles="$(TargetDir)$(ProjectName).rhp" ContinueOnError="true" />
+    <Move SourceFiles="$(TargetPath)" DestinationFiles="$(TargetDir)$(ProjectName).rhp" ContinueOnError="false" />
   </Target>
 
-  <!-- TODO: do only if missing or changed ?-->
-  <Target Name="CopySynatxHighlighter" BeforeTargets="AfterBuild">
-    <Copy SourceFiles="..\Seff\FSharpSynatxHighlighterExtended.xshd" DestinationFiles="$(TargetDir)FSharpSynatxHighlighterExtended.xshd" ContinueOnError="true" />
+  
+  <Target Name="CopyFilesOverAfterBuild" BeforeTargets="AfterBuild">
+    <Copy SourceFiles="..\Seff\FSharpSynatxHighlighterExtended.xshd" DestinationFiles="$(TargetDir)FSharpSynatxHighlighterExtended.xshd" ContinueOnError="false" /> <!-- TODO: do only if missing or changed ?-->
+    <Copy SourceFiles="C:\Users\gwins\.nuget\packages\fsharp.core\4.7.0\lib\net45\FSharp.Core.xml" DestinationFiles="$(TargetDir)FSharp.Core.xml" ContinueOnError="false" /> <!-- missing otherwise ? to have it as intellisense provider-->
   </Target>
 
 </Project>

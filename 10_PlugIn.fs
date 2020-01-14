@@ -61,8 +61,7 @@ type SeffPlugin () =
     
     //PlugIns.PlugInType.Utility how to set this ?
 
-    static let instance = new SeffPlugin()
-    static member Instance = instance // singelton pattern neded for Rhino. http://stackoverflow.com/questions/2691565/how-to-implement-singleton-pattern-syntax
+    static member val Instance = SeffPlugin() // singelton pattern neded for Rhino. http://stackoverflow.com/questions/2691565/how-to-implement-singleton-pattern-syntax
     
     //member this.Folder = IO.Path.GetDirectoryName(this.Assembly.Location) // for debug only
 
