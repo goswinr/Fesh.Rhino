@@ -29,7 +29,6 @@
     <Compile Include="10_PlugIn.fs" />
     <Compile Include="20_Commands.fs" />
 
-
     <EmbeddedResource Include="Media\AppIcon.res" />
     <Resource Include="Media\LogoFSharp.ico" />
 
@@ -39,9 +38,15 @@
 
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="4.7.0" />
-    <PackageReference Include="AvalonEdit" Version="6.0.0" />
-    <PackageReference Include="FSharp.Compiler.Service" Version="33.0.0" />
+    <PackageReference Update="FSharp.Core" Version="4.7.*" />
+    <PackageReference Include="FSharp.Compiler.Service" Version="33.*" />
+    <!-- <PackageReference Include="AvalonEdit" Version="6.0.0" /> use custom build-->    
+  </ItemGroup>
+
+
+  <ItemGroup>
+    
+    <ProjectReference Include="..\Seff\Seff.fsproj" />
   </ItemGroup>
 
 
@@ -50,16 +55,8 @@
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="WindowsBase" />
-
-    <Reference Include="RhinoCommon">
-      <HintPath>C:\Program Files\Rhino 6\System\RhinoCommon.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-
-    <Reference Include="Seff">
-      <HintPath>..\Seff\bin\Debug\net472\Seff.exe</HintPath> <!-- TODO: use Release ?-->
-      <Private>true</Private> 
-    </Reference>
+    <Reference Include="ICSharpCode.AvalonEdit"><HintPath>..\AvalonEdit\ICSharpCode.AvalonEdit\bin\Release\net45\ICSharpCode.AvalonEdit.dll</HintPath>    </Reference> 
+    <Reference Include="RhinoCommon">           <HintPath>C:\Program Files\Rhino 6\System\RhinoCommon.dll</HintPath>      <Private>false</Private>        </Reference>
     
   </ItemGroup>
 
