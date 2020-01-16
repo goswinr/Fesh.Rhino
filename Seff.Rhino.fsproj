@@ -39,14 +39,14 @@
 
   <ItemGroup>
     <PackageReference Update="FSharp.Core" Version="4.7.*" />
-    <PackageReference Include="FSharp.Compiler.Service" Version="33.*" />
+    <PackageReference Include="FSharp.Compiler.Service" Version="33.0.1" />
     <!-- <PackageReference Include="AvalonEdit" Version="6.0.0" /> use custom build-->    
   </ItemGroup>
 
 
-  <ItemGroup>
-    
+  <ItemGroup>    
     <ProjectReference Include="..\Seff\Seff.fsproj" />
+    <ProjectReference Include="..\AvalonEdit\ICSharpCode.AvalonEdit\ICSharpCode.AvalonEdit.csproj" />
   </ItemGroup>
 
 
@@ -54,8 +54,7 @@
     
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
-    <Reference Include="WindowsBase" />
-    <Reference Include="ICSharpCode.AvalonEdit"><HintPath>..\AvalonEdit\ICSharpCode.AvalonEdit\bin\Release\net45\ICSharpCode.AvalonEdit.dll</HintPath>    </Reference> 
+    <Reference Include="WindowsBase" /> 
     <Reference Include="RhinoCommon">           <HintPath>C:\Program Files\Rhino 6\System\RhinoCommon.dll</HintPath>      <Private>false</Private>        </Reference>
     
   </ItemGroup>
