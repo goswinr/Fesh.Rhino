@@ -39,8 +39,8 @@
 
   <ItemGroup>
     <PackageReference Update="FSharp.Core" Version="4.7.*" />
-    <PackageReference Include="FSharp.Compiler.Service" Version="33.0.1" />
-    <!-- <PackageReference Include="AvalonEdit" Version="6.0.0" /> use custom build-->    
+    <PackageReference Include="FSharp.Compiler.Service" Version="34.0.0" />
+    <!-- <PackageReference Include="AvalonEdit" Version="6.0.0" /> use custom build for search and replace-->    
   </ItemGroup>
 
 
@@ -64,16 +64,17 @@
     help: https://docs.microsoft.com/en-us/visualstudio/msbuild/msbuild-well-known-item-metadata?view=vs-2015&redirectedfrom=MSDN
     see    https://stackoverflow.com/questions/43921992/how-can-i-use-beforebuild-and-afterbuild-targets-with-visual-studio-2017
     tasks: https://docs.microsoft.com/en-us/visualstudio/msbuild/msbuild-task-reference?view=vs-2019
-    better https://stackoverflow.com/questions/44043918/running-a-target-before-the-corebuild
+    better: https://stackoverflow.com/questions/44043918/running-a-target-before-the-corebuild
     -->
+
   <Target Name="RenameToRhp" BeforeTargets="AfterBuild">
     <Move SourceFiles="$(TargetPath)" DestinationFiles="$(TargetDir)$(ProjectName).rhp" ContinueOnError="false" />
   </Target>
 
   
   <Target Name="CopyFilesOverAfterBuild" BeforeTargets="AfterBuild">
-    <Copy SourceFiles="..\Seff\FSharpSynatxHighlighterExtended.xshd" DestinationFiles="$(TargetDir)FSharpSynatxHighlighterExtended.xshd" ContinueOnError="false" /> <!-- TODO: do only if missing or changed ?-->
-    <Copy SourceFiles="C:\Users\gwins\.nuget\packages\fsharp.core\4.7.0\lib\net45\FSharp.Core.xml" DestinationFiles="$(TargetDir)FSharp.Core.xml" ContinueOnError="false" /> <!-- missing otherwise ? to have it as intellisense provider-->
+    <Copy SourceFiles="..\Seff\FSharpSynatxHighlighterExtended.xshd"                               DestinationFiles="$(TargetDir)FSharpSynatxHighlighterExtended.xshd" ContinueOnError="false" /> <!-- TODO: do only if missing or changed ?-->
+    <Copy SourceFiles="C:\Users\gwins\.nuget\packages\fsharp.core\4.7.0\lib\net45\FSharp.Core.xml" DestinationFiles="$(TargetDir)FSharp.Core.xml"                      ContinueOnError="false" /> <!-- missing otherwise ? to have it as intellisense provider-->
   </Target>
 
 </Project>
