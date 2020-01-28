@@ -18,13 +18,7 @@ type LoadEditor () =
             rh.print  "*loading Seff - Fsharp Scripting Editor Window..."
             //Seff.Config.fileDefaultCode <- "#r @\"C:\Program Files\Rhinoceros 6\System\RhinoCommon.dll\"\r\n" + Seff.Config.fileDefaultCode + "\r\nopen Rhino\r\n" //TODO fix !
             
-            let win = 
-                Seff.App.runEditorHostedWithUndo(
-                    RhinoApp.MainWindowHandle(),
-                    "Rhino",
-                    (fun () -> RhinoDoc.ActiveDoc.BeginUndoRecord "FsiSession" ) , // https://github.com/mcneel/rhinocommon/blob/57c3967e33d18205efbe6a14db488319c276cbee/dotnet/rhino/rhinosdkdoc.cs#L857
-                    (fun i  -> RhinoDoc.ActiveDoc.EndUndoRecord(i) |> ignore )
-                    )        
+            let win = Seff.App.runEditorHosted(  RhinoApp.MainWindowHandle(), "Rhino" )        
 
             Sync.window <- win
             win.Closing.Add (fun e -> win.Visibility <- Visibility.Hidden ; e.Cancel <- true)
