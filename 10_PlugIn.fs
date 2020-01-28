@@ -5,6 +5,7 @@ open System
 open System.Windows
 open Rhino.Runtime
 open Seff
+open Seff.Fsi
 
 module rh = 
     let print a    = RhinoApp.WriteLine a    ; RhinoApp.Wait()
@@ -63,6 +64,18 @@ type SeffPlugin () =
 
     static member val Instance = SeffPlugin() // singelton pattern neded for Rhino. http://stackoverflow.com/questions/2691565/how-to-implement-singleton-pattern-syntax
     
+    static member val UndoRecordSerial = 0u with get,set
+    
+    static member PostEval (showWin) = 
+        RhinoDoc.ActiveDoc.EndUndoRecord(SeffPlugin.UndoRecordSerial) |> ignore
+        async{
+            do! Async.SwitchToContext Sync.syncContext
+            RhinoDoc.ActiveDoc.Views.RedrawEnabled <- true
+            RhinoDoc.ActiveDoc.Views.Redraw()
+            if showWin then Sync.window.Show() //because it might crash during UI interaction wher it is hidden
+            } |> Async.StartImmediate
+
+
     //member this.Folder = IO.Path.GetDirectoryName(this.Assembly.Location) // for debug only
 
     // You can override methods here to change the plug-in behavior on
@@ -94,6 +107,8 @@ type SeffPlugin () =
           }
         }
         *)
+    
+    
 
     override this.OnLoad refErrs =         
         if not Runtime.HostUtils.RunningOnWindows then 
@@ -101,50 +116,35 @@ type SeffPlugin () =
             PlugIns.LoadReturnCode.ErrorNoDialog
         else
             
-            Fsi.Events.RuntimeError.Add ( fun (ex:Exception) -> // to unsure UI does not stay frozen if RedrawEnabled is false
-                async{
-                    do! Async.SwitchToContext Sync.syncContext
-                    RhinoDoc.ActiveDoc.Views.RedrawEnabled <- true
-                    RhinoDoc.ActiveDoc.Views.Redraw()
-                    Sync.window.Show() //because it might crash during UI interaction wher it is hidden
-                    } |> Async.StartImmediate
-                )
+            Fsi.Events.Started.Add      ( fun () ->   SeffPlugin.UndoRecordSerial <- RhinoDoc.ActiveDoc.BeginUndoRecord "FsiSession" )   // https://github.com/mcneel/rhinocommon/blob/57c3967e33d18205efbe6a14db488319c276cbee/dotnet/rhino/rhinosdkdoc.cs#L857 
+
+            Fsi.Events.RuntimeError.Add ( fun (ex:Exception) -> SeffPlugin.PostEval(true)) // to unsure UI does not stay frozen if RedrawEnabled is false //showWin because it might crash during UI interaction wher it is hidden                
             
-            Fsi.Events.Canceled.Add ( fun () -> // to unsure UI does not stay frozen if RedrawEnabled is false
-                async{
-                    do! Async.SwitchToContext Sync.syncContext
-                    RhinoDoc.ActiveDoc.Views.RedrawEnabled <- true
-                    RhinoDoc.ActiveDoc.Views.Redraw()
-                    Sync.window.Show() //because it might crash during UI interaction wher it is hidden
-                    } |> Async.StartImmediate
-                )
+            Fsi.Events.Canceled.Add     ( fun () ->             SeffPlugin.PostEval(true)) // to unsure UI does not stay frozen if RedrawEnabled is false //showWin because it might crash during UI interaction wher it is hidden         
             
-            Fsi.Events.Completed.Add ( fun () -> // to unsure UI does not stay frozen if RedrawEnabled is false
-                async{
-                    do! Async.SwitchToContext Sync.syncContext
-                    RhinoDoc.ActiveDoc.Views.RedrawEnabled <- true
-                    RhinoDoc.ActiveDoc.Views.Redraw()
-                    //Sync.window.Show() // might be running in background mode from rhino command line
-                    } |> Async.StartImmediate
-                )
+            Fsi.Events.Completed.Add    ( fun () ->             SeffPlugin.PostEval(false)) // to unsure UI does not stay frozen if RedrawEnabled is false //showWin = false because might be running in background mode from rhino command line
+              
             
             RhinoApp.Closing.Add (fun (e:EventArgs) -> 
                 Seff.FileDialogs.closeWindow() |> ignore)
             
-            RhinoDoc.CloseDocument.Add (fun (e:DocumentEventArgs) ->    
-                match Fsi.FsiStatus.Evaluation with
-                |Fsi.Ready |Fsi.HadError -> ()
-                |Fsi.Evaluating ->  
-                    Fsi.agent.Post Fsi.AgentMessage.Cancel 
-                    rh.print "* Closing current file. Canceled currently running FSharp Interacitve Script." )
+            RhinoDoc.CloseDocument.Add (fun (e:DocumentEventArgs) -> 
+                match Fsi.state with
+                |Ready -> ()
+                |Evaluating -> 
+                    rh.print "* Closing current file. Cancel currently running FSharp Interacitve Script?"
+                    Fsi.tryCancel()|> ignore
+                    )                
             
             RhinoApp.EscapeKeyPressed.Add ( fun (e:EventArgs) ->
-                match Fsi.FsiStatus.Evaluation with
-                |Fsi.Ready |Fsi.HadError -> ()
-                |Fsi.Evaluating ->  
-                    Fsi.agent.Post Fsi.AgentMessage.Cancel
-                    rh.print "* 'Esc' was pressed. Canceled currently running FSharp Interacitve Script." )
+                match Fsi.state with
+                |Ready ->()
+                |Evaluating -> 
+                    rh.print "* 'Esc' was pressed. Canceled currently running FSharp Interacitve Script."
+                    Fsi.cancel()
+                    )
             
+            /// add Alias too :
             if not <|  ApplicationSettings.CommandAliasList.IsAlias("sr") then 
                 if ApplicationSettings.CommandAliasList.Add("sr","SeffRunCurrentScript")then 
                     rh.print  "*Seff.Rhino Plugin added the comand alias 'sr' for 'SeffRunCurrentScript'"
@@ -153,6 +153,7 @@ type SeffPlugin () =
             
             rh.print  "*Seff.Rhino Plugin loaded..."
             PlugIns.LoadReturnCode.Success
+    
     
     //override this.LoadAtStartup = true //obsolete??//Seff.Fsi.agent.Post Seff.Fsi.AgentMessage.Done // load FSI already at Rhino startup ??
     
