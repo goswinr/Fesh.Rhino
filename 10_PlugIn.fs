@@ -14,7 +14,7 @@ module rh =
 module Sync = //Don't change name  its used in Rhino.Scripting.dll via reflection
     let syncContext = Threading.SynchronizationContext.Current //Don't change name  its used in Rhino.Scripting.dll via reflection
     let mutable window = null : Window //Don't change name  its used in Rhino.Scripting.dll via reflection
-    let mutable rhinoScriptSyntaxCanCancel = false // don't chnage ! accessed via reflection in RhinoscriptSyntax assembly
+    let mutable isCancelRequested = false // don't chnage ! accessed via reflection in RhinoscriptSyntax assembly
 
 module Debugging = 
     open rh
@@ -115,8 +115,8 @@ type SeffPlugin () =
             rh.print "Seff FSharp Scripting Editor PlugIn only works on Windows. It needs the WPF framework "
             PlugIns.LoadReturnCode.ErrorNoDialog
         else
-            Fsi.Events.Started.Add  ( fun m -> match m with Fsi.Async -> Sync.rhinoScriptSyntaxCanCancel <- false | Fsi.Sync -> Sync.rhinoScriptSyntaxCanCancel <- true ) 
-            //Fsi.Events.Canceled.Add ( fun m -> if m = Fsi.Async then  Sync.rhinoScriptSyntaxCanCancel <- false ) //To avoid that the next runn of an async script gets cancelled on the first occurence of rs.EscapeTest
+            
+            Fsi.Events.Canceled.Add ( fun m -> Sync.isCancelRequested <-false) //cancel not needed  anymore
             
             Fsi.Events.Started.Add      ( fun m -> SeffPlugin.UndoRecordSerial <- RhinoDoc.ActiveDoc.BeginUndoRecord "FsiSession" )   // https://github.com/mcneel/rhinocommon/blob/57c3967e33d18205efbe6a14db488319c276cbee/dotnet/rhino/rhinosdkdoc.cs#L857
             Fsi.Events.RuntimeError.Add ( fun e -> SeffPlugin.PostEval(true)) // to unsure UI does not stay frozen if RedrawEnabled is false //showWin because it might crash during UI interaction wher it is hidden
@@ -129,14 +129,20 @@ type SeffPlugin () =
             
             RhinoDoc.CloseDocument.Add (fun (e:DocumentEventArgs) -> Fsi.cancelIfAsync())
             
-            RhinoApp.EscapeKeyPressed.Add ( fun (e:EventArgs) -> Fsi.cancelIfAsync()) //don't block event completion by doing some debug logging
-                //match Fsi.state with
-                //|Ready ->()
-                //|Evaluating -> 
-                    //match Fsi.mode with
-                    //|Async ->   Fsi.cancel()  // abort Thread // rh.print "* Seff.Rhino: 'Esc' was pressed. Canceled currently running FSharp Interacitve Script."
-                    //|Sync ->    () //don't block event completion by doing some debug logging // do nothing wait for Escape test event attched in Rhinscriotsyntax
-                    //)
+            RhinoApp.EscapeKeyPressed.Add ( fun (e:EventArgs) -> 
+                    
+                    if not <| Input.RhinoGet.InGet(RhinoDoc.ActiveDoc) then // TODO blocking in async ??
+                        Sync.isCancelRequested <-true
+                        Fsi.cancelIfAsync()
+                    ) 
+                    //don't block event completion by doing some debug logging
+                    //match Fsi.state with
+                    //|Ready ->()
+                    //|Evaluating -> 
+                        //match Fsi.mode with
+                        //|Async ->   Fsi.cancel()  // abort Thread // rh.print "* Seff.Rhino: 'Esc' was pressed. Canceled currently running FSharp Interacitve Script."
+                        //|Sync ->    () //don't block event completion by doing some debug logging // do nothing wait for Escape test event attched in Rhinscriotsyntax
+                        //)
             
             /// add Alias too :
             if not <|  ApplicationSettings.CommandAliasList.IsAlias("sr") then 
