@@ -115,16 +115,16 @@ type SeffPlugin () =
             PlugIns.LoadReturnCode.ErrorNoDialog
         else
                         
-            Fsi.Events.Started.Add      ( fun m -> SeffPlugin.UndoRecordSerial <- RhinoDoc.ActiveDoc.BeginUndoRecord "FsiSession" )   // https://github.com/mcneel/rhinocommon/blob/57c3967e33d18205efbe6a14db488319c276cbee/dotnet/rhino/rhinosdkdoc.cs#L857
-            Fsi.Events.RuntimeError.Add ( fun e -> SeffPlugin.PostEval(true)) // to unsure UI does not stay frozen if RedrawEnabled is false //showWin because it might crash during UI interaction wher it is hidden
-            Fsi.Events.Canceled.Add     ( fun m -> SeffPlugin.PostEval(true)) // to unsure UI does not stay frozen if RedrawEnabled is false //showWin because it might crash during UI interaction wher it is hidden  
-            Fsi.Events.Completed.Add    ( fun m -> SeffPlugin.PostEval(false)) // to unsure UI does not stay frozen if RedrawEnabled is false //showWin = false because might be running in background mode from rhino command line
+            //Fsi.Events.Started.Add      ( fun m -> SeffPlugin.UndoRecordSerial <- RhinoDoc.ActiveDoc.BeginUndoRecord "FsiSession" )   // https://github.com/mcneel/rhinocommon/blob/57c3967e33d18205efbe6a14db488319c276cbee/dotnet/rhino/rhinosdkdoc.cs#L857
+            //Fsi.Events.RuntimeError.Add ( fun e -> SeffPlugin.PostEval(true)) // to unsure UI does not stay frozen if RedrawEnabled is false //showWin because it might crash during UI interaction wher it is hidden
+            //Fsi.Events.Canceled.Add     ( fun m -> SeffPlugin.PostEval(true)) // to unsure UI does not stay frozen if RedrawEnabled is false //showWin because it might crash during UI interaction wher it is hidden  
+            //Fsi.Events.Completed.Add    ( fun m -> SeffPlugin.PostEval(false)) // to unsure UI does not stay frozen if RedrawEnabled is false //showWin = false because might be running in background mode from rhino command line
               
             
             RhinoApp.Closing.Add (fun (e:EventArgs) -> 
                 Seff.FileDialogs.closeWindow() |> ignore) // to save unsaved files
             
-            RhinoDoc.CloseDocument.Add (fun (e:DocumentEventArgs) -> Fsi.cancelIfAsync())
+            //RhinoDoc.CloseDocument.Add (fun (e:DocumentEventArgs) -> Fsi.cancelIfAsync())
             
             //RhinoApp.EscapeKeyPressed.Add ( fun (e:EventArgs) -> Fsi.cancelIfAsync() //dont abort on esc, only on ctrl+break or rs.EscapeTest() 
                   
