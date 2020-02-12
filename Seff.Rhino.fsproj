@@ -38,8 +38,8 @@
 
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="4.7.0" GeneratePathProperty="true"/>  <!-- path property $(PkgFSharp_Core) is C:\Users\Gos\.nuget\packages\fsharp.core\4.7.0 -->
-    <PackageReference Include="FSharp.Compiler.Service" Version="33.0.1" />
+    <PackageReference Update="FSharp.Core" Version="4.7.0" GeneratePathProperty="true" />  <!-- path property $(PkgFSharp_Core) is C:\Users\Gos\.nuget\packages\fsharp.core\4.7.0 -->
+    <PackageReference Include="FSharp.Compiler.Service" Version="34.0.1" />
     <!-- <PackageReference Include="AvalonEdit" Version="6.0.0" /> use custom build for search and replace-->    
   </ItemGroup>
 
@@ -73,7 +73,7 @@
 
   
   <Target Name="CopyFilesOverAfterBuild" BeforeTargets="AfterBuild">
-    <Copy SourceFiles="..\Seff\FSharpSynatxHighlighterExtended.xshd"                               DestinationFiles="$(TargetDir)FSharpSynatxHighlighterExtended.xshd" ContinueOnError="false" /> <!-- TODO: do only if missing or changed ?-->
+    <Copy SourceFiles="..\Seff\FSharpSynatxHighlighterExtended.xshd" DestinationFiles="$(TargetDir)FSharpSynatxHighlighterExtended.xshd" ContinueOnError="false" /> <!-- TODO: do only if missing or changed ?-->
     <Copy SourceFiles="$(PkgFSharp_Core)\lib\net45\FSharp.Core.xml" DestinationFiles="$(TargetDir)FSharp.Core.xml" ContinueOnError="false" />  <!-- xml missing otherwise ? to have it as intellisense provider-->
   </Target>
 
