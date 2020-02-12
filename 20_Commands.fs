@@ -4,6 +4,7 @@ open Rhino
 open System
 open System.Windows
 open Seff.Util
+open Seff
 
 //the Command Singelton classes:
 
@@ -15,19 +16,24 @@ type LoadEditor () =
            
     override this.RunCommand (doc, mode)  =
         if isNull Sync.window then // set up window on first run
-            rh.print  "*loading Seff - Fsharp Scripting Editor Window..."
-            
-            let win = Seff.App.runEditorHosted(  RhinoApp.MainWindowHandle(), "Rhino" )        
-
+            rh.print  "*loading Seff - Fsharp Scripting Editor Window..."            
+            let win = Seff.App.runEditorHosted(  RhinoApp.MainWindowHandle(), "Rhino" )
             Sync.window <- win
-            win.Closing.Add (fun e -> win.Visibility <- Visibility.Hidden ; e.Cancel <- true)
 
-            //Seff.Menu.addToAboutMenu ("Seff.Rhino Build Time "+ Seff.Util.Time.)  // add one mor item to about menu
+            //win.Closing.Add (fun e ->         // not needed ???
+            //    match Fsi.askAndCancel() with
+            //    |Fsi.States.Evaluating -> e.Cancel <- true
+            //    |Fsi.States.Ready -> 
+            //        win.Visibility <- Visibility.Hidden 
+            //        e.Cancel <- true) // i think user would rather expect full closing ? 
+            
+            //win.Closed.Add (fun _ -> Sync.window <- null) // cant be restarted then ??
+
             
             win.Show()
-
             rh.print  "*Seff Editor Window loaded."
             Commands.Result.Success
+
         else            
             if Sync.window.WindowState = WindowState.Minimized then Sync.window.WindowState <- WindowState.Normal 
             Sync.window.Visibility <- Visibility.Visible
@@ -35,7 +41,6 @@ type LoadEditor () =
             Commands.Result.Success
 
 
-        //TODO add rhino closing event that closes the window and so checks for unsaved script files before rhino closes
 
 type RunCurrentScript () = 
     inherit Commands.Command()    
@@ -73,16 +78,16 @@ type RunCurrentScript () =
 
 
 
-type Redraw () = 
-    inherit Commands.Command()    
-    static member val Instance = Redraw() 
-            
-    override this.EnglishName = "Redraw" //The command name as it appears on the Rhino command line.
-                   
-    override this.RunCommand (doc, mode)  =        
-        RhinoDoc.ActiveDoc.Views.RedrawEnabled <- true
-        RhinoDoc.ActiveDoc.Views.Redraw()
-        Commands.Result.Success
+// type Redraw () =                            // why ??
+//     inherit Commands.Command()    
+//     static member val Instance = Redraw() 
+//             
+//     override this.EnglishName = "Redraw" //The command name as it appears on the Rhino command line.
+//                    
+//     override this.RunCommand (doc, mode)  =        
+//         RhinoDoc.ActiveDoc.Views.RedrawEnabled <- true
+//         RhinoDoc.ActiveDoc.Views.Redraw()
+//         Commands.Result.Success
 
 
 //TODO mouse focus: https://discourse.mcneel.com/t/can-rhinocommon-be-used-with-wpf/12/7
