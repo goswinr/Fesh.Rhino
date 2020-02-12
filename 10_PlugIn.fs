@@ -120,11 +120,11 @@ type SeffPlugin () =
             Fsi.Events.Canceled.Add     ( fun m -> SeffPlugin.PostEval(true)) // to unsure UI does not stay frozen if RedrawEnabled is false //showWin because it might crash during UI interaction wher it is hidden  
             Fsi.Events.Completed.Add    ( fun m -> SeffPlugin.PostEval(false)) // to unsure UI does not stay frozen if RedrawEnabled is false //showWin = false because might be running in background mode from rhino command line
               
-            
-            RhinoApp.Closing.Add (fun _ -> Seff.FileDialogs.closeWindow() |> ignore) // to save unsaved files
-            RhinoApp.Closing.Add (fun _ -> Fsi.cancelIfAsync() ) //synch eval gets canceled anyway
-            
-            RhinoDoc.CloseDocument.Add (fun (e:DocumentEventArgs) -> Fsi.cancelIfAsync() ) //during sync eval closing doc should not be possible ??
+
+            RhinoApp.Closing.Add (fun e -> Seff.FileDialogs.closeWindow() |> ignore) // to save unsaved files, canceling of closing not possible here, save dialog will show after rhino is closed
+            RhinoDoc.CloseDocument.Add (fun (e:DocumentEventArgs) -> Fsi.cancelIfAsync() ) //during sync eval closing doc should not be possible anyway??
+            //RhinoApp.Closing.Add (fun _ -> Fsi.cancelIfAsync() ) //synch eval gets canceled anyway
+
             
             RhinoApp.EscapeKeyPressed.Add ( fun e -> ()) // dummy attachment in sync mode  to prevent access violation exception if first access is in async mode  //dont abort on esc, only on ctrl+break or rs.EscapeTest() 
                   
