@@ -81,9 +81,13 @@ type SeffPlugin () =
     // loading and shut down, add options pages to the Rhino _Option command
     // and mantain plug-in wide options in a document.
 
-        
     override this.CreateCommands() = //to add script files as custom commands
+        // https://discourse.mcneel.com/t/how-to-create-commands-after-plugin-load/47833    
+        
         base.CreateCommands()
+        // then call base.RegisterCommand()
+        // or ? Rhino.Runtime.HostUtils.RegisterDynamicCommand(seffPlugin,command)
+
         //for file in commandsfiles do
         // let cmd `= creat instance of command derived class
         //    HostUtils.RegisterDynamicCommand(this,cmd)
