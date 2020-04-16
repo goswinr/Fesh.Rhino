@@ -20,14 +20,14 @@ type LoadEditor () =
             let win = Seff.App.runEditorHosted(  RhinoApp.MainWindowHandle(), "Rhino" )
             Sync.window <- win
 
-            //win.Closing.Add (fun e ->         // not needed ???
-            //    match Fsi.askAndCancel() with
-            //    |Fsi.States.Evaluating -> e.Cancel <- true
-            //    |Fsi.States.Ready -> 
-            //        win.Visibility <- Visibility.Hidden 
-            //        e.Cancel <- true) // i think user would rather expect full closing ? 
+            win.Closing.Add (fun e ->         // not needed ???
+                match Fsi.askAndCancel() with
+                |Fsi.States.Evaluating -> e.Cancel <- true // no closing
+                |Fsi.States.Ready -> 
+                    win.Visibility <- Visibility.Hidden 
+                    e.Cancel <- true) // i think user would rather expect full closing ? 
             
-            //win.Closed.Add (fun _ -> Sync.window <- null) // cant be restarted then ??
+            //win.Closed.Add (fun _ -> Sync.window <- null) // TODO, it seems cant be restarted then.
 
             
             win.Show()
