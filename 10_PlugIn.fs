@@ -65,13 +65,13 @@ type SeffPlugin () =
     
     static member val UndoRecordSerial = 0u with get,set
     
-    static member PostEval (showWin) = 
+    static member AfterEval (showWin) = 
         RhinoDoc.ActiveDoc.EndUndoRecord(SeffPlugin.UndoRecordSerial) |> ignore
         async{
             do! Async.SwitchToContext Sync.syncContext
             RhinoDoc.ActiveDoc.Views.RedrawEnabled <- true
             RhinoDoc.ActiveDoc.Views.Redraw()
-            if showWin then Sync.window.Show() //because it might crash during UI interaction wher it is hidden
+            if showWin then Sync.window.Show() //because it might crash during UI interaction where it is hidden
             } |> Async.StartImmediate
 
 
@@ -120,9 +120,9 @@ type SeffPlugin () =
         else
                         
             Fsi.Events.Started.Add      ( fun m -> SeffPlugin.UndoRecordSerial <- RhinoDoc.ActiveDoc.BeginUndoRecord "FsiSession" )   // https://github.com/mcneel/rhinocommon/blob/57c3967e33d18205efbe6a14db488319c276cbee/dotnet/rhino/rhinosdkdoc.cs#L857
-            Fsi.Events.RuntimeError.Add ( fun e -> SeffPlugin.PostEval(true)) // to unsure UI does not stay frozen if RedrawEnabled is false //showWin because it might crash during UI interaction wher it is hidden
-            Fsi.Events.Canceled.Add     ( fun m -> SeffPlugin.PostEval(true)) // to unsure UI does not stay frozen if RedrawEnabled is false //showWin because it might crash during UI interaction wher it is hidden  
-            Fsi.Events.Completed.Add    ( fun m -> SeffPlugin.PostEval(false)) // to unsure UI does not stay frozen if RedrawEnabled is false //showWin = false because might be running in background mode from rhino command line
+            Fsi.Events.RuntimeError.Add ( fun e -> SeffPlugin.AfterEval(true))  // to unsure UI does not stay frozen if RedrawEnabled is false //showWin because it might crash during UI interaction wher it is hidden
+            Fsi.Events.Canceled.Add     ( fun m -> SeffPlugin.AfterEval(true))  // to unsure UI does not stay frozen if RedrawEnabled is false //showWin because it might crash during UI interaction wher it is hidden  
+            Fsi.Events.Completed.Add    ( fun m -> SeffPlugin.AfterEval(false)) // to unsure UI does not stay frozen if RedrawEnabled is false //showWin = false because might be running in background mode from rhino command line
               
 
             RhinoApp.Closing.Add (fun e -> Seff.FileDialogs.closeWindow() |> ignore) // to save unsaved files, canceling of closing not possible here, save dialog will show after rhino is closed
