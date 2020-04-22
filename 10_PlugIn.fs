@@ -90,8 +90,8 @@ type SeffPlugin () =
 
             win.Closing.Add (fun e ->         // not needed ???
                 match Fsi.askAndCancel() with
-                |Fsi.States.Evaluating -> e.Cancel <- true // no closing
-                |Fsi.States.Ready -> 
+                |Fsi.State.Evaluating -> e.Cancel <- true // no closing
+                |Fsi.State.Ready -> 
                     win.Visibility <- Visibility.Hidden 
                     e.Cancel <- true) // i think user would rather expect full closing ? 
             
@@ -100,20 +100,23 @@ type SeffPlugin () =
             Fsi.Events.Started.Add      ( fun m -> SeffPlugin.UndoRecordSerial <- RhinoDoc.ActiveDoc.BeginUndoRecord "FsiSession" )   // https://github.com/mcneel/rhinocommon/blob/57c3967e33d18205efbe6a14db488319c276cbee/dotnet/rhino/rhinosdkdoc.cs#L857
             Fsi.Events.RuntimeError.Add ( fun e -> SeffPlugin.AfterEval(true))  // to unsure UI does not stay frozen if RedrawEnabled is false //showWin because it might crash during UI interaction wher it is hidden
             Fsi.Events.Canceled.Add     ( fun m -> SeffPlugin.AfterEval(true))  // to unsure UI does not stay frozen if RedrawEnabled is false //showWin because it might crash during UI interaction wher it is hidden  
-            Fsi.Events.Completed.Add    ( fun m -> SeffPlugin.AfterEval(false)) // to unsure UI does not stay frozen if RedrawEnabled is false //showWin = false because might be running in background mode from rhino command line
+            Fsi.Events.CompletedOk.Add  ( fun m -> SeffPlugin.AfterEval(false)) // to unsure UI does not stay frozen if RedrawEnabled is false //showWin = false because might be running in background mode from rhino command line
               
 
-            RhinoApp.Closing.Add (fun e -> Seff.FileDialogs.closeWindow() |> ignore) // to save unsaved files, canceling of closing not possible here, save dialog will show after rhino is closed
-            RhinoDoc.CloseDocument.Add (fun (e:DocumentEventArgs) -> Fsi.cancelIfAsync() ) //during sync eval closing doc should not be possible anyway??
+            RhinoApp.Closing.Add       (fun e -> Seff.FileDialogs.closeWindow() |> ignore) // to save unsaved files, canceling of closing not possible here, save dialog will show after rhino is closed
+            RhinoDoc.CloseDocument.Add (fun e -> Fsi.cancelIfAsync() ) //during sync eval closing doc should not be possible anyway??
             //RhinoApp.Closing.Add (fun _ -> Fsi.cancelIfAsync() ) //synch eval gets canceled anyway
 
             
-            RhinoApp.EscapeKeyPressed.Add ( fun e -> ()) // dummy attachment in sync mode  to prevent access violation exception if first access is in async mode  //dont abort on esc, only on ctrl+break or rs.EscapeTest() 
+            
+            //Dummy attachment in sync mode  to prevent access violation exception if first access is in async mode  
+            //dont abort on esc, only on ctrl+break or RhinoScriptSyntax.EscapeTest() 
+            RhinoApp.EscapeKeyPressed.Add ( fun e -> ()) 
                   
             // add Alias too :
             if not <|  ApplicationSettings.CommandAliasList.IsAlias("sr") then 
                 if ApplicationSettings.CommandAliasList.Add("sr","SeffRunCurrentScript")then 
-                    rh.print  "*Seff.Rhino Plugin added the comand alias 'sr' for 'SeffRunCurrentScript'"
+                    rh.print  "* Seff.Rhino Plugin added the comand alias 'sr' for 'SeffRunCurrentScript'"
 
             //Debugging.printAssemblyInfo(this)
             
