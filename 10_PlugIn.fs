@@ -64,7 +64,8 @@ type SeffPlugin () =
     static member val Instance = SeffPlugin() // singelton pattern neded for Rhino. http://stackoverflow.com/questions/2691565/how-to-implement-singleton-pattern-syntax
     
     static member val UndoRecordSerial = 0u with get,set
-    
+        
+
     static member AfterEval (showWin) = 
         RhinoDoc.ActiveDoc.EndUndoRecord(SeffPlugin.UndoRecordSerial) |> ignore
         async{
@@ -77,10 +78,54 @@ type SeffPlugin () =
 
     //member this.Folder = IO.Path.GetDirectoryName(this.Assembly.Location) // for debug only
 
+
+    override this.OnLoad refErrs =         
+        if not Runtime.HostUtils.RunningOnWindows then 
+            rh.print "Seff | Scripting Editor For FSharp PlugIn only works on Windows. It needs the WPF framework "
+            PlugIns.LoadReturnCode.ErrorNoDialog
+        else    
+            rh.print  "* loading Seff.Rhino Plugin ..."          
+            let win = Seff.App.runEditorHosted(  RhinoApp.MainWindowHandle(), "Rhino" )
+            Sync.window <- win
+
+            win.Closing.Add (fun e ->         // not needed ???
+                match Fsi.askAndCancel() with
+                |Fsi.States.Evaluating -> e.Cancel <- true // no closing
+                |Fsi.States.Ready -> 
+                    win.Visibility <- Visibility.Hidden 
+                    e.Cancel <- true) // i think user would rather expect full closing ? 
+            
+            //win.Closed.Add (fun _ -> Sync.window <- null) // TODO, it seems it cant be restarted then.
+
+            Fsi.Events.Started.Add      ( fun m -> SeffPlugin.UndoRecordSerial <- RhinoDoc.ActiveDoc.BeginUndoRecord "FsiSession" )   // https://github.com/mcneel/rhinocommon/blob/57c3967e33d18205efbe6a14db488319c276cbee/dotnet/rhino/rhinosdkdoc.cs#L857
+            Fsi.Events.RuntimeError.Add ( fun e -> SeffPlugin.AfterEval(true))  // to unsure UI does not stay frozen if RedrawEnabled is false //showWin because it might crash during UI interaction wher it is hidden
+            Fsi.Events.Canceled.Add     ( fun m -> SeffPlugin.AfterEval(true))  // to unsure UI does not stay frozen if RedrawEnabled is false //showWin because it might crash during UI interaction wher it is hidden  
+            Fsi.Events.Completed.Add    ( fun m -> SeffPlugin.AfterEval(false)) // to unsure UI does not stay frozen if RedrawEnabled is false //showWin = false because might be running in background mode from rhino command line
+              
+
+            RhinoApp.Closing.Add (fun e -> Seff.FileDialogs.closeWindow() |> ignore) // to save unsaved files, canceling of closing not possible here, save dialog will show after rhino is closed
+            RhinoDoc.CloseDocument.Add (fun (e:DocumentEventArgs) -> Fsi.cancelIfAsync() ) //during sync eval closing doc should not be possible anyway??
+            //RhinoApp.Closing.Add (fun _ -> Fsi.cancelIfAsync() ) //synch eval gets canceled anyway
+
+            
+            RhinoApp.EscapeKeyPressed.Add ( fun e -> ()) // dummy attachment in sync mode  to prevent access violation exception if first access is in async mode  //dont abort on esc, only on ctrl+break or rs.EscapeTest() 
+                  
+            // add Alias too :
+            if not <|  ApplicationSettings.CommandAliasList.IsAlias("sr") then 
+                if ApplicationSettings.CommandAliasList.Add("sr","SeffRunCurrentScript")then 
+                    rh.print  "*Seff.Rhino Plugin added the comand alias 'sr' for 'SeffRunCurrentScript'"
+
+            //Debugging.printAssemblyInfo(this)
+            
+            rh.print  "* Seff.Rhino Plugin loaded."
+            PlugIns.LoadReturnCode.Success
+    
+    
+    //override this.LoadAtStartup = true //obsolete??//Seff.Fsi.agent.Post Seff.Fsi.AgentMessage.Done // load FSI already at Rhino startup ??
+    
     // You can override methods here to change the plug-in behavior on
     // loading and shut down, add options pages to the Rhino _Option command
     // and mantain plug-in wide options in a document.
-
     override this.CreateCommands() = //to add script files as custom commands
         // https://discourse.mcneel.com/t/how-to-create-commands-after-plugin-load/47833    
         
@@ -110,38 +155,4 @@ type SeffPlugin () =
           }
         }
         *)
-    
-    
-
-    override this.OnLoad refErrs =         
-        if not Runtime.HostUtils.RunningOnWindows then 
-            rh.print "Seff FSharp Scripting Editor PlugIn only works on Windows. It needs the WPF framework "
-            PlugIns.LoadReturnCode.ErrorNoDialog
-        else
-                        
-            Fsi.Events.Started.Add      ( fun m -> SeffPlugin.UndoRecordSerial <- RhinoDoc.ActiveDoc.BeginUndoRecord "FsiSession" )   // https://github.com/mcneel/rhinocommon/blob/57c3967e33d18205efbe6a14db488319c276cbee/dotnet/rhino/rhinosdkdoc.cs#L857
-            Fsi.Events.RuntimeError.Add ( fun e -> SeffPlugin.AfterEval(true))  // to unsure UI does not stay frozen if RedrawEnabled is false //showWin because it might crash during UI interaction wher it is hidden
-            Fsi.Events.Canceled.Add     ( fun m -> SeffPlugin.AfterEval(true))  // to unsure UI does not stay frozen if RedrawEnabled is false //showWin because it might crash during UI interaction wher it is hidden  
-            Fsi.Events.Completed.Add    ( fun m -> SeffPlugin.AfterEval(false)) // to unsure UI does not stay frozen if RedrawEnabled is false //showWin = false because might be running in background mode from rhino command line
-              
-
-            RhinoApp.Closing.Add (fun e -> Seff.FileDialogs.closeWindow() |> ignore) // to save unsaved files, canceling of closing not possible here, save dialog will show after rhino is closed
-            RhinoDoc.CloseDocument.Add (fun (e:DocumentEventArgs) -> Fsi.cancelIfAsync() ) //during sync eval closing doc should not be possible anyway??
-            //RhinoApp.Closing.Add (fun _ -> Fsi.cancelIfAsync() ) //synch eval gets canceled anyway
-
-            
-            RhinoApp.EscapeKeyPressed.Add ( fun e -> ()) // dummy attachment in sync mode  to prevent access violation exception if first access is in async mode  //dont abort on esc, only on ctrl+break or rs.EscapeTest() 
-                  
-            // add Alias too :
-            if not <|  ApplicationSettings.CommandAliasList.IsAlias("sr") then 
-                if ApplicationSettings.CommandAliasList.Add("sr","SeffRunCurrentScript")then 
-                    rh.print  "*Seff.Rhino Plugin added the comand alias 'sr' for 'SeffRunCurrentScript'"
-
-            //Debugging.printAssemblyInfo(this)
-            
-            rh.print  "*Seff.Rhino Plugin loaded..."
-            PlugIns.LoadReturnCode.Success
-    
-    
-    //override this.LoadAtStartup = true //obsolete??//Seff.Fsi.agent.Post Seff.Fsi.AgentMessage.Done // load FSI already at Rhino startup ??
     

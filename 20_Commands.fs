@@ -15,29 +15,14 @@ type LoadEditor () =
     override this.EnglishName = "Seff" //The command name as it appears on the Rhino command line.
            
     override this.RunCommand (doc, mode)  =
-        if isNull Sync.window then // set up window on first run
-            rh.print  "*loading Seff - Fsharp Scripting Editor Window..."            
-            let win = Seff.App.runEditorHosted(  RhinoApp.MainWindowHandle(), "Rhino" )
-            Sync.window <- win
-
-            win.Closing.Add (fun e ->         // not needed ???
-                match Fsi.askAndCancel() with
-                |Fsi.States.Evaluating -> e.Cancel <- true // no closing
-                |Fsi.States.Ready -> 
-                    win.Visibility <- Visibility.Hidden 
-                    e.Cancel <- true) // i think user would rather expect full closing ? 
-            
-            //win.Closed.Add (fun _ -> Sync.window <- null) // TODO, it seems cant be restarted then.
-
-            
-            win.Show()
-            rh.print  "*Seff Editor Window loaded."
-            Commands.Result.Success
+        if isNull Sync.window then // set up window on first run            
+            rh.print  "*Seff Editor Window cant be shown, the Plugin is not properly loadad . please restart Rhino."
+            Commands.Result.Failure
 
         else            
-            if Sync.window.WindowState = WindowState.Minimized then Sync.window.WindowState <- WindowState.Normal 
-            Sync.window.Visibility <- Visibility.Visible
             Sync.window.Show()
+            Sync.window.Visibility <- Visibility.Visible
+            if Sync.window.WindowState = WindowState.Minimized then Sync.window.WindowState <- WindowState.Normal 
             Commands.Result.Success
 
 
@@ -49,45 +34,36 @@ type RunCurrentScript () =
     override this.EnglishName = "SeffRunCurrentScript"
            
     override this.RunCommand (doc, mode)  =
+        if isNull Sync.window then // set up window on first run            
+            rh.print  "*Seff Editor Window cant be shown, the Plugin is not properly loadad . please restart Rhino."
+            Commands.Result.Failure
+        else   
+            match Sync.window.Visibility with
+            | Visibility.Visible | Visibility.Collapsed -> 
+                match Seff.Tab.current with 
+                | Some t -> 
+                    rh.print  "*Seff, running the current script.."
+                    let _,_,cmd,_ = Seff.Commands.RunAllText //TODO or trigger directly via agent post to distinguish triggers from commandline and seff ui?
+                    cmd.Execute(null) // the argumnent can be any obj, its ignored
+                    rh.print  "*Seff, ran current script." // this non-modal ? print another msg when completed
+                    Commands.Result.Success
+                |None -> 
+                    rh.print "There is no active script file in Seff editor"
+                    Commands.Result.Failure
         
-        match Sync.window.Visibility with
-        | Visibility.Visible | Visibility.Collapsed -> 
-            match Seff.Tab.current with 
-            | Some t -> 
-                rh.print  "*Seff, running the current script.."
-                let _,_,cmd,_ = Seff.Commands.RunAllText //TODO or trigger directly via agent post to distinguish triggers from commandline and seff ui?
-                cmd.Execute(null) // the argumnent can be any obj, its ignored
-                rh.print  "*Seff, ran current script." // this non-modal ? print another msg when completed
-                Commands.Result.Success
-            |None -> 
-                rh.print "There is no active script file in Seff editor"
-                Commands.Result.Failure
-        
-        |Visibility.Hidden -> 
-            Sync.window.Visibility <- Visibility.Visible
-            match Seff.Tab.current with 
-            | Some t -> 
-                match MessageBox.Show("Run Script from current Tab?", "Run Script from current Tab?", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.Yes) with
-                | MessageBoxResult.Yes -> this.RunCommand (doc, mode) 
-                | _ -> Commands.Result.Failure
-            |None -> 
-                rh.print "There is no active script file in Seff editor"
-                Commands.Result.Failure
+            |Visibility.Hidden -> 
+                Sync.window.Visibility <- Visibility.Visible
+                match Seff.Tab.current with 
+                | Some t -> 
+                    match MessageBox.Show("Run Script from current Tab?", "Run Script from current Tab?", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.Yes) with
+                    | MessageBoxResult.Yes -> this.RunCommand (doc, mode) 
+                    | _ -> Commands.Result.Failure
+                |None -> 
+                    rh.print "There is no active script file in Seff editor"
+                    Commands.Result.Failure
                 
-        | _ -> Commands.Result.Failure // only needed to make F# compiler happy
+            | _ -> Commands.Result.Failure // only needed to make F# compiler happy
 
-
-
-// type Redraw () =                            // why ??
-//     inherit Commands.Command()    
-//     static member val Instance = Redraw() 
-//             
-//     override this.EnglishName = "Redraw" //The command name as it appears on the Rhino command line.
-//                    
-//     override this.RunCommand (doc, mode)  =        
-//         RhinoDoc.ActiveDoc.Views.RedrawEnabled <- true
-//         RhinoDoc.ActiveDoc.Views.Redraw()
-//         Commands.Result.Success
 
 
 //TODO mouse focus: https://discourse.mcneel.com/t/can-rhinocommon-be-used-with-wpf/12/7
