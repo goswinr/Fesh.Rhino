@@ -18,19 +18,20 @@
     <!-- <ProjectGuid>{DE417D77-E80A-472B-9D16-2FFFA284E245}</ProjectGuid> seems to be ignored in buildprocess use assembly info code instead-->
 
 
-    <ApplicationIcon>Media\LogoFSharp.ico</ApplicationIcon>
-    <Win32Resource>Media\AppIcon.res</Win32Resource> <!--  for Application Icon in explorer, adapt path as needed-->
+    <ApplicationIcon>Media\Logo15.ico</ApplicationIcon>
+    <Win32Resource>Media\Logo15.res</Win32Resource>    <!--  for Application Icon in explorer, adapt path as needed-->
   </PropertyGroup>
     
 
 
   <ItemGroup>
+
+    <EmbeddedResource Include="Media\Logo15.res" />
+    <Resource Include="Media\Logo15.ico">      <CopyToOutputDirectory>Never</CopyToOutputDirectory>    </Resource>
+    
     <Compile Include="00_AssemblyInfo.fs" />
     <Compile Include="10_PlugIn.fs" />
     <Compile Include="20_Commands.fs" />
-
-    <EmbeddedResource Include="Media\AppIcon.res" />
-    <Resource Include="Media\LogoFSharp.ico" />
 
     <!--<None Include="FSharpSynatxHighlighterExtended.xshd"><CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory> </None>  copy it directly from Seff folder below in afterbuild -->
     
@@ -38,8 +39,8 @@
 
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="4.7.1" GeneratePathProperty="true" />  <!-- path property $(PkgFSharp_Core) is C:\Users\Gos\.nuget\packages\fsharp.core\4.7.0 -->
-    <PackageReference Include="FSharp.Compiler.Service" Version="34.0.1" />
+    <PackageReference Update="FSharp.Core" Version="4.7.1" GeneratePathProperty="true" />  <!-- path property $(PkgFSharp_Core) is C:\Users\Gos\.nuget\packages\fsharp.core\4.7.1 -->
+    <PackageReference Include="FSharp.Compiler.Service" Version="33.0.1" />
     <!-- <PackageReference Include="AvalonEdit" Version="6.0.0" /> use custom build for search and replace-->    
   </ItemGroup>
 
