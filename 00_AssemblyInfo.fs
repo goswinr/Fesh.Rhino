@@ -31,7 +31,7 @@ open Rhino.PlugIns
 //[<assembly: PlugInDescription(DescriptionType.Fax, "206-545-7321")>]
 [<assembly: PlugInDescription(DescriptionType.Organization, "Studio Rothenthal")>]
 //[<assembly: PlugInDescription(DescriptionType.UpdateUrl, "https://github.com/mcneel/RhinoPbrMaterial")>]
-[<assembly: PlugInDescription(DescriptionType.WebSite, "http://rothenthal.com/")>]
+[<assembly: PlugInDescription(DescriptionType.WebSite, "http://seff.io/")>]
 // Icons should be Windows .ico files and contain 32-bit images in the following sizes: 16, 24, 32, 48, and 256.
 // This is a Rhino 6-only description.
 [<assembly: PlugInDescription(DescriptionType.Icon, "Seff.Rhino.EmbeddedResources.Logo15.ico")>] // TODO path ok ?
