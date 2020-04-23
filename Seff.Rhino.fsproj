@@ -51,13 +51,11 @@
   </ItemGroup>
 
 
-  <ItemGroup>
-    
+  <ItemGroup>    
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="WindowsBase" /> 
-    <Reference Include="RhinoCommon">           <HintPath>C:\Program Files\Rhino 6\System\RhinoCommon.dll</HintPath>      <Private>false</Private>        </Reference>
-    
+    <Reference Include="RhinoCommon">           <HintPath>C:\Program Files\Rhino 6\System\RhinoCommon.dll</HintPath>      <Private>false</Private>        </Reference>    
   </ItemGroup>
 
 

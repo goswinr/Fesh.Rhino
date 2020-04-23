@@ -34,7 +34,7 @@ open Rhino.PlugIns
 [<assembly: PlugInDescription(DescriptionType.WebSite, "http://rothenthal.com/")>]
 // Icons should be Windows .ico files and contain 32-bit images in the following sizes: 16, 24, 32, 48, and 256.
 // This is a Rhino 6-only description.
-[<assembly: PlugInDescription(DescriptionType.Icon, "Seff.Rhino.EmbeddedResources.Logo15.ico")>]
+[<assembly: PlugInDescription(DescriptionType.Icon, "Seff.Rhino.EmbeddedResources.Logo15.ico")>] // TODO path ok ?
 
 
 // done in new SDK fsproj file:
