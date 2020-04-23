@@ -11,9 +11,9 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
     <Version>0.1.0.0</Version>
-    <Authors>Goswin Rothemthal</Authors>
-    <Description>an F# Scripring Editor for Rhino</Description>
-    <Copyright>Goswin Rothenthal 2019</Copyright>
+    <Authors>Goswin Rothenthal</Authors>
+    <Description> a Scripting Editor for FSharp in Rhino</Description>
+    <Copyright>Goswin Rothenthal 2020</Copyright>
     <NeutralLanguage>en</NeutralLanguage>
     <!-- <ProjectGuid>{DE417D77-E80A-472B-9D16-2FFFA284E245}</ProjectGuid> seems to be ignored in buildprocess use assembly info code instead-->
 

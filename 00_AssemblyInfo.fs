@@ -25,25 +25,25 @@ open Rhino.PlugIns
 
 
 //[<assembly: PlugInDescription(DescriptionType.Address, "3670 Woodland Park Avenue North\r\nSeattle, WA 98103")>]
-//[<assembly: PlugInDescription(DescriptionType.Country, "United States")>]
-//[<assembly: PlugInDescription(DescriptionType.Email, "devsupport@mcneel.com")>]
+[<assembly: PlugInDescription(DescriptionType.Country, "Austria")>]
+[<assembly: PlugInDescription(DescriptionType.Email, "goswin@rothenthal.com")>]
 //[<assembly: PlugInDescription(DescriptionType.Phone, "206-545-6877")>]
 //[<assembly: PlugInDescription(DescriptionType.Fax, "206-545-7321")>]
-//[<assembly: PlugInDescription(DescriptionType.Organization, "Robert McNeel & Associates")>]
+[<assembly: PlugInDescription(DescriptionType.Organization, "Studio Rothenthal")>]
 //[<assembly: PlugInDescription(DescriptionType.UpdateUrl, "https://github.com/mcneel/RhinoPbrMaterial")>]
-//[<assembly: PlugInDescription(DescriptionType.WebSite, "http://www.rhino3d.com/")>]
+[<assembly: PlugInDescription(DescriptionType.WebSite, "http://rothenthal.com/")>]
 // Icons should be Windows .ico files and contain 32-bit images in the following sizes: 16, 24, 32, 48, and 256.
 // This is a Rhino 6-only description.
-//[<assembly: PlugInDescription(DescriptionType.Icon, "RhinoPbrMaterial.EmbeddedResources.plugin-utility.ico")>]
+[<assembly: PlugInDescription(DescriptionType.Icon, "Seff.Rhino.EmbeddedResources.Logo15.ico")>]
 
 
 // done in new SDK fsproj file:
-//[<assembly: AssemblyTitle("Etos.Rhino")>]
-//[<assembly: AssemblyDescription("FSharp Scriting Editor for Rhino")>]
+//[<assembly: AssemblyTitle("Seff.Rhino")>]
+//[<assembly: AssemblyDescription("Seff | FSharp Scriting Editor for Rhino")>]
 //[<assembly: AssemblyConfiguration("")>]
-//[<assembly: AssemblyCompany("Etos.io")>]
-//[<assembly: AssemblyProduct("Etos.Rhino")>]
-//[<assembly: AssemblyCopyright("© Copyright Goswin R 2017")>]
+//[<assembly: AssemblyCompany("Seff.io")>]
+//[<assembly: AssemblyProduct("Seff.Rhino")>]
+//[<assembly: AssemblyCopyright("© Copyright Goswin Rothenthal 2020")>]
 //[<assembly: AssemblyTrademark("")>]
 //[<assembly: AssemblyCulture("en-US")>]
 //[<assembly: AssemblyVersion("0.1.*")>] // You can specify all the values or you can default the Build and Revision Numbers  by using the '*' as shown below:
