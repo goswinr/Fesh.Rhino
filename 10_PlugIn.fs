@@ -112,6 +112,7 @@ type SeffPlugin () =
             //Dummy attachment in sync mode  to prevent access violation exception if first access is in async mode  
             //dont abort on esc, only on ctrl+break or RhinoScriptSyntax.EscapeTest() 
             RhinoApp.EscapeKeyPressed.Add ( fun e -> ()) 
+            
                   
             // add Alias too :
             if not <|  ApplicationSettings.CommandAliasList.IsAlias("sr") then 
