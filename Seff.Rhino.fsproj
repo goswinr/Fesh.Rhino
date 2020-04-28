@@ -12,7 +12,7 @@
 
     <Version>0.1.0.0</Version>
     <Authors>Goswin Rothenthal</Authors>
-    <Description> a Scripting Editor for FSharp in Rhino. see seff.io</Description>
+    <Description> a Scripting Editor for FSharp in Rhino. see http://seff.io </Description>
     <Copyright>Goswin Rothenthal 2020</Copyright>
     <NeutralLanguage>en</NeutralLanguage>
     <!-- <ProjectGuid>{DE417D77-E80A-472B-9D16-2FFFA284E245}</ProjectGuid> seems to be ignored in buildprocess use assembly info code instead-->
@@ -25,7 +25,6 @@
 
 
   <ItemGroup>
-
     <EmbeddedResource Include="Media\Logo15.res" />
     <Resource Include="Media\Logo15.ico">      <CopyToOutputDirectory>Never</CopyToOutputDirectory>    </Resource>
     
@@ -33,22 +32,18 @@
     <Compile Include="10_PlugIn.fs" />
     <Compile Include="20_Commands.fs" />
 
-    <!--<None Include="FSharpSynatxHighlighterExtended.xshd"><CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory> </None>  copy it directly from Seff folder below in afterbuild -->
-    
  </ItemGroup>
 
 
-  <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="4.7.1" GeneratePathProperty="true" />  <!-- path property $(PkgFSharp_Core) is C:\Users\Gos\.nuget\packages\fsharp.core\4.7.1 -->
-    <PackageReference Include="FSharp.Compiler.Service" Version="33.0.1" /> <!--cannot be higher than 33.0.1 because of https://github.com/fsharp/FSharp.Compiler.Service/issues/935-->
-     
-    <!-- <PackageReference Include="AvalonEdit" Version="6.0.0" /> use custom build for search and replace-->    
+  <ItemGroup> 
+    <!-- don't add explict ref to Fsharp.Core because: https://github.com/dotnet/fsharp/issues/9064 -->   
+    <PackageReference Include="FSharp.Compiler.Service" Version="35.0.0" />
   </ItemGroup>
 
 
   <ItemGroup> 
-    <ProjectReference Include="..\AvalonEdit\ICSharpCode.AvalonEdit\ICSharpCode.AvalonEdit.csproj" />
-    <ProjectReference Include="..\Seff\Seff.fsproj" />
+    <ProjectReference Include="..\AvalonEdit\ICSharpCode.AvalonEdit\ICSharpCode.AvalonEdit.csproj" />  <!-- take from https://github.com/goswinr/AvalonEdit -->
+    <ProjectReference Include="..\Seff\Seff.fsproj" />  <!-- take from https://github.com/goswinr/Seff -->
   </ItemGroup>
 
 
@@ -56,7 +51,7 @@
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="WindowsBase" /> 
-    <Reference Include="RhinoCommon">           <HintPath>C:\Program Files\Rhino 6\System\RhinoCommon.dll</HintPath>      <Private>false</Private>        </Reference>    
+    <Reference Include="RhinoCommon">    <HintPath>C:\Program Files\Rhino 6\System\RhinoCommon.dll</HintPath>  <Private>false</Private> </Reference>    
   </ItemGroup>
 
 
@@ -73,8 +68,13 @@
 
   
   <Target Name="CopyFilesOverAfterBuild" BeforeTargets="AfterBuild">
-    <Copy SourceFiles="..\Seff\FSharpSynatxHighlighterExtended.xshd" DestinationFiles="$(TargetDir)FSharpSynatxHighlighterExtended.xshd" ContinueOnError="false" /> <!-- TODO: do only if missing or changed ?-->
-    <Copy SourceFiles="$(PkgFSharp_Core)\lib\net45\FSharp.Core.xml" DestinationFiles="$(TargetDir)FSharp.Core.xml" ContinueOnError="false" />  <!-- xml missing otherwise ? to have it as intellisense provider-->
+    
+    <!-- take FSharpSynatxHighlighterExtended.xshd from https://github.com/goswinr/Seff -->
+    <Copy SourceFiles="..\Seff\FSharpSynatxHighlighterExtended.xshd" DestinationFiles="$(TargetDir)FSharpSynatxHighlighterExtended.xshd" ContinueOnError="false" /> 
+    
+    <!-- FSharp.Core.xml is missing otherwise ? to have it as intellisense provider-->
+    <Copy SourceFiles="$(USERPROFILE)\.nuget\packages\fsharp.core\4.7.1\lib\net45\FSharp.Core.xml" DestinationFiles="$(TargetDir)FSharp.Core.xml" ContinueOnError="false" />  
+
   </Target>
 
 </Project>
