@@ -16,7 +16,7 @@ type LoadEditor () =
            
     override this.RunCommand (doc, mode)  =
         if isNull Sync.window then // set up window on first run            
-            rh.print  "*Seff Editor Window cant be shown, the Plugin is not properly loadad . please restart Rhino."
+            rh.print  " * Seff Editor Window cant be shown, the Plugin is not properly loadad . please restart Rhino."
             Commands.Result.Failure
 
         else            
@@ -25,6 +25,21 @@ type LoadEditor () =
             if Sync.window.WindowState = WindowState.Minimized then Sync.window.WindowState <- WindowState.Normal 
             Commands.Result.Success
 
+    type LoadFsi () = 
+        inherit Commands.Command()    
+        static member val Instance = LoadFsi() 
+                
+        override this.EnglishName = "SeffLoadFsi" //The command name as it appears on the Rhino command line.
+                       
+        override this.RunCommand (doc, mode)  =
+            if isNull Sync.window then // set up window on first run            
+                rh.print  " * Seff Editor Window cant be shown, the Plugin is not properly loadad . please restart Rhino."
+                Commands.Result.Failure            
+            else            
+                rh.print  "loading Fsi ..."
+                Fsi.Initalize()
+                rh.print  "Fsi loaded."
+                Commands.Result.Success
 
 
 type RunCurrentScript () = 
