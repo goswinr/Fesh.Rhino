@@ -37,7 +37,7 @@
 
   <ItemGroup> 
     <!-- don't add explict ref to Fsharp.Core because: https://github.com/dotnet/fsharp/issues/9064 -->   
-    <PackageReference Include="FSharp.Compiler.Service" Version="35.0.0" />
+    <PackageReference Include="FSharp.Compiler.Service" Version="33.0.1" /> <!--be higher than 33.0.1--> 
   </ItemGroup>
 
 

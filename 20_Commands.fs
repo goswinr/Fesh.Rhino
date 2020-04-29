@@ -23,8 +23,10 @@ type LoadEditor () =
             Sync.window.Show()
             Sync.window.Visibility <- Visibility.Visible
             if Sync.window.WindowState = WindowState.Minimized then Sync.window.WindowState <- WindowState.Normal 
+            Fsi.Initalize() // call after window.Show() to sse potential error  messages in the log, is non blocking async anyway. not done in Seff.App.runEditorHosted anymore
             Commands.Result.Success
-
+    
+    (*
     type LoadFsi () = 
         inherit Commands.Command()    
         static member val Instance = LoadFsi() 
@@ -40,6 +42,7 @@ type LoadEditor () =
                 Fsi.Initalize()
                 rh.print  "Fsi loaded."
                 Commands.Result.Success
+                *)
 
 
 type RunCurrentScript () = 

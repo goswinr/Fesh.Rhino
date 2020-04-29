@@ -87,11 +87,12 @@ type SeffPlugin () =
             rh.print  "* loading Seff.Rhino Plugin ..."          
             let win = Seff.App.runEditorHosted(  RhinoApp.MainWindowHandle(), "Rhino" )
             Sync.window <- win
+            
 
             win.Closing.Add (fun e ->         // not needed ???
                 match Fsi.AskAndCancel() with
-                |FsiState.Evaluating -> e.Cancel <- true // no closing
-                |FsiState.Ready -> 
+                |Evaluating -> e.Cancel <- true // no closing
+                |Ready | Initalizing | NotLoaded -> 
                     win.Visibility <- Visibility.Hidden 
                     e.Cancel <- true) // i think user would rather expect full closing ? 
             
