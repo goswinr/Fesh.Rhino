@@ -18,15 +18,15 @@
     <!-- <ProjectGuid>{DE417D77-E80A-472B-9D16-2FFFA284E245}</ProjectGuid> seems to be ignored in buildprocess use assembly info code instead-->
 
 
-    <ApplicationIcon>Media\Logo15.ico</ApplicationIcon>
-    <Win32Resource>Media\Logo15.res</Win32Resource>    <!--  for Application Icon in explorer, adapt path as needed-->
+    <ApplicationIcon>Media\LogoCursorTr.ico</ApplicationIcon>
+    <Win32Resource>Media\LogoCursorTr.res</Win32Resource>    <!--  for Application Icon in explorer, adapt path as needed-->
   </PropertyGroup>
     
 
 
   <ItemGroup>
-    <EmbeddedResource Include="Media\Logo15.res" />
-    <Resource Include="Media\Logo15.ico">      <CopyToOutputDirectory>Never</CopyToOutputDirectory>    </Resource>
+    <EmbeddedResource Include="Media\LogoCursorTr.res" />
+    <Resource Include="Media\LogoCursorTr.ico">      <CopyToOutputDirectory>Never</CopyToOutputDirectory>    </Resource>
     
     <Compile Include="00_AssemblyInfo.fs" />
     <Compile Include="10_PlugIn.fs" />
