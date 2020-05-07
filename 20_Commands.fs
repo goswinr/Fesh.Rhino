@@ -57,28 +57,20 @@ type RunCurrentScript () =
             Commands.Result.Failure
         else   
             match Sync.window.Visibility with
-            | Visibility.Visible | Visibility.Collapsed -> 
-                match Seff.Tab.current with 
-                | Some t -> 
-                    rh.print  "*Seff, running the current script.."
-                    let _,_,cmd,_ = Seff.Commands.RunAllText //TODO or trigger directly via agent post to distinguish triggers from commandline and seff ui?
-                    cmd.Execute(null) // the argumnent can be any obj, its ignored
-                    rh.print  "*Seff, ran current script." // this non-modal ? print another msg when completed
-                    Commands.Result.Success
-                |None -> 
-                    rh.print "There is no active script file in Seff editor"
-                    Commands.Result.Failure
+            | Visibility.Visible | Visibility.Collapsed ->                
+                rh.print  "*Seff, running the current script.."
+                let _,_,cmd,_ = Seff.Commands.RunAllText //TODO or trigger directly via agent post to distinguish triggers from commandline and seff ui?
+                cmd.Execute(null) // the argumnent can be any obj, its ignored
+                rh.print  "*Seff, ran current script." // this non-modal ? print another msg when completed
+                Commands.Result.Success
+
         
             |Visibility.Hidden -> 
-                Sync.window.Visibility <- Visibility.Visible
-                match Seff.Tab.current with 
-                | Some t -> 
-                    match MessageBox.Show("Run Script from current Tab?", "Run Script from current Tab?", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.Yes) with
-                    | MessageBoxResult.Yes -> this.RunCommand (doc, mode) 
-                    | _ -> Commands.Result.Failure
-                |None -> 
-                    rh.print "There is no active script file in Seff editor"
-                    Commands.Result.Failure
+                Sync.window.Visibility <- Visibility.Visible                
+                match MessageBox.Show("Run Script from current Tab?", "Run Script from current Tab?", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.Yes) with
+                | MessageBoxResult.Yes -> this.RunCommand (doc, mode) 
+                | _ -> Commands.Result.Failure
+                
                 
             | _ -> Commands.Result.Failure // only needed to make F# compiler happy
 

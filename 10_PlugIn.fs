@@ -104,8 +104,8 @@ type SeffPlugin () =
             Fsi.OnCanceled.Add     ( fun m -> SeffPlugin.AfterEval(true))  // to unsure UI does not stay frozen if RedrawEnabled is false //showWin because it might crash during UI interaction wher it is hidden  
             Fsi.OnCompletedOk.Add  ( fun m -> SeffPlugin.AfterEval(false)) // to unsure UI does not stay frozen if RedrawEnabled is false //showWin = false because might be running in background mode from rhino command line
               
-
-            RhinoApp.Closing.Add       (fun e -> Seff.FileDialogs.askIfClosingWindowIsOk() |> ignore) // to save unsaved files, canceling of closing not possible here, save dialog will show after rhino is closed
+            
+            // TODO done by seff anyway?? RhinoApp.Closing.Add       (fun e -> Seff.FileDialogs.askIfClosingWindowIsOk(Tabs.AllTabs,Tabs.Save) |> ignore) // to save unsaved files, canceling of closing not possible here, save dialog will show after rhino is closed
             RhinoDoc.CloseDocument.Add (fun e -> Fsi.CancelIfAsync() ) //during sync eval closing doc should not be possible anyway??
             //RhinoApp.Closing.Add (fun _ -> Fsi.cancelIfAsync() ) //synch eval gets canceled anyway
 
