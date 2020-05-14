@@ -22,8 +22,7 @@ type LoadEditor () =
         else            
             Sync.window.Show()
             Sync.window.Visibility <- Visibility.Visible
-            if Sync.window.WindowState = WindowState.Minimized then Sync.window.WindowState <- WindowState.Normal 
-            Fsi.Initalize() // call after window.Show() to sse potential error  messages in the log, is non blocking async anyway. not done in Seff.App.runEditorHosted anymore
+            if Sync.window.WindowState = WindowState.Minimized then Sync.window.WindowState <- WindowState.Normal             
             Commands.Result.Success
     
     (*
@@ -59,8 +58,8 @@ type RunCurrentScript () =
             match Sync.window.Visibility with
             | Visibility.Visible | Visibility.Collapsed ->                
                 rh.print  "*Seff, running the current script.."
-                let _,_,cmd,_ = Seff.Commands.RunAllText //TODO or trigger directly via agent post to distinguish triggers from commandline and seff ui?
-                cmd.Execute(null) // the argumnent can be any obj, its ignored
+                let cmd= SeffPlugin.Seff.Commands.RunAllText //TODO or trigger directly via agent post to distinguish triggers from commandline and seff ui?
+                cmd.cmd.Execute(null) // the argumnent can be any obj, its ignored
                 rh.print  "*Seff, ran current script." // this non-modal ? print another msg when completed
                 Commands.Result.Success
 
