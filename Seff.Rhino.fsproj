@@ -11,15 +11,12 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects><!--allows FCS 35.0.0 ??-->
 
-
     <Version>0.1.0.0</Version>
     <Authors>Goswin Rothenthal</Authors>
     <Description> a Scripting Editor for FSharp in Rhino. see http://seff.io </Description>
     <Copyright>Goswin Rothenthal 2020</Copyright>
     <NeutralLanguage>en</NeutralLanguage>
-    <!-- <ProjectGuid>{DE417D77-E80A-472B-9D16-2FFFA284E245}</ProjectGuid> seems to be ignored in buildprocess use assembly info code instead-->
-
-
+  
     <ApplicationIcon>Media\LogoCursorTr.ico</ApplicationIcon>
     <Win32Resource>Media\LogoCursorTr.res</Win32Resource>    <!--  for Application Icon in explorer, adapt path as needed-->
   </PropertyGroup>
@@ -28,7 +25,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Media\LogoCursorTr.res" />
-    <Resource Include="Media\LogoCursorTr.ico">      <CopyToOutputDirectory>Never</CopyToOutputDirectory>    </Resource>
+    <Resource Include="Media\LogoCursorTr.ico"  />
     
     <Compile Include="00_AssemblyInfo.fs" />
     <Compile Include="10_PlugIn.fs" />
@@ -37,14 +34,8 @@
  </ItemGroup>
 
 
-  <ItemGroup> 
-    <!-- don't add explict ref to Fsharp.Core because: https://github.com/dotnet/fsharp/issues/9064 -->   
-    <PackageReference Include="FSharp.Compiler.Service" Version="33.0.1" /> <!--be higher than 33.0.1--> 
-  </ItemGroup>
-
-
-  <ItemGroup> 
-    <ProjectReference Include="..\AvalonEdit\ICSharpCode.AvalonEdit\ICSharpCode.AvalonEdit.csproj" />  <!-- take from https://github.com/goswinr/AvalonEdit -->
+  <ItemGroup>
+    <PackageReference Update="FSharp.Core" Version="4.6.2" /> <!-- 4.6.2 needed ? --><!-- don't add explict ref to Fsharp.Core because: https://github.com/dotnet/fsharp/issues/9064 -->
     <ProjectReference Include="..\Seff\Seff.fsproj" />  <!-- take from https://github.com/goswinr/Seff -->
   </ItemGroup>
 
