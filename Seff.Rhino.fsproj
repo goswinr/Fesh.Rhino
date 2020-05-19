@@ -9,6 +9,8 @@
     <AssemblyName>Seff.Rhino</AssemblyName>
     <RootNamespace>Seff.Rhino</RootNamespace>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects><!--allows FCS 35.0.0 ??-->
+
 
     <Version>0.1.0.0</Version>
     <Authors>Goswin Rothenthal</Authors>
