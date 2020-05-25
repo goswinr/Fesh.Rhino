@@ -37,7 +37,10 @@
 
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="4.6.2" /> <!-- 4.6.2 needed  for Seff.Revit. or don't add explict ref to Fsharp.Core because?: https://github.com/dotnet/fsharp/issues/9064 -->
+    <!-- 4.6.2 needed  for Seff.Revit. or don't add explict ref to Fsharp.Core because?: https://github.com/dotnet/fsharp/issues/9064 -->
+    <!-- path property $(PkgFSharp_Core) is C:\Users\Gos\.nuget\packages\fsharp.core\4.6.2 -->
+    <PackageReference Update="FSharp.Core" Version="4.6.2" GeneratePathProperty="true"/>
+    
     <ProjectReference Include="..\Seff\Seff.fsproj" />  <!-- take from https://github.com/goswinr/Seff -->
   </ItemGroup>
 
@@ -68,7 +71,8 @@
     <Copy SourceFiles="..\Seff\FSharpSynatxHighlighterExtended.xshd" DestinationFiles="$(TargetDir)FSharpSynatxHighlighterExtended.xshd" ContinueOnError="false" /> 
     
     <!-- FSharp.Core.xml is missing otherwise ? to have it as intellisense provider-->
-    <Copy SourceFiles="$(USERPROFILE)\.nuget\packages\fsharp.core\4.7.1\lib\net45\FSharp.Core.xml" DestinationFiles="$(TargetDir)FSharp.Core.xml" ContinueOnError="false" />  
+    <!--$(USERPROFILE)\.nuget\packages\fsharp.core\4.7.1\lib\net45\FSharp.Core.xml-->
+    <Copy SourceFiles=" $(PkgFSharp_Core)\lib\net45\FSharp.Core.xml" DestinationFiles="$(TargetDir)FSharp.Core.xml" ContinueOnError="false" />  
 
   </Target>
 
