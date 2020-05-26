@@ -87,7 +87,7 @@ type SeffPlugin () =
             PlugIns.LoadReturnCode.ErrorNoDialog
         else    
             rh.print  "* loading Seff.Rhino Plugin ..."          
-            let seff = Seff.App.runEditorHosted(  RhinoApp.MainWindowHandle(), "Rhino" )
+            let seff = Seff.App.createEditorForHosting( RhinoApp.MainWindowHandle(), "Rhino" )
             SeffPlugin.Seff <- seff
             Sync.window <- seff.Window
             
