@@ -1,5 +1,4 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-
 <Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -7,31 +6,34 @@
     <TargetFramework>net472</TargetFramework><!--472 for fewer files, 461 ok too-->
     <LangVersion>preview</LangVersion>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages><!--to only have the english resources-->
-    
-    <AssemblyName>Seff.Rhino</AssemblyName>
     <RootNamespace>Seff.Rhino</RootNamespace>
+    <AssemblyName>Seff.Rhino</AssemblyName>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NeutralLanguage>en</NeutralLanguage>
     <!--<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>   allows FCS 35.0.0 ??-->
 
-    <Version>0.1.0.0</Version>
+    <Version>0.2.0.0</Version>
+    <AssemblyVersion>0.2.0.0</AssemblyVersion>
+    <FileVersion>0.2.0.0</FileVersion>
+   
     <Authors>Goswin Rothenthal</Authors>
-    <Description> a Scripting Editor for FSharp in Rhino. see http://seff.io </Description>
+    <Product>Seff.Rhino</Product>
+    <Description>A Scripting Editor for FSharp in Rhino. see http://seff.io </Description>
     <Copyright>Goswin Rothenthal 2020</Copyright>
-    <NeutralLanguage>en</NeutralLanguage>
+    
   
     <ApplicationIcon>Media\LogoCursorTr.ico</ApplicationIcon>
     <Win32Resource>Media\LogoCursorTr.res</Win32Resource>    <!--  for Application Icon in explorer, adapt path as needed-->
   </PropertyGroup>
     
 
-
   <ItemGroup>
     <EmbeddedResource Include="Media\LogoCursorTr.res" />
     <Resource Include="Media\LogoCursorTr.ico"  />
     
-    <Compile Include="00_AssemblyInfo.fs" />
-    <Compile Include="10_PlugIn.fs" />
-    <Compile Include="20_Commands.fs" />
+    <Compile Include="Src\AssemblyInfo.fs" />
+    <Compile Include="Src\PlugIn.fs" />
+    <Compile Include="Src\Commands.fs" />
 
  </ItemGroup>
 
