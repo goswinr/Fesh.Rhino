@@ -81,6 +81,8 @@ type SeffPlugin () =
     //member this.Folder = IO.Path.GetDirectoryName(this.Assembly.Location) // for debug only
 
 
+    static member val PrintOnceAfterEval = "" with get,set // to be ablke to print after SeffRunCurrentScript command 
+
     override this.OnLoad refErrs =         
         if not Runtime.HostUtils.RunningOnWindows then 
             rh.print " * Seff | Scripting Editor For FSharp PlugIn only works on Windows. It needs the WPF framework "
@@ -107,7 +109,7 @@ type SeffPlugin () =
             seff.Fsi.OnRuntimeError.Add ( fun e -> SeffPlugin.AfterEval(true))  // to unsure UI does not stay frozen if RedrawEnabled is false //showWin because it might crash during UI interaction wher it is hidden
             seff.Fsi.OnCanceled.Add     ( fun m -> SeffPlugin.AfterEval(true))  // to unsure UI does not stay frozen if RedrawEnabled is false //showWin because it might crash during UI interaction wher it is hidden  
             seff.Fsi.OnCompletedOk.Add  ( fun m -> SeffPlugin.AfterEval(false)) // to unsure UI does not stay frozen if RedrawEnabled is false //showWin = false because might be running in background mode from rhino command line
-              
+            seff.Fsi.OnIsReady.Add      ( fun m -> if SeffPlugin.PrintOnceAfterEval <> "" then RhinoApp.WriteLine SeffPlugin.PrintOnceAfterEval ; SeffPlugin.PrintOnceAfterEval <- "")  
             
             // TODO done by seff anyway?? RhinoApp.Closing.Add       (fun e -> Seff.FileDialogs.askIfClosingWindowIsOk(Tabs.AllTabs,Tabs.Save) |> ignore) // to save unsaved files, canceling of closing not possible here, save dialog will show after rhino is closed
             RhinoDoc.CloseDocument.Add (fun e -> seff.Fsi.CancelIfAsync() ) //during sync eval closing doc should not be possible anyway??
@@ -122,7 +124,7 @@ type SeffPlugin () =
             // add Alias too :
             if not <|  ApplicationSettings.CommandAliasList.IsAlias("sr") then 
                 if ApplicationSettings.CommandAliasList.Add("sr","SeffRunCurrentScript")then 
-                    rh.print  "* Seff.Rhino Plugin added the comand alias 'sr' for 'SeffRunCurrentScript'"
+                    rh.print  "* Seff.Rhino Plugin added the command alias 'sr' for 'SeffRunCurrentScript'"
 
             //Debugging.printAssemblyInfo(this)
             

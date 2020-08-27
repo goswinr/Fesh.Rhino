@@ -8,23 +8,30 @@ open Seff
 
 //the Command Singelton classes:
 
+module State =     
+    let mutable ShownOnce = false // having this as static member on LoadEditor fails to evaluate !! not sure why.
+
 type LoadEditor () = 
     inherit Commands.Command()    
     static member val Instance = LoadEditor() 
     
-    override this.EnglishName = "Seff" //The command name as it appears on the Rhino command line.
-           
-    override this.RunCommand (doc, mode)  =
+    static member DoLoad() = 
         if isNull Sync.window then // set up window on first run            
-            rh.print  " * Seff Editor Window cant be shown, the Plugin is not properly loadad . please restart Rhino."
+            rh.print  " * Seff Editor Window cant be shown, the Plugin is not properly loadad. try restarting Rhino."
             Commands.Result.Failure
 
         else            
             Sync.window.Show()
             Sync.window.Visibility <- Visibility.Visible
             if Sync.window.WindowState = WindowState.Minimized then Sync.window.WindowState <- WindowState.Normal             
+            State.ShownOnce <- true
             Commands.Result.Success
-    
+
+    override this.EnglishName = "Seff" //The command name as it appears on the Rhino command line.
+           
+    override this.RunCommand (doc, mode)  = 
+        LoadEditor.DoLoad()
+
     (*
     type LoadFsi () = 
         inherit Commands.Command()    
@@ -51,27 +58,33 @@ type RunCurrentScript () =
     override this.EnglishName = "SeffRunCurrentScript"
            
     override this.RunCommand (doc, mode)  =
+        
         if isNull Sync.window then // set up window on first run            
             rh.print  "*Seff Editor Window cant be shown, the Plugin is not properly loadad . please restart Rhino."
             Commands.Result.Failure
-        else   
-            match Sync.window.Visibility with
-            | Visibility.Visible | Visibility.Collapsed ->                
-                rh.print  "*Seff, running the current script.."
-                let cmd= SeffPlugin.Seff.Commands.RunAllText //TODO or trigger directly via agent post to distinguish triggers from commandline and seff ui?
-                cmd.cmd.Execute(null) // the argumnent can be any obj, its ignored
-                rh.print  "*Seff, ran current script." // this non-modal ? print another msg when completed
-                Commands.Result.Success
+        else
+            if not State.ShownOnce then 
+                LoadEditor.DoLoad()  
+                // it needs to be shown once. otherwise Seff.Commands.RunAllText below fails to find any text in Editor
+            else           
+                match Sync.window.Visibility with
+                | Visibility.Visible | Visibility.Collapsed ->                
+                    rh.print2  "*Seff is running " SeffPlugin.Seff.Tabs.Current.FormatedFileName
+                    SeffPlugin.PrintOnceAfterEval <- "*Seff is done!"
+                    let cmd = SeffPlugin.Seff.Commands.RunAllText //TODO or trigger directly via agent post to distinguish triggers from commandline and seff ui?
+                    cmd.cmd.Execute(null) // the argumnent can be any obj, its ignored
+                    //rh.print  "*Seff, ran current script." //prints immedeatly in async mode
+                    Commands.Result.Success
 
         
-            |Visibility.Hidden -> 
-                Sync.window.Visibility <- Visibility.Visible                
-                match MessageBox.Show("Run Script from current Tab?", "Run Script from current Tab?", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.Yes) with
-                | MessageBoxResult.Yes -> this.RunCommand (doc, mode) 
-                | _ -> Commands.Result.Failure
+                |Visibility.Hidden -> 
+                    Sync.window.Visibility <- Visibility.Visible                
+                    match MessageBox.Show("Run Script from current Tab?", "Run Script from current Tab?", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.Yes) with
+                    | MessageBoxResult.Yes -> this.RunCommand (doc, mode) 
+                    | _ -> Commands.Result.Failure
                 
                 
-            | _ -> Commands.Result.Failure // only needed to make F# compiler happy
+                | _ -> Commands.Result.Failure // only needed to make F# compiler happy
 
 
 
