@@ -5,6 +5,7 @@ open System
 open System.Windows
 open Seff.Util
 open Seff
+open Rhino.Commands
 
 //the Command Singelton classes:
 
@@ -31,6 +32,7 @@ type LoadEditor () =
            
     override this.RunCommand (doc, mode)  = 
         LoadEditor.DoLoad()
+
 
     (*
     type LoadFsi () = 
@@ -72,7 +74,18 @@ type RunCurrentScript () =
                     rh.print2  "*Seff is running " SeffPlugin.Seff.Tabs.Current.FormatedFileName
                     SeffPlugin.PrintOnceAfterEval <- "*Seff is done!"
                     let cmd = SeffPlugin.Seff.Commands.RunAllText //TODO or trigger directly via agent post to distinguish triggers from commandline and seff ui?
-                    cmd.cmd.Execute(null) // the argumnent can be any obj, its ignored
+                    
+                    // to start running the script after the command has actually completed = making it modeless so manual undo stack works
+                    async{
+                        do! Async.Sleep 50 // wait till command actually completes. so that RhinoDoc.ActiveDoc.BeginUndoRecord does not return 0 
+                        let k = ref 0
+                        while Command.InCommand() && !k < 40 do // wait up to 2 sec more ?  
+                            incr k 
+                            do! Async.Sleep 50                          
+                        do! Async.SwitchToContext Sync.syncContext
+                        cmd.cmd.Execute(null)} // the argumnent can be any obj, its ignored}
+                    |> Async.Start  
+
                     //rh.print  "*Seff, ran current script." //prints immedeatly in async mode
                     Commands.Result.Success
 
