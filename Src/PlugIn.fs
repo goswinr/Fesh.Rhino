@@ -5,6 +5,8 @@ open System
 open System.Windows
 open Rhino.Runtime
 open Seff
+open Seff.Config
+open Seff.Views.Util
 
 
 module rh = 
@@ -97,8 +99,9 @@ type SeffPlugin () =
             rh.print " * Seff | Scripting Editor For FSharp PlugIn only works on Windows. It needs the WPF framework "
             PlugIns.LoadReturnCode.ErrorNoDialog
         else    
-            rh.print  "* loading Seff.Rhino Plugin ..."          
-            let seff = Seff.App.createEditorForHosting( RhinoApp.MainWindowHandle(), "Rhino" )
+            rh.print  "* loading Seff.Rhino Plugin ..."           
+            let canRun () = not <| Rhino.Commands.Command.InCommand()
+            let seff = Seff.App.createEditorForHosting( { hostName= "Rhino" ; mainWindowHandel= RhinoApp.MainWindowHandle(); fsiCanRun= canRun } )
             SeffPlugin.Seff <- seff
             Sync.window <- seff.Window
             

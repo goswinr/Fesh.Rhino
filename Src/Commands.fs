@@ -75,15 +75,19 @@ type RunCurrentScript () =
                     SeffPlugin.PrintOnceAfterEval <- "*Seff is done!"
                     let cmd = SeffPlugin.Seff.Commands.RunAllText //TODO or trigger directly via agent post to distinguish triggers from commandline and seff ui?
                     
-                    // to start running the script after the command has actually completed = making it modeless so manual undo stack works
+                    // to start running the script after the command has actually completed, making it modeless, so manual undo stack works
                     async{
-                        do! Async.Sleep 50 // wait till command actually completes. so that RhinoDoc.ActiveDoc.BeginUndoRecord does not return 0 
+                        do! Async.Sleep 30 // wait till command SeffRunCurrentScript actually completes. so that RhinoDoc.ActiveDoc.BeginUndoRecord does not return 0 
                         let k = ref 0
-                        while Command.InCommand() && !k < 40 do // wait up to 2 sec more ?  
+                        while Command.InCommand() && !k < 30 do // wait up to 1.5 sec more ?  
                             incr k 
                             do! Async.Sleep 50                          
                         do! Async.SwitchToContext Sync.syncContext
-                        cmd.cmd.Execute(null)} // the argumnent can be any obj, its ignored}
+                        if Command.InCommand() then 
+                            SeffPlugin.Seff.Log.PrintAppErrorMsg "Cant Run Current Seff Script because another Rhino Command is active"
+                            rh.print "Cant Run Current Seff Script because another Rhino Command is active"
+                        else
+                            cmd.cmd.Execute(null)} // the argumnent can be any obj, its ignored
                     |> Async.Start  
 
                     //rh.print  "*Seff, ran current script." //prints immedeatly in async mode
