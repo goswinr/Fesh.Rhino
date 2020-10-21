@@ -17,6 +17,12 @@ module Sync =                                                   //Don't change n
     let syncContext = Threading.SynchronizationContext.Current  //Don't change name  its used in Rhino.Scripting.dll via reflection
     let mutable window = null : Window                          //Don't change name  its used in Rhino.Scripting.dll via reflection
 
+module Print = 
+    let mutable colorLogger  = //Don't change name  its used in Rhino.Scripting.dll via reflection
+        fun (r:int) (g:int) (b:int) (s:string) ->
+            RhinoApp.WriteLine s
+            printfn "%s" s
+
 module Debugging = 
 
     open rh
@@ -104,7 +110,7 @@ type SeffPlugin () =
             let seff = Seff.App.createEditorForHosting( { hostName= "Rhino" ; mainWindowHandel= RhinoApp.MainWindowHandle(); fsiCanRun= canRun } )
             SeffPlugin.Seff <- seff
             Sync.window <- seff.Window
-            
+            Print.colorLogger <- (fun r g b s -> seff.Log.PrintCustomColor r g b "%s" s)
 
             seff.Window.Closing.Add (fun e ->         
                 
