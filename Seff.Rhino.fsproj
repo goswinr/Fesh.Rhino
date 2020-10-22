@@ -29,7 +29,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Media\LogoCursorTr.res" />
-    <Resource Include="Media\LogoCursorTr.ico"  />
+    <Resource Include="Media\LogoCursorTr.ico" />
     
     <Compile Include="Src\AssemblyInfo.fs" />
     <Compile Include="Src\PlugIn.fs" />
@@ -39,18 +39,30 @@
 
 
   <ItemGroup>    
-    <!-- path property $(PkgFSharp_Core) is C:\Users\Gos\.nuget\packages\fsharp.core\4.6.2 -->
-    <PackageReference Update="FSharp.Core" Version="4.7.2" GeneratePathProperty="true"/>
+    <!-- GeneratePathProperty: path property $(PkgFSharp_Core) is C:\Users\Gos\.nuget\packages\fsharp.core\4.6.2 -->
+    <PackageReference Update="FSharp.Core" Version="4.7.2" GeneratePathProperty="true" />  
     
-    <ProjectReference Include="..\Seff\SeffHosting.fsproj" />  <!-- take from https://github.com/goswinr/Seff -->
   </ItemGroup>
 
 
   <ItemGroup>    
+    <Reference Include="WindowsBase" /> 
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
-    <Reference Include="WindowsBase" /> 
-    <Reference Include="RhinoCommon">    <HintPath>C:\Program Files\Rhino 6\System\RhinoCommon.dll</HintPath>  <Private>false</Private> </Reference>    
+    
+    <Reference Include="ICSharpCode.AvalonEdit">
+      <HintPath>..\Seff\binHosting\Release\net472\ICSharpCode.AvalonEdit.dll</HintPath> <!-- take from https://github.com/goswinr/AvalonEdit -->
+    </Reference>  
+
+    <Reference Include="Seff">
+      <HintPath>..\Seff\binHosting\Release\net472\Seff.dll</HintPath> <!-- take from https://github.com/goswinr/Seff -->
+    </Reference>
+
+    <Reference Include="RhinoCommon">  
+      <HintPath>C:\Program Files\Rhino 6\System\RhinoCommon.dll</HintPath>  
+      <Private>false</Private> 
+    </Reference>    
+
   </ItemGroup>
 
 
