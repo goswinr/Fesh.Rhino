@@ -5,6 +5,7 @@ open System
 open System.Windows
 open Rhino.Runtime
 open Seff
+open Seff.Model
 open Seff.Config
 open Seff.Views.Util
 
