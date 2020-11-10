@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <UseWPF>true</UseWPF>
-    <TargetFramework>net472</TargetFramework><!--472 for fewer files, 461 ok too-->
+    <TargetFramework>net472</TargetFramework><!--472 for fewer files with netstandart 2.0, 461 would be ok too-->
     <LangVersion>preview</LangVersion>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages><!--to only have the english resources-->
     <RootNamespace>Seff.Rhino</RootNamespace>
@@ -11,10 +11,11 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NeutralLanguage>en</NeutralLanguage>
     <!--<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>   allows FCS 35.0.0 ??-->
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
 
-    <Version>0.2.0.0</Version>
-    <AssemblyVersion>0.2.0.0</AssemblyVersion>
-    <FileVersion>0.2.0.0</FileVersion>
+    <Version>0.3.0.0</Version>
+    <AssemblyVersion>0.3.0.0</AssemblyVersion>
+    <FileVersion>0.3.0.0</FileVersion>
    
     <Authors>Goswin Rothenthal</Authors>
     <Product>Seff.Rhino</Product>
@@ -26,22 +27,9 @@
     <Win32Resource>Media\LogoCursorTr.res</Win32Resource>    <!--  for Application Icon in explorer, adapt path as needed-->
   </PropertyGroup>
     
-
-  <ItemGroup>
-    <EmbeddedResource Include="Media\LogoCursorTr.res" />
-    <Resource Include="Media\LogoCursorTr.ico" />
-    
-    <Compile Include="Src\AssemblyInfo.fs" />
-    <Compile Include="Src\PlugIn.fs" />
-    <Compile Include="Src\Commands.fs" />
-
- </ItemGroup>
-
-
   <ItemGroup>    
     <!-- GeneratePathProperty: path property $(PkgFSharp_Core) is C:\Users\Gos\.nuget\packages\fsharp.core\4.6.2 -->
-    <PackageReference Update="FSharp.Core" Version="4.7.2" GeneratePathProperty="true" />  
-    
+    <PackageReference Update="FSharp.Core" Version="5.0.0" GeneratePathProperty="true" />      
   </ItemGroup>
 
 
@@ -65,6 +53,15 @@
 
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="Media\LogoCursorTr.res" />
+    <Resource Include="Media\LogoCursorTr.ico" />
+    
+    <Compile Include="Src\AssemblyInfo.fs" />
+    <Compile Include="Src\PlugIn.fs" />
+    <Compile Include="Src\Commands.fs" />
+ </ItemGroup>
+
 
   <!-- Replaces AfterBuild target, 
     help: https://docs.microsoft.com/en-us/visualstudio/msbuild/msbuild-well-known-item-metadata?view=vs-2015&redirectedfrom=MSDN
@@ -84,7 +81,8 @@
     <Copy SourceFiles="..\Seff\FSharpSynatxHighlighterExtended.xshd" DestinationFiles="$(TargetDir)FSharpSynatxHighlighterExtended.xshd" ContinueOnError="false" /> 
     
     <!-- FSharp.Core.xml is missing otherwise ? to have it as intellisense provider-->
-    <Copy SourceFiles=" $(PkgFSharp_Core)\lib\net45\FSharp.Core.xml" DestinationFiles="$(TargetDir)FSharp.Core.xml" ContinueOnError="false" />  
+    <!--<Copy SourceFiles=" $(PkgFSharp_Core)\lib\net45\FSharp.Core.xml" DestinationFiles="$(TargetDir)FSharp.Core.xml" ContinueOnError="false" />-->
+    <Copy SourceFiles=" $(PkgFSharp_Core)\lib\netstandard2.0\FSharp.Core.xml" DestinationFiles="$(TargetDir)FSharp.Core.xml" ContinueOnError="false" />  
 
   </Target>
 
