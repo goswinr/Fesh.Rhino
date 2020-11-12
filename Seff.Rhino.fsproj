@@ -36,11 +36,12 @@
   <ItemGroup>    
     <Reference Include="WindowsBase" /> 
     <Reference Include="PresentationCore" />
-    <Reference Include="PresentationFramework" />
+    <Reference Include="PresentationFramework" />   
     
-    <Reference Include="ICSharpCode.AvalonEdit">
-      <HintPath>..\Seff\binHosting\Release\net472\ICSharpCode.AvalonEdit.dll</HintPath> <!-- take from https://github.com/goswinr/AvalonEdit -->
-    </Reference>  
+
+    <Reference Include="ICSharpCode.AvalonEdit">      <!-- build from https://github.com/goswinr/AvalonEdit -->
+      <HintPath>..\AvalonEdit\ICSharpCode.AvalonEdit\bin\Release\net472\ICSharpCode.AvalonEdit.dll</HintPath> 
+    </Reference>   
 
     <Reference Include="Seff">
       <HintPath>..\Seff\binHosting\Release\net472\Seff.dll</HintPath> <!-- take from https://github.com/goswinr/Seff -->
@@ -48,7 +49,7 @@
 
     <Reference Include="RhinoCommon">  
       <HintPath>C:\Program Files\Rhino 6\System\RhinoCommon.dll</HintPath>  
-      <Private>false</Private> 
+      <Private>false</Private> <!--do not copy to output directory-->
     </Reference>    
 
   </ItemGroup>
