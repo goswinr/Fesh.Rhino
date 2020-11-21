@@ -66,9 +66,10 @@ module Debugging =
 // responsibility of Rhino to create an instance of this class.
 // do not use "private" keyword on (singelton) constructor
 type SeffPlugin () =  
-
     inherit PlugIns.PlugIn()
     
+    static let mutable lastDoc = RhinoDoc.ActiveDoc 
+
     //PlugIns.PlugInType.Utility how to set this ?
 
     static member val Instance = SeffPlugin() // singelton pattern neded for Rhino. http://stackoverflow.com/questions/2691565/how-to-implement-singleton-pattern-syntax
@@ -80,15 +81,18 @@ type SeffPlugin () =
     static member BeforeEval () = 
            async{
                do! Async.SwitchToContext Sync.syncContext
+               lastDoc <- RhinoDoc.ActiveDoc
                SeffPlugin.UndoRecordSerial <- RhinoDoc.ActiveDoc.BeginUndoRecord "FsiSession" 
                } |> Async.StartImmediate
 
     static member AfterEval (showWin) = 
         async{
             do! Async.SwitchToContext Sync.syncContext
-            //if SeffPlugin.UndoRecordSerial <> 0u then 
-            if not <| RhinoDoc.ActiveDoc.EndUndoRecord(SeffPlugin.UndoRecordSerial) then
-                eprintfn "failed to set RhinoDoc.ActiveDoc.EndUndoRecord(%d)" SeffPlugin.UndoRecordSerial        
+            //if SeffPlugin.UndoRecordSerial <> 0u then
+            
+            if lastDoc = RhinoDoc.ActiveDoc then // it might have changed during script run
+                if not <| RhinoDoc.ActiveDoc.EndUndoRecord(SeffPlugin.UndoRecordSerial) then
+                    eprintfn "failed to set RhinoDoc.ActiveDoc.EndUndoRecord(SeffPlugin.UndoRecordSerial:%d)" SeffPlugin.UndoRecordSerial        
             
             RhinoDoc.ActiveDoc.Views.RedrawEnabled <- true
             RhinoDoc.ActiveDoc.Views.Redraw()
