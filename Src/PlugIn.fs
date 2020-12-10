@@ -1,4 +1,4 @@
-﻿namespace Seff.Rhino
+﻿namespace Seff.Rhino //Don't change name  its used in Rhino.Scripting.dll via reflection
 
 open Rhino
 open System
@@ -14,15 +14,20 @@ module rh =
     let print a    = RhinoApp.WriteLine a    ; RhinoApp.Wait()
     let print2 a b = RhinoApp.WriteLine (a+b); RhinoApp.Wait()   
     
-module Sync =                                                   //Don't change name  its used in Rhino.Scripting.dll via reflection
+module Sync =  //Don't change name  its used in Rhino.Scripting.dll via reflection                                                 
     let syncContext = Threading.SynchronizationContext.Current  //Don't change name  its used in Rhino.Scripting.dll via reflection
     let mutable window = null : Window                          //Don't change name  its used in Rhino.Scripting.dll via reflection
 
-module Print = 
+module Print = //Don't change name  its used in Rhino.Scripting.dll via reflection
     let mutable colorLogger  = //Don't change name  its used in Rhino.Scripting.dll via reflection
         fun (r:int) (g:int) (b:int) (s:string) ->
-            RhinoApp.WriteLine s
-            printfn "%s" s
+            RhinoApp.Write s    //default , will be changed below in OnLoad
+            printf "%s" s       //default , will be changed below in OnLoad
+    
+    let mutable colorLoggerNl  = //Don't change name  its used in Rhino.Scripting.dll via reflection
+        fun (r:int) (g:int) (b:int) (s:string) ->
+            RhinoApp.WriteLine s //default , will be changed below in OnLoad
+            printfn "%s" s       //default , will be changed below in OnLoad
 
 module Debugging = 
 
@@ -115,7 +120,8 @@ type SeffPlugin () =
             let seff = Seff.App.createEditorForHosting( { hostName= "Rhino" ; mainWindowHandel= RhinoApp.MainWindowHandle(); fsiCanRun= canRun } )
             SeffPlugin.Seff <- seff
             Sync.window <- seff.Window
-            Print.colorLogger <- (fun r g b s -> seff.Log.PrintCustomColor r g b "%s" s)
+            Print.colorLoggerNl <- (fun r g b s -> seff.Log.PrintDirektNlCustomColor r g b s)
+            Print.colorLogger <- (fun r g b s -> seff.Log.PrintDirektCustomColor r g b s)
 
             seff.Window.Closing.Add (fun e ->         
                 
