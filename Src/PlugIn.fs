@@ -120,8 +120,8 @@ type SeffPlugin () =
             let seff = Seff.App.createEditorForHosting( { hostName= "Rhino" ; mainWindowHandel= RhinoApp.MainWindowHandle(); fsiCanRun= canRun } )
             SeffPlugin.Seff <- seff
             Sync.window <- seff.Window
-            Print.colorLoggerNl <- (fun r g b s -> seff.Log.PrintDirektNlCustomColor r g b s)
-            Print.colorLogger <- (fun r g b s -> seff.Log.PrintDirektCustomColor r g b s)
+            Print.colorLoggerNl <- (fun r g b s -> seff.Log.PrintfnDirektNlCustomColor r g b s)
+            Print.colorLogger <- (fun r g b s -> seff.Log.PrintfnDirektCustomColor r g b s)
 
             seff.Window.Closing.Add (fun e ->         
                 

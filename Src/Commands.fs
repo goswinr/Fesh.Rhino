@@ -84,7 +84,7 @@ type RunCurrentScript () =
                             do! Async.Sleep 50                          
                         do! Async.SwitchToContext Sync.syncContext
                         if Command.InCommand() then 
-                            SeffPlugin.Seff.Log.PrintAppErrorMsg "Cant Run Current Seff Script because another Rhino Command is active"
+                            SeffPlugin.Seff.Log.PrintfnAppErrorMsg "Cant Run Current Seff Script because another Rhino Command is active"
                             rh.print "Cant Run Current Seff Script because another Rhino Command is active"
                         else
                             cmd.cmd.Execute(null)} // the argumnent can be any obj, its ignored
