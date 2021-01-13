@@ -18,6 +18,7 @@ module Sync =  //Don't change name  its used in Rhino.Scripting.dll via reflecti
     let syncContext = Threading.SynchronizationContext.Current  //Don't change name  its used in Rhino.Scripting.dll via reflection
     let mutable window = null : Window                          //Don't change name  its used in Rhino.Scripting.dll via reflection
 
+(* done in FsEx
 module Print = //Don't change name  its used in Rhino.Scripting.dll via reflection
     let mutable colorLogger  = //Don't change name  its used in Rhino.Scripting.dll via reflection
         fun (r:int) (g:int) (b:int) (s:string) ->
@@ -28,6 +29,7 @@ module Print = //Don't change name  its used in Rhino.Scripting.dll via reflecti
         fun (r:int) (g:int) (b:int) (s:string) ->
             RhinoApp.WriteLine s //default , will be changed below in OnLoad
             printfn "%s" s       //default , will be changed below in OnLoad
+    *)
 
 module Debugging = 
 
@@ -64,6 +66,11 @@ module Debugging =
 
             if isNull fcs then print "***cannot load Fsarp.Compiler.Service"
             else print2 "*Fsharp.Compiler.Service loaded from:" fcs.Location
+        
+        print "++AppDomain.CurrentDomain.GetAssemblies():"
+        AppDomain.CurrentDomain.GetAssemblies()
+        |> Seq.sortBy string
+        |> Seq.iter (sprintf "%A" >> print)
 
 // the Plugin  and Commands Singeltons:
 // Every RhinoCommon .rhp assembly must have one and only one PlugIn-derived
@@ -120,8 +127,8 @@ type SeffPlugin () =
             let seff = Seff.App.createEditorForHosting( { hostName= "Rhino" ; mainWindowHandel= RhinoApp.MainWindowHandle(); fsiCanRun= canRun } )
             SeffPlugin.Seff <- seff
             Sync.window <- seff.Window
-            Print.colorLoggerNl <- (fun r g b s -> seff.Log.PrintfnDirektNlCustomColor r g b s)
-            Print.colorLogger <- (fun r g b s -> seff.Log.PrintfnDirektCustomColor r g b s)
+            //Print.colorLoggerNl <- (fun r g b s -> seff.Log.PrintfnDirektNlCustomColor r g b s)
+            //Print.colorLogger   <- (fun r g b s -> seff.Log.PrintfnDirektCustomColor r g b s)
 
             seff.Window.Closing.Add (fun e ->         
                 
