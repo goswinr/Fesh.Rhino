@@ -1,0 +1,103 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <UseWPF>true</UseWPF>
+    <TargetFramework>net472</TargetFramework><!--472 for fewer files with netstandart 2.0, 461 would be ok too-->
+    <LangVersion>preview</LangVersion>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages><!--to only have the english resources-->
+    <RootNamespace>Seff.Rhino</RootNamespace>
+    <AssemblyName>Seff.Rhino</AssemblyName>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NeutralLanguage>en</NeutralLanguage>
+    <!--<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>   allows FCS 35.0.0 ??-->
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+
+    <Version>0.3.0.0</Version>
+    <AssemblyVersion>0.3.0.0</AssemblyVersion>
+    <FileVersion>0.3.0.0</FileVersion>
+   
+    <Authors>Goswin Rothenthal</Authors>
+    <Product>Seff.Rhino</Product>
+    <Description>A Scripting Editor for FSharp in Rhino. see http://seff.io </Description>
+    <Copyright>Goswin Rothenthal 2020</Copyright>
+    
+  
+    <ApplicationIcon>Media\LogoCursorTr.ico</ApplicationIcon>
+    <Win32Resource>Media\LogoCursorTr.res</Win32Resource>    <!--  for Application Icon in explorer, adapt path as needed-->
+
+    <Configurations>Debug;Release</Configurations>
+  </PropertyGroup>
+    
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <OutputPath>binRh6/Debug/</OutputPath>
+  </PropertyGroup> 
+  
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <OutputPath>binRh6/Release/</OutputPath>
+  </PropertyGroup>
+
+
+  <ItemGroup>    
+    <!-- GeneratePathProperty: path property $(PkgFSharp_Core) is C:\Users\Gos\.nuget\packages\fsharp.core\4.6.2 -->
+    <PackageReference Update="FSharp.Core" Version="5.0.0" GeneratePathProperty="true" />      
+  </ItemGroup>
+
+
+  <ItemGroup>    
+    <Reference Include="WindowsBase" /> 
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />   
+    
+
+    <Reference Include="ICSharpCode.AvalonEdit">      <!-- build from https://github.com/goswinr/AvalonEdit -->
+      <HintPath>..\AvalonEdit\ICSharpCode.AvalonEdit\bin\Release\net472\ICSharpCode.AvalonEdit.dll</HintPath> 
+    </Reference>   
+
+    <Reference Include="Seff">
+      <HintPath>..\Seff\binHosting\Release\net472\Seff.dll</HintPath>
+      <!--<HintPath>..\Seff\binHosting\Debug\net472\Seff.dll</HintPath> -->
+      <!-- take from https://github.com/goswinr/Seff -->
+    </Reference>
+
+    <Reference Include="RhinoCommon">  
+      <HintPath>C:\Program Files\Rhino 6\System\RhinoCommon.dll</HintPath>  
+      <Private>false</Private> <!--do not copy to output directory-->
+    </Reference>    
+
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Media\LogoCursorTr.res" />
+    <Resource Include="Media\LogoCursorTr.ico" />
+    
+    <Compile Include="Src\AssemblyInfo.fs" />
+    <Compile Include="Src\PlugIn.fs" />
+    <Compile Include="Src\Commands.fs" />
+ </ItemGroup>
+
+
+  <!-- Replaces AfterBuild target, 
+    help: https://docs.microsoft.com/en-us/visualstudio/msbuild/msbuild-well-known-item-metadata?view=vs-2015&redirectedfrom=MSDN
+    see    https://stackoverflow.com/questions/43921992/how-can-i-use-beforebuild-and-afterbuild-targets-with-visual-studio-2017
+    tasks: https://docs.microsoft.com/en-us/visualstudio/msbuild/msbuild-task-reference?view=vs-2019
+    better: https://stackoverflow.com/questions/44043918/running-a-target-before-the-corebuild
+    -->
+
+  <Target Name="RenameToRhp" BeforeTargets="AfterBuild">
+    <Move SourceFiles="$(TargetPath)" DestinationFiles="$(TargetDir)$(ProjectName).rhp" ContinueOnError="false" />
+  </Target>
+
+  
+  <Target Name="CopyFilesOverAfterBuild" BeforeTargets="AfterBuild">
+    
+    <!-- take FSharpSynatxHighlighterExtended.xshd from https://github.com/goswinr/Seff -->
+    <Copy SourceFiles="..\Seff\FSharpSynatxHighlighterExtended.xshd" DestinationFiles="$(TargetDir)FSharpSynatxHighlighterExtended.xshd" ContinueOnError="false" /> 
+    
+    <!-- FSharp.Core.xml is missing otherwise ? to have it as intellisense provider-->
+    <!--<Copy SourceFiles=" $(PkgFSharp_Core)\lib\net45\FSharp.Core.xml" DestinationFiles="$(TargetDir)FSharp.Core.xml" ContinueOnError="false" />-->
+    <Copy SourceFiles=" $(PkgFSharp_Core)\lib\netstandard2.0\FSharp.Core.xml" DestinationFiles="$(TargetDir)FSharp.Core.xml" ContinueOnError="false" />  
+
+  </Target>
+
+</Project>
