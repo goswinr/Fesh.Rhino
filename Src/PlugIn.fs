@@ -124,7 +124,12 @@ type SeffPlugin () =
         else    
             rh.print  "* loading Seff.Rhino Plugin ..."           
             let canRun () = not <| Rhino.Commands.Command.InCommand()
-            let seff = Seff.App.createEditorForHosting( { hostName= "Rhino" ; mainWindowHandel= RhinoApp.MainWindowHandle(); fsiCanRun= canRun } )
+            #if RHINO6
+            let host = "Rhino 6"
+            #else
+            let host = "Rhino 7"
+            #endif
+            let seff = Seff.App.createEditorForHosting( { hostName = host ; mainWindowHandel = RhinoApp.MainWindowHandle(); fsiCanRun = canRun } )
             SeffPlugin.Seff <- seff
             Sync.window <- seff.Window
             //Print.colorLoggerNl <- (fun r g b s -> seff.Log.PrintfnDirektNlCustomColor r g b s)
