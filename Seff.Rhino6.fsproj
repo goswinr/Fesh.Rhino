@@ -56,7 +56,7 @@
     </Reference>   
 
     <Reference Include="Seff">
-      <HintPath>..\Seff\binHosting\Release\net472\Seff.dll</HintPath>
+      <HintPath>..\Seff\binHostingRhino\Release\net472\Seff.dll</HintPath>
       <!--<HintPath>..\Seff\binHosting\Debug\net472\Seff.dll</HintPath> -->
       <!-- take from https://github.com/goswinr/Seff -->
     </Reference>
