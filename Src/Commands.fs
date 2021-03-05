@@ -18,7 +18,7 @@ type LoadEditor () =
     
     static member DoLoad() = 
         if isNull Sync.window then // set up window on first run            
-            rh.print  " * Seff Editor Window cant be shown, the Plugin is not properly loadad. try restarting Rhino."
+            RhinoAppWriteLine.print  " * Seff Editor Window cant be shown, the Plugin is not properly loadad. try restarting Rhino."
             Commands.Result.Failure
 
         else            
@@ -62,7 +62,7 @@ type RunCurrentScript () =
     override this.RunCommand (doc, mode)  =
         
         if isNull Sync.window then // set up window on first run            
-            rh.print  "*Seff Editor Window cant be shown, the Plugin is not properly loadad . please restart Rhino."
+            RhinoAppWriteLine.print  "*Seff Editor Window cant be shown, the Plugin is not properly loadad . please restart Rhino."
             Commands.Result.Failure
         else
             if not State.ShownOnce then 
@@ -71,7 +71,7 @@ type RunCurrentScript () =
             else           
                 match Sync.window.Visibility with
                 | Visibility.Visible | Visibility.Collapsed ->                
-                    rh.print2  "*Seff is running " SeffPlugin.Seff.Tabs.Current.FormatedFileName
+                    RhinoAppWriteLine.print2  "*Seff is running " SeffPlugin.Seff.Tabs.Current.FormatedFileName
                     SeffPlugin.PrintOnceAfterEval <- "*Seff is done!"
                     let cmd = SeffPlugin.Seff.Commands.RunAllText //TODO or trigger directly via agent post to distinguish triggers from commandline and seff ui?
                     
@@ -85,7 +85,7 @@ type RunCurrentScript () =
                         do! Async.SwitchToContext Sync.syncContext
                         if Command.InCommand() then 
                             SeffPlugin.Seff.Log.PrintfnAppErrorMsg "Cant Run Current Seff Script because another Rhino Command is active"
-                            rh.print "Cant Run Current Seff Script because another Rhino Command is active"
+                            RhinoAppWriteLine.print "Cant Run Current Seff Script because another Rhino Command is active"
                         else
                             cmd.cmd.Execute(null)} // the argumnent can be any obj, its ignored
                     |> Async.Start  

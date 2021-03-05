@@ -9,31 +9,18 @@ open Seff.Model
 open Seff.Config
 open Seff.Views.Util
 
-
-module rh = 
-    let print a    = RhinoApp.WriteLine a    ; RhinoApp.Wait()
-    let print2 a b = RhinoApp.WriteLine (a+b); RhinoApp.Wait()   
-    
 module Sync =  //Don't change name  its used in Rhino.Scripting.dll via reflection                                                 
     let syncContext = Threading.SynchronizationContext.Current  //Don't change name  its used in Rhino.Scripting.dll via reflection
     let mutable window = null : Window                          //Don't change name  its used in Rhino.Scripting.dll via reflection
 
-(* done in FsEx
-module Print = //Don't change name  its used in Rhino.Scripting.dll via reflection
-    let mutable colorLogger  = //Don't change name  its used in Rhino.Scripting.dll via reflection
-        fun (r:int) (g:int) (b:int) (s:string) ->
-            RhinoApp.Write s    //default , will be changed below in OnLoad
-            printf "%s" s       //default , will be changed below in OnLoad
+
+module RhinoAppWriteLine = 
+    let print a    = RhinoApp.WriteLine a    ; RhinoApp.Wait()
+    let print2 a b = RhinoApp.WriteLine (a+b); RhinoApp.Wait()   
     
-    let mutable colorLoggerNl  = //Don't change name  its used in Rhino.Scripting.dll via reflection
-        fun (r:int) (g:int) (b:int) (s:string) ->
-            RhinoApp.WriteLine s //default , will be changed below in OnLoad
-            printfn "%s" s       //default , will be changed below in OnLoad
-    *)
 
 module Debugging = 
-
-    open rh
+    open RhinoAppWriteLine
 
     let printAssemblyInfo (plug:PlugIns.PlugIn) =             
         let rec getAllFiles dir pattern = 
@@ -114,15 +101,14 @@ type SeffPlugin () =
 
     //member this.Folder = IO.Path.GetDirectoryName(this.Assembly.Location) // for debug only
 
-
     static member val PrintOnceAfterEval = "" with get,set // to be ablke to print after SeffRunCurrentScript command 
 
     override this.OnLoad refErrs =         
         if not Runtime.HostUtils.RunningOnWindows then 
-            rh.print " * Seff | Scripting Editor For FSharp PlugIn only works on Windows. It needs the WPF framework "
+            RhinoAppWriteLine.print " * Seff | Scripting Editor For FSharp PlugIn only works on Windows. It needs the WPF framework "
             PlugIns.LoadReturnCode.ErrorNoDialog
         else    
-            rh.print  "* loading Seff.Rhino Plugin ..."           
+            RhinoAppWriteLine.print  "* loading Seff.Rhino Plugin ..."           
             let canRun () = not <| Rhino.Commands.Command.InCommand()
             #if RHINO6
             let host = "Rhino 6"
@@ -159,17 +145,17 @@ type SeffPlugin () =
             
             
             //Dummy attachment in sync mode  to prevent access violation exception if first access is in async mode  
-            //dont abort on esc, only on ctrl+break or RhinoScriptSyntax.EscapeTest() 
+            //Dont abort on esc, only on ctrl+break or RhinoScriptSyntax.EscapeTest() 
             RhinoApp.EscapeKeyPressed.Add ( fun e -> ()) 
             
             // add Alias too :
             if not <|  ApplicationSettings.CommandAliasList.IsAlias("sr") then 
                 if ApplicationSettings.CommandAliasList.Add("sr","SeffRunCurrentScript")then 
-                    rh.print  "* Seff.Rhino Plugin added the command alias 'sr' for 'SeffRunCurrentScript'"
+                    RhinoAppWriteLine.print  "* Seff.Rhino Plugin added the command alias 'sr' for 'SeffRunCurrentScript'"
 
             //Debugging.printAssemblyInfo(this)
             
-            rh.print  "* Seff.Rhino Plugin loaded."
+            RhinoAppWriteLine.print  "* Seff.Rhino Plugin loaded."
             PlugIns.LoadReturnCode.Success
     
     
