@@ -13,35 +13,37 @@
     <!--<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>   allows FCS 35.0.0 ??-->
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
 
-    <Version>0.3.0.0</Version>
-    <AssemblyVersion>0.3.0.0</AssemblyVersion>
-    <FileVersion>0.3.0.0</FileVersion>
+    <Version>0.4.0.0</Version>
+    <AssemblyVersion>0.4.0.0</AssemblyVersion>
+    <FileVersion>0.4.0.0</FileVersion>
    
     <Authors>Goswin Rothenthal</Authors>
     <Product>Seff.Rhino</Product>
     <Description>A Scripting Editor for FSharp in Rhino. see http://seff.io </Description>
-    <Copyright>Goswin Rothenthal 2020</Copyright>
+    <Copyright>Goswin Rothenthal</Copyright>
     
   
     <ApplicationIcon>Media\LogoCursorTr.ico</ApplicationIcon>
     <Win32Resource>Media\LogoCursorTr.res</Win32Resource>    <!--  for Application Icon in explorer, adapt path as needed-->
 
-    <Configurations>Debug;Release</Configurations>
+    <Configurations>Release</Configurations>
+    <Platform>x64</Platform>
+    
     <DefineConstants>RHINO6</DefineConstants>
   </PropertyGroup>
     
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <OutputPath>binRh6/Debug/</OutputPath>
   </PropertyGroup> 
   
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <OutputPath>binRh6/Release/</OutputPath>
   </PropertyGroup>
 
 
   <ItemGroup>    
     <!-- GeneratePathProperty: path property $(PkgFSharp_Core) is C:\Users\Gos\.nuget\packages\fsharp.core\4.6.2 -->
-    <PackageReference Update="FSharp.Core" Version="5.0.0" GeneratePathProperty="true" />      
+    <PackageReference Update="FSharp.Core" Version="5.0.1" GeneratePathProperty="true" />      
   </ItemGroup>
 
 
@@ -52,7 +54,7 @@
     
 
     <Reference Include="ICSharpCode.AvalonEdit">      <!-- build from https://github.com/goswinr/AvalonEdit -->
-      <HintPath>..\AvalonEdit\ICSharpCode.AvalonEdit\bin\Release\net472\ICSharpCode.AvalonEdit.dll</HintPath> 
+      <HintPath>..\AvalonEditB\ICSharpCode.AvalonEdit\bin\Release\net472\ICSharpCode.AvalonEdit.dll</HintPath> 
     </Reference>   
 
     <Reference Include="Seff">

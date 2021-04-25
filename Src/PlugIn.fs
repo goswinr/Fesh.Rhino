@@ -138,10 +138,15 @@ type SeffPlugin () =
             seff.Fsi.OnCompletedOk.Add  ( fun m -> SeffPlugin.AfterEval(false)) // to unsure UI does not stay frozen if RedrawEnabled is false //showWin = false because might be running in background mode from rhino command line
             seff.Fsi.OnIsReady.Add      ( fun m -> if SeffPlugin.PrintOnceAfterEval <> "" then RhinoApp.WriteLine SeffPlugin.PrintOnceAfterEval ; SeffPlugin.PrintOnceAfterEval <- "")  
            
-            // TODO done by seff anyway?? RhinoApp.Closing.Add       (fun e -> Seff.FileDialogs.askIfClosingWindowIsOk(Tabs.AllTabs,Tabs.Save) |> ignore) // to save unsaved files, canceling of closing not possible here, save dialog will show after rhino is closed
+            // TODO done by seff anyway?? 
+            
+            
             RhinoDoc.CloseDocument.Add (fun e -> seff.Fsi.CancelIfAsync() ) //during sync eval closing doc should not be possible anyway??
-            //RhinoApp.Closing.Add (fun _ -> Fsi.cancelIfAsync() ) //synch eval gets canceled anyway
-
+            RhinoApp.Closing.Add (fun _ -> 
+                seff.Tabs.AskIfClosingWindowIsOk() |> ignore // to save unsaved files, canceling of closing not possible here, save dialog will show after rhino is closed
+                seff.Fsi.AskIfCancellingIsOk() |> ignore
+                seff.Fsi.CancelIfAsync()   //sync eval gets canceled anyway
+                )
             
             
             //Dummy attachment in sync mode  to prevent access violation exception if first access is in async mode  
@@ -155,7 +160,7 @@ type SeffPlugin () =
 
             //Debugging.printAssemblyInfo(this)
             
-            RhinoAppWriteLine.print  "* Seff.Rhino Plugin loaded."
+            RhinoAppWriteLine.print  ("Seff."+host + " Plugin loaded.")
             PlugIns.LoadReturnCode.Success
     
     
