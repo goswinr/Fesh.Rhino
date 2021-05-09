@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <UseWPF>true</UseWPF>
-    <TargetFramework>net472</TargetFramework><!--472 for fewer files with netstandart 2.0, 461 would be ok too-->
+    <TargetFramework>net48</TargetFramework><!--4.8 needed by rhino common-->
     <LangVersion>preview</LangVersion>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages><!--to only have the english resources-->
     <RootNamespace>Seff.Rhino</RootNamespace>
