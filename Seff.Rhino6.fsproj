@@ -23,10 +23,10 @@
     <Copyright>Goswin Rothenthal</Copyright>
     
   
-    <ApplicationIcon>Media\LogoCursorTr.ico</ApplicationIcon>
-    <Win32Resource>Media\LogoCursorTr.res</Win32Resource>    <!--  for Application Icon in explorer, adapt path as needed-->
+    <ApplicationIcon>Media/LogoCursorTr.ico</ApplicationIcon>
+    <Win32Resource>Media/LogoCursorTr.res</Win32Resource>    <!--  for Application Icon in explorer, adapt path as needed-->
 
-    <Configurations>Release</Configurations>
+    <Configurations>Debug;Release</Configurations>
     <Platform>x64</Platform>
     
     <DefineConstants>RHINO6</DefineConstants>
@@ -42,7 +42,7 @@
 
 
   <ItemGroup>    
-    <!-- GeneratePathProperty: path property $(PkgFSharp_Core) is C:\Users\Gos\.nuget\packages\fsharp.core\4.6.2 -->
+    <!-- GeneratePathProperty: path property $(PkgFSharp_Core) is C:/Users/Gos/.nuget/packages/fsharp.core/4.6.2 -->
     <PackageReference Update="FSharp.Core" Version="5.0.1" GeneratePathProperty="true" />      
   </ItemGroup>
 
@@ -51,32 +51,29 @@
     <Reference Include="WindowsBase" /> 
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />   
-    
-
-    <Reference Include="AvalonEditB">      <!-- build from dev branch of https://github.com/goswinr/AvalonEditB -->
+       
+    <Reference Include="AvalonEditB">    <!-- build from dev branch of https://github.com/goswinr/AvalonEditB -->
       <HintPath>../AvalonEditB/AvalonEditB/bin/Release/net472/AvalonEditB.dll</HintPath> 
-    </Reference>       
+    </Reference>        
 
-    <Reference Include="Seff">
-      <HintPath>..\Seff\binHostingRhino\Release\net472\Seff.dll</HintPath>
-      <!--<HintPath>..\Seff\binHosting\Debug\net472\Seff.dll</HintPath> -->
-      <!-- take from https://github.com/goswinr/Seff -->
+    <Reference Include="Seff"> <!-- take from https://github.com/goswinr/Seff -->
+      <HintPath>../Seff/binHostingRhino/Release/net472/Seff.dll</HintPath>      
     </Reference>
 
     <Reference Include="RhinoCommon">  
-      <HintPath>C:\Program Files\Rhino 6\System\RhinoCommon.dll</HintPath>  
+      <HintPath>C:/Program Files/Rhino 6/System/RhinoCommon.dll</HintPath>  
       <Private>false</Private> <!--do not copy to output directory-->
-    </Reference>    
+    </Reference>      
 
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Media\LogoCursorTr.res" />
-    <Resource Include="Media\LogoCursorTr.ico" />
+    <EmbeddedResource Include="Media/LogoCursorTr.res" />
+    <Resource Include="Media/LogoCursorTr.ico" />
     
-    <Compile Include="Src\AssemblyInfo.fs" />
-    <Compile Include="Src\PlugIn.fs" />
-    <Compile Include="Src\Commands.fs" />
+    <Compile Include="Src/AssemblyInfo.fs" />
+    <Compile Include="Src/PlugIn.fs" />
+    <Compile Include="Src/Commands.fs" />
  </ItemGroup>
 
 
@@ -95,11 +92,11 @@
   <Target Name="CopyFilesOverAfterBuild" BeforeTargets="AfterBuild">
     
     <!-- take FSharpSynatxHighlighterExtended.xshd from https://github.com/goswinr/Seff -->
-    <Copy SourceFiles="..\Seff\FSharpSynatxHighlighterExtended.xshd" DestinationFiles="$(TargetDir)FSharpSynatxHighlighterExtended.xshd" ContinueOnError="false" /> 
+    <Copy SourceFiles="../Seff/FSharpSynatxHighlighterExtended.xshd" DestinationFiles="$(TargetDir)FSharpSynatxHighlighterExtended.xshd" ContinueOnError="false" /> 
     
     <!-- FSharp.Core.xml is missing otherwise ? to have it as intellisense provider-->
-    <!--<Copy SourceFiles=" $(PkgFSharp_Core)\lib\net45\FSharp.Core.xml" DestinationFiles="$(TargetDir)FSharp.Core.xml" ContinueOnError="false" />-->
-    <Copy SourceFiles=" $(PkgFSharp_Core)\lib\netstandard2.0\FSharp.Core.xml" DestinationFiles="$(TargetDir)FSharp.Core.xml" ContinueOnError="false" />  
+    <!--<Copy SourceFiles=" $(PkgFSharp_Core)/lib/net45/FSharp.Core.xml" DestinationFiles="$(TargetDir)FSharp.Core.xml" ContinueOnError="false" />-->
+    <Copy SourceFiles=" $(PkgFSharp_Core)/lib/netstandard2.0/FSharp.Core.xml" DestinationFiles="$(TargetDir)FSharp.Core.xml" ContinueOnError="false" />  
 
   </Target>
 
