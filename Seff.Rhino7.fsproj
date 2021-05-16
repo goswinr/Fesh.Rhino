@@ -71,8 +71,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Media/logo.res" />
-    <Resource         Include="Media/logo.ico" />
+   <EmbeddedResource Include="Media/logo.res" /> <!--  for Application Icon in explorer-->   
+    <Resource Include="Media/logo.ico" />        
     
     <Compile Include="Src/AssemblyInfo.fs" />
     <Compile Include="Src/PlugIn.fs" />
