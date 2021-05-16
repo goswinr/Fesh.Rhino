@@ -23,8 +23,8 @@
     <Copyright>Goswin Rothenthal</Copyright>
     
   
-    <ApplicationIcon>Media/LogoCursorTr.ico</ApplicationIcon>
-    <Win32Resource>Media/LogoCursorTr.res</Win32Resource>    <!--  for Application Icon in explorer, adapt path as needed-->
+    <ApplicationIcon>Media/logo.ico</ApplicationIcon>
+    <Win32Resource>Media/logo.res</Win32Resource>    <!--  for Application Icon in explorer-->
 
     <Configurations>Debug;Release</Configurations>
     <Platform>x64</Platform>
@@ -68,8 +68,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Media/LogoCursorTr.res" />
-    <Resource Include="Media/LogoCursorTr.ico" />
+    <EmbeddedResource Include="Media/logo.res" />
+    <Resource Include="Media/logo.ico" />
     
     <Compile Include="Src/AssemblyInfo.fs" />
     <Compile Include="Src/PlugIn.fs" />
