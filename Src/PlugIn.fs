@@ -116,20 +116,19 @@ type SeffPlugin () =
             #else
             let host = "Rhino 7"
             #endif
-            let seff = Seff.App.createEditorForHosting( { hostName = host ; mainWindowHandel = RhinoApp.MainWindowHandle(); fsiCanRun = canRun } )
-            SeffPlugin.Seff <- seff
-            Sync.window <- seff.Window
-
-            try                 
+            let hostData = { 
+                hostName = host  
+                mainWindowHandel = RhinoApp.MainWindowHandle()
+                fsiCanRun = canRun 
                 // Add the Icon at the top left of the window and in the status bar, musst be called  after loading window.
                 // Media/LogoCursorTr.ico with Build action : "Resource"
                 // (for the exe file icon in explorer use <Win32Resource>Media\logo.res</Win32Resource>  in fsproj )
-                seff.Window.Icon <-  Media.Imaging.BitmapFrame.Create(Uri("pack://application:,,,/Seff.Rhino;component/Media/logo.ico"))
-            with ex ->  
-                seff.Log.PrintfnAppErrorMsg  "Failed to load Media/logo.ico from Application.ResourceStream : %A" ex 
+                logo = Some (Uri("pack://application:,,,/Seff.Rhino;component/Media/logo.ico"))
+                }
 
-            //Print.colorLoggerNl <- (fun r g b s -> seff.Log.PrintfnDirektNlCustomColor r g b s)
-            //Print.colorLogger   <- (fun r g b s -> seff.Log.PrintfnDirektCustomColor r g b s)
+            let seff = Seff.App.createEditorForHosting( hostData )
+            SeffPlugin.Seff <- seff
+            Sync.window <- seff.Window
 
             seff.Window.Closing.Add (fun e ->         
                 
