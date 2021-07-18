@@ -1,37 +1,39 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <UseWPF>true</UseWPF>
-    <TargetFramework>net48</TargetFramework>    <!--  net48 needed since RhinoCommon.dll 7.5 -->
+    <OutputType>Library</OutputType>
+    <TargetFrameworks>net48</TargetFrameworks> <!--  net48 needed since RhinoCommon.dll 7.5 --> 
+    <UseWPF>true</UseWPF>    
     <LangVersion>preview</LangVersion>
-    <SatelliteResourceLanguages>en</SatelliteResourceLanguages><!--to only have the english resources-->
+    
+    <NeutralLanguage>en</NeutralLanguage>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>    <!--to only have the english resources-->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects> <!--needed ?-->
+    
     <RootNamespace>Seff.Rhino</RootNamespace>
     <AssemblyName>Seff.Rhino</AssemblyName>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <NeutralLanguage>en</NeutralLanguage>
-    
-    <!--<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>   allows FCS 35.0.0 ??-->
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-
-    <Version>0.4.0.0</Version>
-    <AssemblyVersion>0.4.0.0</AssemblyVersion>
-    <FileVersion>0.4.0.0</FileVersion>
-   
-    <Authors>Goswin Rothenthal</Authors>
+    <AssemblyTitle>Seff.Rhino</AssemblyTitle>
+    <Title>Seff.Rhino</Title>  
     <Product>Seff.Rhino</Product>
-    <Description>A Scripting Editor for FSharp in Rhino. see http://seff.io </Description>
-    <Copyright>Goswin Rothenthal</Copyright>
+    <PackageId>Seff.Rhino</PackageId>  
+
+    <Version>1.0.0.0</Version>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
     
-  
+    <Authors>GoswinR</Authors>
+    <Copyright>Goswin Rothenthal 2021</Copyright>
+
+    <Description>A Scripting Editor for FSharp in Rhino 7.</Description>
     <ApplicationIcon>Media/logo.ico</ApplicationIcon>
     <Win32Resource>Media/logo.res</Win32Resource>    <!--  for Application Icon in explorer-->
     
     <Configurations>Debug;Release</Configurations>
-    <Platform>x64</Platform>    
-    
+    <Platform>x64</Platform>
   </PropertyGroup>
-    
+  
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <OutputPath>binRh7/Debug/</OutputPath>
@@ -54,33 +56,26 @@
     <!--this reference is needed for tooling only, it might not be installed on host PC. see also https://github.com/fsprojects/IfSharp/issues/213 -->
     <PackageReference Include="NETStandard.Library" Version="2.0.3" GeneratePathProperty="true" />
 
-  </ItemGroup>
-
-
-  <ItemGroup>    
-    <Reference Include="WindowsBase" /> 
-    <Reference Include="PresentationCore" />
-    <Reference Include="PresentationFramework" />   
+    <!-- use PrivateAssets="all" ExcludeAssets="runtime" to exclude these dlls from the output folder-->
+    <PackageReference Include="RhinoCommon" Version="7.0.20314.3001" PrivateAssets="all" ExcludeAssets="runtime"/>
     
+    <PackageReference Include="AvalonEditB" Version="1.0.0" />
+    <!-- <PackageReference Include="FsEx.Wpf" Version="1.0.0" /> -->
+    <!-- <PackageReference Include="AvalonLog" Version="1.0.0" /> -->
+    <!-- <PackageReference Include="Seff" Version="1.0.0" /> -->
+    
+    <!--<Reference Include="AvalonEditB" HintPath="../AvalonEditB/AvalonEditB/bin/Release/net472/AvalonEditB.dll" />-->
+    <Reference Include="FsEx.Wpf" HintPath="../FsEx.Wpf/bin/Release/net472/FsEx.Wpf.dll" />    
+    <Reference Include="AvalonLog" HintPath="../AvalonLog/bin/Release/net472/AvalonLog.dll" />
+    <Reference Include="Seff" HintPath="../Seff/binHosting/x64/net472/Seff.dll" />
+     
 
-    <Reference Include="AvalonEditB">    <!-- build from dev branch of https://github.com/goswinr/AvalonEditB -->
-      <HintPath>../AvalonEditB/AvalonEditB/bin/Release/net472/AvalonEditB.dll</HintPath> 
-    </Reference>        
-
-    <Reference Include="Seff"> <!-- take from https://github.com/goswinr/Seff -->
-      <HintPath>../Seff/binHosting/x64/net472/Seff.dll</HintPath>   
-    </Reference>
-
-    <Reference Include="RhinoCommon">  
-      <HintPath>C:/Program Files/Rhino 7/System/RhinoCommon.dll</HintPath>  
-      <Private>false</Private> <!--do not copy to output directory-->
-    </Reference>    
 
   </ItemGroup>
 
   <ItemGroup>
-   <EmbeddedResource Include="Media/logo.res" /> <!--  for Application Icon in explorer-->   
-    <Resource Include="Media/logo.ico" />        
+    <EmbeddedResource Include="Media/logo.res" /> <!--  for Application Icon in explorer-->   
+    <Resource Include="Media/logo.ico" />
     
     <Compile Include="Src/AssemblyInfo.fs" />
     <Compile Include="Src/PlugIn.fs" />

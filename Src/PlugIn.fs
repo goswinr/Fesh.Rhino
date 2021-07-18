@@ -7,7 +7,6 @@ open Rhino.Runtime
 open Seff
 open Seff.Model
 open Seff.Config
-open Seff.Views.Util
 
 
 module Sync =  //Don't change name  its used in Rhino.Scripting.dll via reflection                                                 
@@ -128,7 +127,7 @@ type SeffPlugin () =
 
             let seff = Seff.App.createEditorForHosting( hostData )
             SeffPlugin.Seff <- seff
-            Sync.window <- seff.Window
+            Sync.window <- (seff.Window :> Window)
 
             seff.Window.Closing.Add (fun e ->         
                 
