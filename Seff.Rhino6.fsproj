@@ -1,6 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
   <PropertyGroup>
+    <TargetExt>.rhp</TargetExt>
     <OutputType>Library</OutputType>
     <TargetFrameworks>net48</TargetFrameworks> <!--  net48 needed since RhinoCommon.dll 7.5 --> 
     <UseWPF>true</UseWPF>    
@@ -44,6 +45,11 @@
     <OutputPath>binRh6/Release/</OutputPath>
   </PropertyGroup>
 
+  <PropertyGroup Condition="$(Configuration) == 'Debug' AND $([MSBuild]::IsOSPlatform(Windows))">
+    <StartProgram>C:\Program Files\Rhino 6\System\Rhino.exe</StartProgram>
+    <StartArguments></StartArguments>
+    <StartAction>Program</StartAction>
+  </PropertyGroup>
 
   <ItemGroup>
 
@@ -89,9 +95,9 @@
     better: https://stackoverflow.com/questions/44043918/running-a-target-before-the-corebuild
     -->
 
-  <Target Name="RenameToRhp" BeforeTargets="AfterBuild">
-    <Move SourceFiles="$(TargetPath)" DestinationFiles="$(TargetDir)$(ProjectName).rhp" ContinueOnError="false" />
-  </Target>
+  <!--    done via <TargetExt>.rhp</TargetExt> 
+  <Target Name="RenameToRhp" BeforeTargets="AfterBuild">    <Move SourceFiles="$(TargetPath)" DestinationFiles="$(TargetDir)$(ProjectName).rhp" ContinueOnError="false" />  </Target>
+   -->
 
   
   <Target Name="CopyFilesOverAfterBuild" BeforeTargets="AfterBuild">
@@ -106,9 +112,8 @@
     <!--dll is needed for editor tooling only, it might not be installed on host PC . seee also  https://github.com/fsprojects/IfSharp/issues/213 -->
     <Copy SourceFiles="$(PkgNETStandard_Library)/build/netstandard2.0/ref/netstandard.dll" DestinationFiles="$(TargetDir)netstandard.dll" ContinueOnError="false" />
     
-    <!-- needed too ?
+    <!-- needed for intelisense? -->
     <Copy SourceFiles="$(PkgNETStandard_Library)/build/netstandard2.0/ref/netstandard.xml" DestinationFiles="$(TargetDir)netstandard.xml" ContinueOnError="false" />  
-    -->
   </Target>
 
 </Project>
