@@ -151,7 +151,7 @@ type SeffPlugin () =
             
             RhinoDoc.CloseDocument.Add (fun e -> seff.Fsi.CancelIfAsync() ) //during sync eval closing doc should not be possible anyway??
             RhinoApp.Closing.Add (fun _ -> 
-                seff.Tabs.AskIfClosingWindowIsOk() |> ignore // to save unsaved files, canceling of closing not possible here, save dialog will show after rhino is closed
+                seff.Tabs.AskForFileSavingToKnowIfClosingWindowIsOk() |> ignore // to save unsaved files, canceling of closing not possible here, save dialog will show after rhino is closed
                 seff.Fsi.AskIfCancellingIsOk() |> ignore
                 seff.Fsi.CancelIfAsync()   //sync eval gets canceled anyway
                 )
