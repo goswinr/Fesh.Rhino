@@ -1,44 +1,44 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
   <PropertyGroup>
     <TargetExt>.rhp</TargetExt>
     <OutputType>Library</OutputType>
-    <TargetFrameworks>net48</TargetFrameworks> <!--  net48 needed since RhinoCommon.dll 7.5 --> 
-    <UseWPF>true</UseWPF>    
+    <TargetFrameworks>net48</TargetFrameworks> <!--  net48 needed since RhinoCommon.dll 7.5 -->
+    <UseWPF>true</UseWPF>
     <LangVersion>preview</LangVersion>
     <NeutralLanguage>en</NeutralLanguage>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>    <!--to only have the english resources-->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
     <!--<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects> needed ?-->
-    
+
     <RootNamespace>Seff.Rhino</RootNamespace>
     <AssemblyName>Seff.Rhino</AssemblyName>
     <AssemblyTitle>Seff.Rhino</AssemblyTitle>
-    <Title>Seff.Rhino</Title>  
+    <Title>Seff.Rhino</Title>
     <Product>Seff.Rhino</Product>
-    <PackageId>Seff.Rhino</PackageId>  
+    <PackageId>Seff.Rhino</PackageId>
 
     <Version>1.0.0.0</Version>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
-    
+
     <Authors>GoswinR</Authors>
     <Copyright>Goswin Rothenthal 2021</Copyright>
 
     <Description>A Scripting Editor for FSharp in Rhino 7.</Description>
     <ApplicationIcon>Media/logo.ico</ApplicationIcon>
     <Win32Resource>Media/logo.res</Win32Resource>    <!--  for Application Icon in explorer-->
-    
+
     <Configurations>Debug;Release</Configurations>
     <PlatformTarget>x64</PlatformTarget><!--  x64 is required e.g by Rhino, dont us just 'Platform' tag-->
   </PropertyGroup>
-  
+
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <OutputPath>binRh7/Debug/</OutputPath>
-  </PropertyGroup> 
-  
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <OutputPath>binRh7/Release/</OutputPath>
   </PropertyGroup>
@@ -64,43 +64,43 @@
 
     <!-- use PrivateAssets="all" ExcludeAssets="runtime" to exclude these dlls from the output folder-->
     <PackageReference Include="RhinoCommon" Version="7.0.20314.3001" PrivateAssets="all" ExcludeAssets="runtime"/>
-        
+
     <PackageReference Include="Seff" Version="0.0.2" />
-    
+
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Media/logo.res" /> <!--  for Application Icon in explorer-->   
+    <EmbeddedResource Include="Media/logo.res" /> <!--  for Application Icon in explorer-->
     <Resource Include="Media/logo.ico" />
-    
+
     <Compile Include="Src/AssemblyInfo.fs" />
     <Compile Include="Src/PlugIn.fs" />
     <Compile Include="Src/Commands.fs" />
  </ItemGroup>
 
 
-  <!-- Replaces AfterBuild target, 
+  <!-- Replaces AfterBuild target,
     help: https://docs.microsoft.com/en-us/visualstudio/msbuild/msbuild-well-known-item-metadata?view=vs-2015&redirectedfrom=MSDN
     see    https://stackoverflow.com/questions/43921992/how-can-i-use-beforebuild-and-afterbuild-targets-with-visual-studio-2017
     tasks: https://docs.microsoft.com/en-us/visualstudio/msbuild/msbuild-task-reference?view=vs-2019
     better: https://stackoverflow.com/questions/44043918/running-a-target-before-the-corebuild
-    -->  
-  
+    -->
+
   <Target Name="CopyFilesOverAfterBuild" BeforeTargets="AfterBuild">
-    
+
     <!-- take FSharpSynatxHighlighterExtended.xshd from https://github.com/goswinr/Seff -->
-    <Copy SourceFiles="../Seff/FSharpSynatxHighlighterExtended.xshd" DestinationFiles="$(TargetDir)FSharpSynatxHighlighterExtended.xshd" ContinueOnError="false" /> 
-    
+    <Copy SourceFiles="../Seff/FSharpSynatxHighlighterExtended.xshd" DestinationFiles="$(TargetDir)FSharpSynatxHighlighterExtended.xshd" ContinueOnError="false" />
+
     <!-- FSharp.Core.xml is missing otherwise ? to have it as intellisense provider-->
     <!--<Copy SourceFiles=" $(PkgFSharp_Core)/lib/net45/FSharp.Core.xml" DestinationFiles="$(TargetDir)FSharp.Core.xml" ContinueOnError="false" />-->
     <Copy SourceFiles=" $(PkgFSharp_Core)/lib/netstandard2.0/FSharp.Core.xml" DestinationFiles="$(TargetDir)FSharp.Core.xml" ContinueOnError="false" />
-    
+
     <!--dll is needed for editor tooling only, it might not be installed on host PC . seee also  https://github.com/fsprojects/IfSharp/issues/213 -->
     <Copy SourceFiles="$(PkgNETStandard_Library)/build/netstandard2.0/ref/netstandard.dll" DestinationFiles="$(TargetDir)netstandard.dll" ContinueOnError="false" />
-    
+
     <!-- needed for intelisense? -->
-    <Copy SourceFiles="$(PkgNETStandard_Library)/build/netstandard2.0/ref/netstandard.xml" DestinationFiles="$(TargetDir)netstandard.xml" ContinueOnError="false" />  
-    
+    <Copy SourceFiles="$(PkgNETStandard_Library)/build/netstandard2.0/ref/netstandard.xml" DestinationFiles="$(TargetDir)netstandard.xml" ContinueOnError="false" />
+
   </Target>
 
 </Project>

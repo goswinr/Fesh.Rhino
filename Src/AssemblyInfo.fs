@@ -11,8 +11,8 @@ open Rhino.PlugIns
 //System.Guid.NewGuid() //for fsi
 
 
-// Setting ComVisible to false makes the types in this assembly not visible 
-// to COM components.  If you need to access a type in this assembly from 
+// Setting ComVisible to false makes the types in this assembly not visible
+// to COM components.  If you need to access a type in this assembly from
 // COM, set the ComVisible attribute to true on that type.
 //[<assembly: ComVisible(true)>] //needed to acces synchronisation context of this editor from asycnc evaluation therad? does not work ???
 [<assembly: ComVisible(false)>] //needed to acces synchronisation context of this editor from asycnc evaluation therad?

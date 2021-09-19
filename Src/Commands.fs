@@ -9,43 +9,43 @@ open Rhino.Commands
 
 //the Command Singelton classes:
 
-module State =     
+module State = 
     let mutable ShownOnce = false // having this as static member on LoadEditor fails to evaluate !! not sure why.
 
 type LoadEditor () = 
-    inherit Commands.Command()    
-    static member val Instance = LoadEditor() 
-    
+    inherit Commands.Command()
+    static member val Instance = LoadEditor()
+
     static member DoLoad() = 
-        if isNull Sync.window then // set up window on first run            
+        if isNull Sync.window then // set up window on first run
             RhinoAppWriteLine.print  " * Seff Editor Window cant be shown, the Plugin is not properly loadad. try restarting Rhino."
             Commands.Result.Failure
 
-        else            
+        else
             Sync.window.Show()
             Sync.window.Visibility <- Visibility.Visible
-            if Sync.window.WindowState = WindowState.Minimized then Sync.window.WindowState <- WindowState.Normal             
+            if Sync.window.WindowState = WindowState.Minimized then Sync.window.WindowState <- WindowState.Normal
             State.ShownOnce <- true
             Commands.Result.Success
 
     override this.EnglishName = "Seff" //The command name as it appears on the Rhino command line.
-           
+
     override this.RunCommand (doc, mode)  = 
         LoadEditor.DoLoad()
 
 
     (*
     type LoadFsi () = 
-        inherit Commands.Command()    
-        static member val Instance = LoadFsi() 
-                
+        inherit Commands.Command()
+        static member val Instance = LoadFsi()
+
         override this.EnglishName = "SeffLoadFsi" //The command name as it appears on the Rhino command line.
-                       
-        override this.RunCommand (doc, mode)  =
-            if isNull Sync.window then // set up window on first run            
+
+        override this.RunCommand (doc, mode)  = 
+            if isNull Sync.window then // set up window on first run
                 rh.print  " * Seff Editor Window cant be shown, the Plugin is not properly loadad . please restart Rhino."
-                Commands.Result.Failure            
-            else            
+                Commands.Result.Failure
+            else
                 rh.print  "loading Fsi ..."
                 Fsi.Initalize()
                 rh.print  "Fsi loaded."
@@ -54,53 +54,53 @@ type LoadEditor () =
 
 
 type RunCurrentScript () = 
-    inherit Commands.Command()    
-    static member val Instance = RunCurrentScript() 
-    
+    inherit Commands.Command()
+    static member val Instance = RunCurrentScript()
+
     override this.EnglishName = "SeffRunCurrentScript"
-           
-    override this.RunCommand (doc, mode)  =
-        
-        if isNull Sync.window then // set up window on first run            
+
+    override this.RunCommand (doc, mode)  = 
+
+        if isNull Sync.window then // set up window on first run
             RhinoAppWriteLine.print  "*Seff Editor Window cant be shown, the Plugin is not properly loadad . please restart Rhino."
             Commands.Result.Failure
         else
-            if not State.ShownOnce then 
-                LoadEditor.DoLoad()  
+            if not State.ShownOnce then
+                LoadEditor.DoLoad()
                 // it needs to be shown once. otherwise Seff.Commands.RunAllText below fails to find any text in Editor
-            else           
+            else
                 match Sync.window.Visibility with
-                | Visibility.Visible | Visibility.Collapsed ->                
+                | Visibility.Visible | Visibility.Collapsed ->
                     RhinoAppWriteLine.print2  "*Seff is running " SeffPlugin.Seff.Tabs.Current.FormatedFileName
                     SeffPlugin.PrintOnceAfterEval <- "*Seff is done!"
                     let cmd = SeffPlugin.Seff.Commands.RunAllText //TODO or trigger directly via agent post to distinguish triggers from commandline and seff ui?
-                    
+
                     // to start running the script after the command has actually completed, making it modeless, so manual undo stack works
                     async{
-                        do! Async.Sleep 30 // wait till command SeffRunCurrentScript actually completes. so that RhinoDoc.ActiveDoc.BeginUndoRecord does not return 0 
+                        do! Async.Sleep 30 // wait till command SeffRunCurrentScript actually completes. so that RhinoDoc.ActiveDoc.BeginUndoRecord does not return 0
                         let k = ref 0
-                        while Command.InCommand() && !k < 30 do // wait up to 1.5 sec more ?  
-                            incr k 
-                            do! Async.Sleep 50                          
+                        while Command.InCommand() && !k < 30 do // wait up to 1.5 sec more ?
+                            incr k
+                            do! Async.Sleep 50
                         do! Async.SwitchToContext Sync.syncContext
-                        if Command.InCommand() then 
+                        if Command.InCommand() then
                             SeffPlugin.Seff.Log.PrintfnAppErrorMsg "Cant Run Current Seff Script because another Rhino Command is active"
                             RhinoAppWriteLine.print "Cant Run Current Seff Script because another Rhino Command is active"
                         else
                             cmd.cmd.Execute(null)} // the argumnent can be any obj, its ignored
-                    |> Async.Start  
+                    |> Async.Start
 
                     //rh.print  "*Seff, ran current script." //prints immedeatly in async mode
                     Commands.Result.Success
 
-        
-                |Visibility.Hidden -> 
-                    Sync.window.Visibility <- Visibility.Visible                
+
+                |Visibility.Hidden ->
+                    Sync.window.Visibility <- Visibility.Visible
                     match MessageBox.Show("Run Script from current Tab?", "Run Script from current Tab?", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.Yes) with
-                    | MessageBoxResult.Yes -> this.RunCommand (doc, mode) 
+                    | MessageBoxResult.Yes -> this.RunCommand (doc, mode)
                     | _ -> Commands.Result.Failure
-                
-                
+
+
                 | _ -> Commands.Result.Failure // only needed to make F# compiler happy
 
 
