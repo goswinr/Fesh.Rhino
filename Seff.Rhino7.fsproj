@@ -9,7 +9,7 @@
     <NeutralLanguage>en</NeutralLanguage>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>    <!--to only have the english resources-->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-
+    <FSharpCoreIncludeDocFileInOutput>true</FSharpCoreIncludeDocFileInOutput>
     <!--<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects> needed ?-->
 
     <RootNamespace>Seff.Rhino</RootNamespace>
@@ -52,7 +52,7 @@
 
   <ItemGroup>
 
-    <PackageReference Update="FSharp.Core" Version="5.0.2" GeneratePathProperty="true" />
+    <PackageReference Update="FSharp.Core" Version="5.0.2" />
 
     <!--FSharp.Compiler.Service 40.0.0 needs to be refernceed here too because
      somehow FSharp.DependencyManager.Nuget doesn't get copied over from /Seff/binHosting/x64/net472
@@ -90,10 +90,6 @@
 
     <!-- take FSharpSynatxHighlighterExtended.xshd from https://github.com/goswinr/Seff -->
     <Copy SourceFiles="../Seff/FSharpSynatxHighlighterExtended.xshd" DestinationFiles="$(TargetDir)FSharpSynatxHighlighterExtended.xshd" ContinueOnError="false" />
-
-    <!-- FSharp.Core.xml is missing otherwise ? to have it as intellisense provider-->
-    <!--<Copy SourceFiles=" $(PkgFSharp_Core)/lib/net45/FSharp.Core.xml" DestinationFiles="$(TargetDir)FSharp.Core.xml" ContinueOnError="false" />-->
-    <Copy SourceFiles=" $(PkgFSharp_Core)/lib/netstandard2.0/FSharp.Core.xml" DestinationFiles="$(TargetDir)FSharp.Core.xml" ContinueOnError="false" />
 
     <!--dll is needed for editor tooling only, it might not be installed on host PC . seee also  https://github.com/fsprojects/IfSharp/issues/213 -->
     <Copy SourceFiles="$(PkgNETStandard_Library)/build/netstandard2.0/ref/netstandard.dll" DestinationFiles="$(TargetDir)netstandard.dll" ContinueOnError="false" />
