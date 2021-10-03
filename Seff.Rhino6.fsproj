@@ -64,7 +64,7 @@
     <!-- use PrivateAssets="all" ExcludeAssets="runtime" to exclude these dlls from the output folder-->
     <PackageReference Include="RhinoCommon" Version="6.0.18016.23451" PrivateAssets="all" ExcludeAssets="runtime"/>
 
-    <PackageReference Include="Seff" Version="0.0.2" />
+    <PackageReference Include="Seff" Version="0.0.3" />
 
   </ItemGroup>
 
