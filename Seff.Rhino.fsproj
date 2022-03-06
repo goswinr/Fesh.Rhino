@@ -6,6 +6,7 @@
     <TargetFrameworks>net48</TargetFrameworks> <!--  net48 needed since RhinoCommon.dll 7.5 -->
     <UseWPF>true</UseWPF>
     <LangVersion>preview</LangVersion>
+
     <NeutralLanguage>en</NeutralLanguage>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>    <!--to only have the english resources-->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -26,21 +27,12 @@
     <Authors>GoswinR</Authors>
     <Copyright>Goswin Rothenthal 2021</Copyright>
 
-    <Description>A Scripting Editor for FSharp in Rhino 7.</Description>
+    <Description>A Scripting Editor for FSharp in Rhino</Description>
     <ApplicationIcon>Media/logo.ico</ApplicationIcon>
     <Win32Resource>Media/logo.res</Win32Resource>    <!--  for Application Icon in explorer-->
 
-    <Configurations>Debug;Release</Configurations>
-    <PlatformTarget>x64</PlatformTarget><!--  x64 is required e.g by Rhino, dont us just 'Platform' tag-->
-  </PropertyGroup>
-
-
-  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
-    <OutputPath>binRh7/Debug/</OutputPath>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)'=='Release'">
-    <OutputPath>binRh7/Release/</OutputPath>
+    <Configurations>Release</Configurations>
+    <PlatformTarget>x64</PlatformTarget><!--  x64 is required by Rhino, dont us just 'Platform' tag-->    
   </PropertyGroup>
 
 
@@ -51,22 +43,26 @@
   </PropertyGroup>
 
   <ItemGroup>
-
-    <PackageReference Update="FSharp.Core" Version="6.0.1" />
+    <PackageReference Update="FSharp.Core" Version="6.0.3" />
 
     <!--FSharp.Compiler.Service 40.0.0 needs to be refernceed here too because
      somehow FSharp.DependencyManager.Nuget doesn't get copied over from /Seff/binHosting/x64/net472
      (don't load it from Nuget see https://github.com/dotnet/fsharp/issues/10467#issuecomment-774430370) -->
-    <PackageReference Include="FSharp.Compiler.Service" Version="41.0.1" />
+    <PackageReference Include="FSharp.Compiler.Service" Version="41.0.3" />
 
     <!--this reference is needed for tooling only, it might not be installed on host PC. see also https://github.com/fsprojects/IfSharp/issues/213 -->
     <PackageReference Include="NETStandard.Library" Version="2.0.3" GeneratePathProperty="true" />
 
     <!-- use PrivateAssets="all" ExcludeAssets="runtime" to exclude these dlls from the output folder-->
-    <PackageReference Include="RhinoCommon" Version="7.0.20314.3001" PrivateAssets="all" ExcludeAssets="runtime"/>
+    <PackageReference Include="RhinoCommon" Version="6.0.18016.23451" PrivateAssets="all" ExcludeAssets="runtime" />
 
-    <PackageReference Include="Seff" Version="0.0.3" />
-
+    <!--
+	  <PackageReference Include="Seff" Version="0.0.3" />
+	-->
+	<Reference Include="Seff"           HintPath="..\Seff\binHosting\net472\Seff.dll" />	  
+	<Reference Include="AvalonEditB"     HintPath="..\Seff\binHosting\net472\AvalonEditB.dll" />
+	<Reference Include="AvalonLog"      HintPath="..\Seff\binHosting\net472\AvalonLog.dll" />
+	<Reference Include="FsEx.Wpf"     HintPath="..\Seff\binHosting\net472\FsEx.Wpf.dll" />
   </ItemGroup>
 
   <ItemGroup>
@@ -88,15 +84,17 @@
 
   <Target Name="CopyFilesOverAfterBuild" BeforeTargets="AfterBuild">
 
-    <!-- take FSharpSynatxHighlighterExtended.xshd from https://github.com/goswinr/Seff -->
-    <Copy SourceFiles="../Seff/FSharpSynatxHighlighterExtended.xshd" DestinationFiles="$(TargetDir)FSharpSynatxHighlighterExtended.xshd" ContinueOnError="false" />
+    <!-- take latest SynatxHighlightingFSharp.xshd from https://github.com/goswinr/Seff 
+	this is only needed if there are recent chnages to this file that are not published with to the Seff nuget.  SynatxHighlightingFSharp.xshd is in the Seff nuget.-->
+    <Copy SourceFiles="../Seff/Src/SynatxHighlightingFSharp.xshd" DestinationFiles="$(TargetDir)SynatxHighlightingFSharp.xshd" ContinueOnError="true" />
 
     <!--dll is needed for editor tooling only, it might not be installed on host PC . seee also  https://github.com/fsprojects/IfSharp/issues/213 -->
     <Copy SourceFiles="$(PkgNETStandard_Library)/build/netstandard2.0/ref/netstandard.dll" DestinationFiles="$(TargetDir)netstandard.dll" ContinueOnError="false" />
 
-    <!-- needed for intelisense? -->
+    <!-- needed for intelisense, if netstandart is not installed -->
     <Copy SourceFiles="$(PkgNETStandard_Library)/build/netstandard2.0/ref/netstandard.xml" DestinationFiles="$(TargetDir)netstandard.xml" ContinueOnError="false" />
-
   </Target>
 
 </Project>
+
+

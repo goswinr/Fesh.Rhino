@@ -67,12 +67,8 @@ type SeffPlugin () =
             PlugIns.LoadReturnCode.ErrorNoDialog
         else
             RhinoAppWriteLine.print  "* loading Seff.Rhino Plugin ..."
-            let canRun () = not <| Rhino.Commands.Command.InCommand()
-            #if RHINO6
-            let host = "Rhino 6"
-            #else
-            let host = "Rhino 7"
-            #endif
+            let canRun () = not <| Rhino.Commands.Command.InCommand()            
+            let host = "Rhino"
             let hostData = {
                 hostName = host
                 mainWindowHandel = RhinoApp.MainWindowHandle()
