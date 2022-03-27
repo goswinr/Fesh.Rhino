@@ -1,4 +1,4 @@
-﻿namespace Seff.Rhino // Don't change name  its used in Rhino.Scripting.dll via reflection
+namespace Seff.Rhino // Don't change name  its used in Rhino.Scripting.dll via reflection
 
 open Rhino
 open System
@@ -157,46 +157,3 @@ type SeffPlugin () =
           }
         }
         *)
-
-(*
-        //member this.Folder = IO.Path.GetDirectoryName(this.Assembly.Location) // for debug only
-module Debugging = 
-    open RhinoAppWriteLine
-
-    let printAssemblyInfo (plug:PlugIns.PlugIn) = 
-        let rec getAllFiles dir pattern = 
-            seq { yield! IO.Directory.EnumerateFiles(dir, pattern)//(patter = "*.pdf")
-                    for d in IO.Directory.EnumerateDirectories(dir) do
-                        yield! getAllFiles d pattern }
-
-        // FSI assembly binding: https://github.com/Microsoft/visualfsharp/issues/3600#issuecomment-330378022
-        for s in Runtime.HostUtils.GetAssemblySearchPaths() do
-            print2 "*Searched: " s
-            for file in getAllFiles s "*.dll" do
-                if file.ToUpper().Contains("FSHARP") then
-                    print2 "*Dll found: " file
-
-        let assem = plug.Assembly
-        if isNull assem then print "***cannot get pulgin assembly loaction"
-        else
-            print2 "*plugin loaded from: " assem.Location
-
-            let ra = Runtime.HostUtils.GetRhinoDotNetAssembly()
-            if isNull ra then print "***cannot load Runtime.HostUtils.GetRhinoDotNetAssembly"
-            else print2 "*GetRhinoDotNetAssembly loaded from:" ra.Location
-
-            let folder = IO.Path.GetDirectoryName(assem.Location)
-            let fc = Reflection.Assembly.LoadFile(IO.Path.Combine(folder,"FSharp.Core.dll"))
-            let fcs =  Reflection.Assembly.LoadFile(IO.Path.Combine(folder,"FSharp.Compiler.Service.dll"))
-
-            if isNull fc then print "***cannot load Fsarp.Core"
-            else print2 "*Fsharp.Core loaded from:" fc.Location
-
-            if isNull fcs then print "***cannot load Fsarp.Compiler.Service"
-            else print2 "*Fsharp.Compiler.Service loaded from:" fcs.Location
-
-        print "++AppDomain.CurrentDomain.GetAssemblies():"
-        AppDomain.CurrentDomain.GetAssemblies()
-        |> Seq.sortBy string
-        |> Seq.iter (sprintf "%A" >> print)
-*)
