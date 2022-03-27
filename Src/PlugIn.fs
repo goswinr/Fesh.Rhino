@@ -1,4 +1,4 @@
-namespace Seff.Rhino // Don't change name  its used in Rhino.Scripting.dll via reflection
+﻿namespace Seff.Rhino // Don't change name  its used in Rhino.Scripting.dll via reflection
 
 open Rhino
 open System
@@ -84,13 +84,11 @@ type SeffPlugin () =
             Sync.window <- (seff.Window :> Window)
 
             seff.Window.Closing.Add (fun e ->
-
-                match seff.Fsi.AskAndCancel() with
-                |Evaluating -> e.Cancel <- true // no closing
-                |Ready | Initalizing | NotLoaded ->
+                if not e.Cancel then // closing might be already cancelled in Seff.fs in main Seff lib.               
+                    // even if closing is not canceled, don't close, just hide window
                     seff.Window.Visibility <- Visibility.Hidden
-                    //TODO add option to menu to actually close and dispose, not just hide ??
-                    e.Cancel <- true) // I think user would rather expect full closing ?
+                    e.Cancel <- true
+                    )
 
             // win.Closed.Add (fun _ -> Sync.window <- null) // TODO, it seems it cant be restarted then.
 
@@ -99,8 +97,6 @@ type SeffPlugin () =
             seff.Fsi.OnCanceled.Add     ( fun m -> SeffPlugin.AfterEval(true))  // to unsure UI does not stay frozen if RedrawEnabled is false //showWin because it might crash during UI interaction wher it is hidden
             seff.Fsi.OnCompletedOk.Add  ( fun m -> SeffPlugin.AfterEval(false)) // to unsure UI does not stay frozen if RedrawEnabled is false //showWin = false because might be running in background mode from rhino command line
             seff.Fsi.OnIsReady.Add      ( fun m -> if SeffPlugin.PrintOnceAfterEval <> "" then RhinoApp.WriteLine SeffPlugin.PrintOnceAfterEval ; SeffPlugin.PrintOnceAfterEval <- "")
-
-            // TODO done by seff anyway??
 
             RhinoDoc.CloseDocument.Add (fun e -> seff.Fsi.CancelIfAsync() ) //during sync eval closing doc should not be possible anyway??
             RhinoApp.Closing.Add (fun _ ->
@@ -111,10 +107,10 @@ type SeffPlugin () =
 
 
             // Dummy attachment in sync mode  to prevent access violation exception if first access is in async mode
-            // Dont abort on esc, only on ctrl+break or Rhino.Scripting.EscapeTest()
+            // Don't abort on esc, only on ctrl+break or Rhino.Scripting.EscapeTest()
             RhinoApp.EscapeKeyPressed.Add ( fun e -> ())
 
-            // add Alias too :
+            // add Alias too if not taken already:
             if not <|  ApplicationSettings.CommandAliasList.IsAlias("sr") then
                 if ApplicationSettings.CommandAliasList.Add("sr","SeffRunCurrentScript")then
                     RhinoAppWriteLine.print  "* Seff.Rhino Plugin added the command alias 'sr' for 'SeffRunCurrentScript'"
@@ -123,7 +119,7 @@ type SeffPlugin () =
             PlugIns.LoadReturnCode.Success
 
 
-    //override this.LoadAtStartup = true //obsolete??//Seff.Fsi.agent.Post Seff.Fsi.AgentMessage.Done // load FSI already at Rhino startup ??
+    //override this.LoadAtStartup = true //obsolete? load FSI already at Rhino startup ??
 
     // You can override methods here to change the plug-in behavior on
     // loading and shut down, add options pages to the Rhino _Option command
