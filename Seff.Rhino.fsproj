@@ -43,9 +43,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="6.0.3" />
+    <PackageReference Update="FSharp.Core" Version="6.0.3" /> <!--explicit reference 6.0.3 neded for FSharp.Compiler.Service-->
 
-    <!--FSharp.Compiler.Service 40.0.0 needs to be refernceed here too because
+    <!--FSharp.Compiler.Service 41.0.3 needs to be refernceed here too because
      somehow FSharp.DependencyManager.Nuget doesn't get copied over from /Seff/binHosting/x64/net472
      (don't load it from Nuget see https://github.com/dotnet/fsharp/issues/10467#issuecomment-774430370) -->
     <PackageReference Include="FSharp.Compiler.Service" Version="41.0.3" />
@@ -53,8 +53,10 @@
     <!--this reference is needed for tooling only, it might not be installed on host PC. see also https://github.com/fsprojects/IfSharp/issues/213 -->
     <PackageReference Include="NETStandard.Library" Version="2.0.3" GeneratePathProperty="true" />
 
-    <!-- use PrivateAssets="all" ExcludeAssets="runtime" to exclude these dlls from the output folder-->
-    <PackageReference Include="RhinoCommon" Version="6.0.18016.23451" PrivateAssets="all" ExcludeAssets="runtime" />
+    
+	<!-- Version 6.7 to match minimum of Rhino.Scripting. PrivateAssets="all" ExcludeAssets="runtime" to exclude these dlls from the output folder-->
+	<PackageReference Include="RhinoCommon" Version="6.7.18199.22081" PrivateAssets="all" ExcludeAssets="runtime" />
+	  
 
     <!--
 	  <PackageReference Include="Seff" Version="0.0.3" />
@@ -85,13 +87,13 @@
   <Target Name="CopyFilesOverAfterBuild" BeforeTargets="AfterBuild">
 
     <!-- take latest SynatxHighlightingFSharp.xshd from https://github.com/goswinr/Seff 
-	this is only needed if there are recent chnages to this file that are not published with to the Seff nuget.  SynatxHighlightingFSharp.xshd is in the Seff nuget.-->
+	this is only needed if there are recent chnages to this file that are not published with to the Seff nuget.  SynatxHighlightingFSharp.xshd is in the Seff nuget too.-->
     <Copy SourceFiles="../Seff/Src/SynatxHighlightingFSharp.xshd" DestinationFiles="$(TargetDir)SynatxHighlightingFSharp.xshd" ContinueOnError="true" />
 
     <!--dll is needed for editor tooling only, it might not be installed on host PC . seee also  https://github.com/fsprojects/IfSharp/issues/213 -->
     <Copy SourceFiles="$(PkgNETStandard_Library)/build/netstandard2.0/ref/netstandard.dll" DestinationFiles="$(TargetDir)netstandard.dll" ContinueOnError="false" />
 
-    <!-- needed for intelisense, if netstandart is not installed -->
+    <!-- needed for intelisense, if netstandart.xml is not installed. -->
     <Copy SourceFiles="$(PkgNETStandard_Library)/build/netstandard2.0/ref/netstandard.xml" DestinationFiles="$(TargetDir)netstandard.xml" ContinueOnError="false" />
   </Target>
 
