@@ -61,9 +61,9 @@
     <!--
 	  <PackageReference Include="Seff" Version="0.0.3" />
 	-->
-	<Reference Include="Seff"           HintPath="..\Seff\binHosting\net472\Seff.dll" />	  
-	<Reference Include="AvalonEditB"     HintPath="..\Seff\binHosting\net472\AvalonEditB.dll" />
-	<Reference Include="AvalonLog"      HintPath="..\Seff\binHosting\net472\AvalonLog.dll" />
+	<Reference Include="Seff"         HintPath="..\Seff\binHosting\net472\Seff.dll" />	  
+	<Reference Include="AvalonEditB"  HintPath="..\Seff\binHosting\net472\AvalonEditB.dll" />
+	<Reference Include="AvalonLog"    HintPath="..\Seff\binHosting\net472\AvalonLog.dll" />
 	<Reference Include="FsEx.Wpf"     HintPath="..\Seff\binHosting\net472\FsEx.Wpf.dll" />
   </ItemGroup>
 
