@@ -9,6 +9,7 @@ open Seff.Model
 open Seff.Config
 
 
+
 module Sync =  //Don't change name  its used in Rhino.Scripting.dll via reflection
     let syncContext = Threading.SynchronizationContext.Current  // Don't change name  its used in Rhino.Scripting.dll via reflection
     let mutable window = null : Window                          // Don't change name  its used in Rhino.Scripting.dll via reflection
@@ -18,19 +19,21 @@ module RhinoAppWriteLine =
     let print txt  = RhinoApp.WriteLine txt  ; RhinoApp.Wait()
     let print2 txt1 txt2 = RhinoApp.WriteLine (txt1+txt2); RhinoApp.Wait()
 
-// the Plugin  and Commands Singeltons:
+// the Plugin  and Commands Singletons:
 // Every RhinoCommon .rhp assembly must have one and only one PlugIn-derived
 // class. DO NOT create instances of this class yourself. It is the
 // responsibility of Rhino to create an instance of this class.
-// do not use "private" keyword on (singelton) constructor
+// do not use "private" keyword on (singleton) constructor
 type SeffPlugin () = 
     inherit PlugIns.PlugIn()
 
     static let mutable lastDoc = RhinoDoc.ActiveDoc
 
+    static member val RhWriter : IO.TextWriter option = Some <| new Rhino.RhinoApp.CommandLineTextWriter() 
+
     //PlugIns.PlugInType.Utility how to set this ?
 
-    static member val Instance = SeffPlugin() // singelton pattern neded for Rhino. http://stackoverflow.com/questions/2691565/how-to-implement-singleton-pattern-syntax
+    static member val Instance = SeffPlugin() // singleton pattern needed for Rhino. http://stackoverflow.com/questions/2691565/how-to-implement-singleton-pattern-syntax
 
     static member val UndoRecordSerial = 0u with get,set
 
@@ -59,7 +62,7 @@ type SeffPlugin () =
             } |> Async.StartImmediate
 
 
-    static member val PrintOnceAfterEval = "" with get,set // to be able to print after SeffRunCurrentScript command
+    //static member val PrintOnceAfterEval = "" with get,set // to be able to print after SeffRunCurrentScript command
 
     override this.OnLoad refErrs = 
         if not Runtime.HostUtils.RunningOnWindows then
@@ -90,14 +93,25 @@ type SeffPlugin () =
                     e.Cancel <- true
                     )
 
-            // win.Closed.Add (fun _ -> Sync.window <- null) // TODO, it seems it cant be restarted then.
+            seff.Window.StateChanged.Add (fun e ->
+                match seff.Fsi.State with 
+                |FsiState.Ready ->   
+                    // if the window is hidden log error messages to rhino command line, but not when window is shown
+                    // this is also set in SeffRunCurrentScript Command
+                    match seff.Window.WindowState with
+                    | WindowState.Normal
+                    | WindowState.Maximized    -> seff.Log.AdditionalLogger <- None
+                    | WindowState.Minimized |_ -> seff.Log.AdditionalLogger <- SeffPlugin.RhWriter                    
+                    
+                |Initializing |NotLoaded  |Evaluating -> ()                    // dont chanage while running                    
+                )
+            
 
             seff.Fsi.OnStarted.Add      ( fun m -> SeffPlugin.BeforeEval())     // https://github.com/mcneel/rhinocommon/blob/57c3967e33d18205efbe6a14db488319c276cbee/dotnet/rhino/rhinosdkdoc.cs#L857
-            seff.Fsi.OnRuntimeError.Add ( fun e -> SeffPlugin.AfterEval(true))  // to unsure UI does not stay frozen if RedrawEnabled is false //showWin because it might crash during UI interaction wher it is hidden
-            seff.Fsi.OnCanceled.Add     ( fun m -> SeffPlugin.AfterEval(true))  // to unsure UI does not stay frozen if RedrawEnabled is false //showWin because it might crash during UI interaction wher it is hidden
+            seff.Fsi.OnRuntimeError.Add ( fun e -> SeffPlugin.AfterEval(true))  // to unsure UI does not stay frozen if RedrawEnabled is false //showWin because it might crash during UI interaction where it is hidden
+            seff.Fsi.OnCanceled.Add     ( fun m -> SeffPlugin.AfterEval(true))  // to unsure UI does not stay frozen if RedrawEnabled is false //showWin because it might crash during UI interaction where it is hidden
             seff.Fsi.OnCompletedOk.Add  ( fun m -> SeffPlugin.AfterEval(false)) // to unsure UI does not stay frozen if RedrawEnabled is false //showWin = false because might be running in background mode from rhino command line
-            seff.Fsi.OnIsReady.Add      ( fun m -> if SeffPlugin.PrintOnceAfterEval <> "" then RhinoApp.WriteLine SeffPlugin.PrintOnceAfterEval ; SeffPlugin.PrintOnceAfterEval <- "")
-
+            
             RhinoDoc.CloseDocument.Add (fun e -> seff.Fsi.CancelIfAsync() ) //during sync eval closing doc should not be possible anyway??
             RhinoApp.Closing.Add (fun _ ->
                 seff.Tabs.AskForFileSavingToKnowIfClosingWindowIsOk() |> ignore // to save unsaved files, canceling of closing not possible here, save dialog will show after rhino is closed
@@ -123,7 +137,7 @@ type SeffPlugin () =
 
     // You can override methods here to change the plug-in behavior on
     // loading and shut down, add options pages to the Rhino _Option command
-    // and mantain plug-in wide options in a document.
+    // and maintain plug-in wide options in a document.
     override this.CreateCommands() = //to add script files as custom commands
         // https://discourse.mcneel.com/t/how-to-create-commands-after-plugin-load/47833
 
@@ -132,7 +146,7 @@ type SeffPlugin () =
         // or ? Rhino.Runtime.HostUtils.RegisterDynamicCommand(seffPlugin,command)
 
         //for file in commandsfiles do
-        // let cmd `= creat instance of command derived class
+        // let cmd `= create instance of command derived class
         //    HostUtils.RegisterDynamicCommand(this,cmd)
 
         (*

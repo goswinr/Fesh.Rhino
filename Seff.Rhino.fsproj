@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetExt>.rhp</TargetExt>
     <OutputType>Library</OutputType>
-    <TargetFrameworks>net48</TargetFrameworks> <!--  net48 needed since RhinoCommon.dll 7.5 -->
+    <TargetFramework>net48</TargetFramework> <!--  net48 needed since RhinoCommon.dll 7.5 -->
     <UseWPF>true</UseWPF>
     <LangVersion>preview</LangVersion>
 
@@ -54,17 +54,21 @@
     <PackageReference Include="NETStandard.Library" Version="2.0.3" GeneratePathProperty="true" />
 
     
-	<!-- Version 6.7 to match minimum of Rhino.Scripting. PrivateAssets="all" ExcludeAssets="runtime" to exclude these dlls from the output folder-->
+	<!-- Version 6.7 to match minimum of Rhino.Scripting. PrivateAssets="all" ExcludeAssets="runtime" to exclude these dlls from the output folder
+	
 	<PackageReference Include="RhinoCommon" Version="6.7.18199.22081" PrivateAssets="all" ExcludeAssets="runtime" />
+	During debugging use the current Rhinocommen dll to avaoid the 20 sec of compatility check when Rhino loads it the first time: 
+	-->
+	<Reference Include="RhinoCommon" HintPath="C:\Program Files\Rhino 7\System\RhinoCommon.dll" Private="False" />
 	  
 
     <!--
 	  <PackageReference Include="Seff" Version="0.0.3" />
 	-->
-	<Reference Include="Seff"         HintPath="..\Seff\binHosting\net472\Seff.dll" />	  
-	<Reference Include="AvalonEditB"  HintPath="..\Seff\binHosting\net472\AvalonEditB.dll" />
-	<Reference Include="AvalonLog"    HintPath="..\Seff\binHosting\net472\AvalonLog.dll" />
-	<Reference Include="FsEx.Wpf"     HintPath="..\Seff\binHosting\net472\FsEx.Wpf.dll" />
+	<Reference Include="Seff" HintPath="..\Seff\binHosting\net472\Seff.dll" />	  
+	<Reference Include="AvalonEditB" HintPath="..\Seff\binHosting\net472\AvalonEditB.dll" />
+	<Reference Include="AvalonLog" HintPath="..\Seff\binHosting\net472\AvalonLog.dll" />
+	<Reference Include="FsEx.Wpf" HintPath="..\Seff\binHosting\net472\FsEx.Wpf.dll" />
   </ItemGroup>
 
   <ItemGroup>
@@ -86,9 +90,9 @@
 
   <Target Name="CopyFilesOverAfterBuild" BeforeTargets="AfterBuild">
 
-    <!-- take latest SynatxHighlightingFSharp.xshd from https://github.com/goswinr/Seff 
-	this is only needed if there are recent chnages to this file that are not published with to the Seff nuget.  SynatxHighlightingFSharp.xshd is in the Seff nuget too.-->
-    <Copy SourceFiles="../Seff/Src/SynatxHighlightingFSharp.xshd" DestinationFiles="$(TargetDir)SynatxHighlightingFSharp.xshd" ContinueOnError="true" />
+    <!-- take latest SyntaxHighlightingFSharp.xshd from https://github.com/goswinr/Seff 
+	this is only needed if there are recent chnages to this file that are not published with to the Seff nuget.  SyntaxHighlightingFSharp.xshd is in the Seff nuget too.-->
+    <Copy SourceFiles="../Seff/Src/SyntaxHighlightingFSharp.xshd" DestinationFiles="$(TargetDir)SyntaxHighlightingFSharp.xshd" ContinueOnError="true" />
 
     <!--dll is needed for editor tooling only, it might not be installed on host PC . seee also  https://github.com/fsprojects/IfSharp/issues/213 -->
     <Copy SourceFiles="$(PkgNETStandard_Library)/build/netstandard2.0/ref/netstandard.dll" DestinationFiles="$(TargetDir)netstandard.dll" ContinueOnError="false" />

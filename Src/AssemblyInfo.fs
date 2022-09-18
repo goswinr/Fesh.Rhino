@@ -6,7 +6,7 @@ open System.Runtime.InteropServices
 open Rhino.PlugIns
 
 // IMPORTANT:
-// Without this Guid Rhino does not remeber the plugin after restart, setting <ProjectGuid> in the new SDK fsproj file does not to work.
+// Without this Guid Rhino does not remember the plugin after restart, setting <ProjectGuid> in the new SDK fsproj file does not to work.
 [<assembly: Guid("01dab273-99ae-4760-8695-3f29f4887831")>] //Don't change its used in Rhino.Scripting.dll via reflection
 //System.Guid.NewGuid() //for fsi
 
@@ -14,8 +14,8 @@ open Rhino.PlugIns
 // Setting ComVisible to false makes the types in this assembly not visible
 // to COM components.  If you need to access a type in this assembly from
 // COM, set the ComVisible attribute to true on that type.
-//[<assembly: ComVisible(true)>] //needed to acces synchronisation context of this editor from asycnc evaluation therad? does not work ???
-[<assembly: ComVisible(false)>] //needed to acces synchronisation context of this editor from asycnc evaluation therad?
+//[<assembly: ComVisible(true)>] //needed to access synchronization context of this editor from async evaluation thread? does not work ???
+[<assembly: ComVisible(false)>] //needed to access synchronization context of this editor from async evaluation thread?
 
 
 //[<assembly: PlugInDescription(DescriptionType.Address, "3670 Woodland Park Avenue North\r\nSeattle, WA 98103")>]
@@ -33,7 +33,7 @@ open Rhino.PlugIns
 
 // done in new SDK fsproj file:
 //[<assembly: AssemblyTitle("Seff.Rhino")>]
-//[<assembly: AssemblyDescription("Seff | FSharp Scriting Editor for Rhino")>]
+//[<assembly: AssemblyDescription("Seff | FSharp Scripting Editor for Rhino")>]
 //[<assembly: AssemblyConfiguration("")>]
 //[<assembly: AssemblyCompany("Seff.io")>]
 //[<assembly: AssemblyProduct("Seff.Rhino")>]

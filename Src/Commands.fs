@@ -4,10 +4,11 @@ open Rhino
 open System
 open System.Windows
 open Seff.Util
+open Seff.Model
 open Seff
 open Rhino.Commands
 
-//the Command Singelton classes:
+//the Command Singleton classes:
 
 module State = 
     let mutable ShownOnce = false // having this as static member on LoadEditor fails to evaluate !! not sure why.
@@ -18,7 +19,7 @@ type LoadEditor () =
 
     static member DoLoad() = 
         if isNull Sync.window then // set up window on first run
-            RhinoAppWriteLine.print  " * Seff Editor Window cant be shown, the Plugin is not properly loadad. try restarting Rhino."
+            RhinoAppWriteLine.print  " * Seff Editor Window cant be shown, the Plugin is not properly loaded. try restarting Rhino."
             Commands.Result.Failure
 
         else
@@ -34,25 +35,6 @@ type LoadEditor () =
         LoadEditor.DoLoad()
 
 
-    (*
-    type LoadFsi () = 
-        inherit Commands.Command()
-        static member val Instance = LoadFsi()
-
-        override this.EnglishName = "SeffLoadFsi" //The command name as it appears on the Rhino command line.
-
-        override this.RunCommand (doc, mode)  = 
-            if isNull Sync.window then // set up window on first run
-                rh.print  " * Seff Editor Window cant be shown, the Plugin is not properly loadad . please restart Rhino."
-                Commands.Result.Failure
-            else
-                rh.print  "loading Fsi ..."
-                Fsi.Initalize()
-                rh.print  "Fsi loaded."
-                Commands.Result.Success
-                *)
-
-
 type RunCurrentScript () = 
     inherit Commands.Command()
     static member val Instance = RunCurrentScript()
@@ -62,40 +44,47 @@ type RunCurrentScript () =
     override this.RunCommand (doc, mode)  = 
 
         if isNull Sync.window then // set up window on first run
-            RhinoAppWriteLine.print  "*Seff Editor Window cant be shown, the Plugin is not properly loadad . please restart Rhino."
+            RhinoAppWriteLine.print  "*Seff Editor Window cant be shown, the Plugin is not properly loaded. Please restart Rhino."
             Commands.Result.Failure
         else
             if not State.ShownOnce then
                 LoadEditor.DoLoad()
                 // it needs to be shown once. otherwise Seff.Commands.RunAllText below fails to find any text in Editor
-            else
+            else                
+                let seff = SeffPlugin.Seff
                 match Sync.window.Visibility with
                 | Visibility.Visible | Visibility.Collapsed ->
-                    RhinoAppWriteLine.print2  "*Seff is running " SeffPlugin.Seff.Tabs.Current.FormatedFileName
-                    SeffPlugin.PrintOnceAfterEval <- "*Seff is done!"
-                    let cmd = SeffPlugin.Seff.Commands.RunAllText //TODO or trigger directly via agent post to distinguish triggers from commandline and seff ui?
+                    RhinoAppWriteLine.print2  "*Seff is running: " seff.Tabs.Current.FormattedFileName
+                    
 
                     // to start running the script after the command has actually completed, making it modeless, so manual undo stack works
                     async{
                         do! Async.Sleep 30 // wait till command SeffRunCurrentScript actually completes. so that RhinoDoc.ActiveDoc.BeginUndoRecord does not return 0
                         let k = ref 0
-                        while Command.InCommand() && !k < 30 do // wait up to 1.5 sec more ?
+                        while Command.InCommand() && !k < 20 do // wait up to 1.5 sec more ?
                             incr k
                             do! Async.Sleep 50
                         do! Async.SwitchToContext Sync.syncContext
                         if Command.InCommand() then
-                            SeffPlugin.Seff.Log.PrintfnAppErrorMsg "Cant Run Current Seff Script because another Rhino Command is active"
+                            seff.Log.PrintfnAppErrorMsg "Cant Run Current Seff Script because another Rhino Command is active"
                             RhinoAppWriteLine.print "Cant Run Current Seff Script because another Rhino Command is active"
                         else
-                            cmd.cmd.Execute(null)} // the argumnent can be any obj, its ignored
+                            match Sync.window.WindowState with
+                            | WindowState.Normal
+                            | WindowState.Maximized   -> seff.Tabs.Fsi.Evaluate {editor= seff.Tabs.Current.Editor; amount=All; logger = None}
+                            |WindowState.Minimized |_ -> seff.Tabs.Fsi.Evaluate {editor= seff.Tabs.Current.Editor; amount=All; logger = SeffPlugin.RhWriter}
+                            
+                                
+                    }
                     |> Async.Start
 
-                    //rh.print  "*Seff, ran current script." //prints immedeatly in async mode
+                    //rh.print  "*Seff, ran current script." //prints immediately in async mode
                     Commands.Result.Success
 
 
                 |Visibility.Hidden ->
                     Sync.window.Visibility <- Visibility.Visible
+                    let cmd = seff.Commands.RunAllText //TODO or trigger directly via agent post to distinguish triggers from commandline and seff ui?
                     match MessageBox.Show("Run Script from current Tab?", "Run Script from current Tab?", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.Yes) with
                     | MessageBoxResult.Yes -> this.RunCommand (doc, mode)
                     | _ -> Commands.Result.Failure
@@ -107,7 +96,7 @@ type RunCurrentScript () =
 
 //TODO mouse focus: https://discourse.mcneel.com/t/can-rhinocommon-be-used-with-wpf/12/7
 (*
-a python script loadad from a file as command:
+a python script loaded from a file as command:
 
 [CommandStyle(Style.ScriptRunner)]
   class PythonCommand : Command
