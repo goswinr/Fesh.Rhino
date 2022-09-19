@@ -10,8 +10,7 @@
     <NeutralLanguage>en</NeutralLanguage>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>    <!--to only have the english resources-->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <FSharpCoreIncludeDocFileInOutput>true</FSharpCoreIncludeDocFileInOutput>
-    <!--<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects> needed ?-->
+    <FSharpCoreIncludeDocFileInOutput>true</FSharpCoreIncludeDocFileInOutput>    
 
     <RootNamespace>Seff.Rhino</RootNamespace>
     <AssemblyName>Seff.Rhino</AssemblyName>
@@ -32,7 +31,7 @@
     <Win32Resource>Media/logo.res</Win32Resource>    <!--  for Application Icon in explorer-->
 
     <Configurations>Release</Configurations>
-    <PlatformTarget>x64</PlatformTarget><!--  x64 is required by Rhino, dont us just 'Platform' tag-->    
+    <PlatformTarget>x64</PlatformTarget><!--  x64 is required by Rhino, dont use just 'Platform' tag-->    
   </PropertyGroup>
 
 
@@ -43,32 +42,31 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="6.0.5" /> <!--explicit reference 6.0.3 neded for FSharp.Compiler.Service-->
+    <PackageReference Update="FSharp.Core" Version="6.0.5" /> <!--explicit reference needed for latest FSharp.Compiler.Service-->
 
     <!--FSharp.Compiler.Service needs to be refernceed here too because
-     somehow FSharp.DependencyManager.Nuget doesn't get copied over from /Seff/binHosting/x64/net472
-     (don't load it from Nuget see https://github.com/dotnet/fsharp/issues/10467#issuecomment-774430370) -->
+      somehow FSharp.DependencyManager.Nuget doesn't get copied over from /Seff/binHosting/x64/net472
+      (don't load it from Nuget see https://github.com/dotnet/fsharp/issues/10467#issuecomment-774430370) -->
     <PackageReference Include="FSharp.Compiler.Service" Version="41.0.5" />
 
     <!--this reference is needed for tooling only, it might not be installed on host PC. see also https://github.com/fsprojects/IfSharp/issues/213 -->
     <PackageReference Include="NETStandard.Library" Version="2.0.3" GeneratePathProperty="true" />
 
     
-	<!-- Version 6.7 to match minimum of Rhino.Scripting. PrivateAssets="all" ExcludeAssets="runtime" to exclude these dlls from the output folder
-	
-	<PackageReference Include="RhinoCommon" Version="6.7.18199.22081" PrivateAssets="all" ExcludeAssets="runtime" />
-	During debugging use the current Rhinocommen dll to avaoid the 20 sec of compatility check when Rhino loads it the first time: 
-	-->
-	<Reference Include="RhinoCommon" HintPath="C:\Program Files\Rhino 7\System\RhinoCommon.dll" Private="False" />
-	  
+    <!-- Version 6.7 to match minimum of Rhino.Scripting. PrivateAssets="all" ExcludeAssets="runtime" to exclude these dlls from the output folder.	
+    During debugging use the current Rhinocommen dll reference to avoide the ~20 sec of compatibility check when Rhino loads it the first time. 
+    <Reference Include="RhinoCommon" HintPath="C:\Program Files\Rhino 7\System\RhinoCommon.dll" Private="False" />
+    -->
+    <PackageReference Include="RhinoCommon" Version="6.7.18199.22081" PrivateAssets="all" ExcludeAssets="runtime" />
+      
 
     <!--
-	  <PackageReference Include="Seff" Version="0.0.3" />
-	-->
-	<Reference Include="Seff" HintPath="..\Seff\binHosting\net472\Seff.dll" />	  
-	<Reference Include="AvalonEditB" HintPath="..\Seff\binHosting\net472\AvalonEditB.dll" />
-	<Reference Include="AvalonLog" HintPath="..\Seff\binHosting\net472\AvalonLog.dll" />
-	<Reference Include="FsEx.Wpf" HintPath="..\Seff\binHosting\net472\FsEx.Wpf.dll" />
+      <PackageReference Include="Seff" Version="0.0.3" />
+    -->
+    <Reference Include="Seff" HintPath="..\Seff\binHosting\net472\Seff.dll" />	  
+    <Reference Include="AvalonEditB" HintPath="..\Seff\binHosting\net472\AvalonEditB.dll" />
+    <Reference Include="AvalonLog" HintPath="..\Seff\binHosting\net472\AvalonLog.dll" />
+    <Reference Include="FsEx.Wpf" HintPath="..\Seff\binHosting\net472\FsEx.Wpf.dll" />
   </ItemGroup>
 
   <ItemGroup>
@@ -78,20 +76,19 @@
     <Compile Include="Src/AssemblyInfo.fs" />
     <Compile Include="Src/PlugIn.fs" />
     <Compile Include="Src/Commands.fs" />
- </ItemGroup>
-
+  </ItemGroup>
 
   <!-- Replaces AfterBuild target,
-    help: https://docs.microsoft.com/en-us/visualstudio/msbuild/msbuild-well-known-item-metadata?view=vs-2015&redirectedfrom=MSDN
-    see    https://stackoverflow.com/questions/43921992/how-can-i-use-beforebuild-and-afterbuild-targets-with-visual-studio-2017
-    tasks: https://docs.microsoft.com/en-us/visualstudio/msbuild/msbuild-task-reference?view=vs-2019
+    help:   https://docs.microsoft.com/en-us/visualstudio/msbuild/msbuild-well-known-item-metadata?view=vs-2015&redirectedfrom=MSDN
+    see:    https://stackoverflow.com/questions/43921992/how-can-i-use-beforebuild-and-afterbuild-targets-with-visual-studio-2017
+    tasks:  https://docs.microsoft.com/en-us/visualstudio/msbuild/msbuild-task-reference?view=vs-2019
     better: https://stackoverflow.com/questions/44043918/running-a-target-before-the-corebuild
     -->
 
   <Target Name="CopyFilesOverAfterBuild" BeforeTargets="AfterBuild">
 
-    <!-- take latest SyntaxHighlightingFSharp.xshd from https://github.com/goswinr/Seff 
-	this is only needed if there are recent chnages to this file that are not published with to the Seff nuget.  SyntaxHighlightingFSharp.xshd is in the Seff nuget too.-->
+    <!-- take latest SyntaxHighlightingFSharp.xshd from https://github.com/goswinr/Seff . 
+    This is only needed if there are recent changes to this file that are not published with to the Seff nuget.  SyntaxHighlightingFSharp.xshd is in the Seff nuget too.-->
     <Copy SourceFiles="../Seff/Src/SyntaxHighlightingFSharp.xshd" DestinationFiles="$(TargetDir)SyntaxHighlightingFSharp.xshd" ContinueOnError="true" />
 
     <!--dll is needed for editor tooling only, it might not be installed on host PC . seee also  https://github.com/fsprojects/IfSharp/issues/213 -->
