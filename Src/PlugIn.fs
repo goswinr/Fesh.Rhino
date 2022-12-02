@@ -9,11 +9,12 @@ open Seff.Model
 open Seff.Config
 
 
-
 module Sync =  //Don't change name  its used in Rhino.Scripting.dll via reflection
     let syncContext = Threading.SynchronizationContext.Current  // Don't change name  its used in Rhino.Scripting.dll via reflection
-    let mutable window = null : Window                          // Don't change name  its used in Rhino.Scripting.dll via reflection
-
+    let mutable hideEditor = null: Action // Don't change name  its used in Rhino.Scripting.dll via reflection
+    let mutable showEditor = null: Action // Don't change name  its used in Rhino.Scripting.dll via reflection
+    let mutable isEditorVisible = null: Func<bool> // Don't change name  its used in Rhino.Scripting.dll via reflection
+    
 
 module RhinoAppWriteLine = 
     let print txt  = RhinoApp.WriteLine txt  ; RhinoApp.Wait()
@@ -54,11 +55,11 @@ type SeffPlugin () =
             if lastDoc = RhinoDoc.ActiveDoc then // it might have changed during script run
                 if not <| RhinoDoc.ActiveDoc.EndUndoRecord(SeffPlugin.UndoRecordSerial) then
                     RhinoAppWriteLine.print " * Seff.Rhino | failed to set RhinoDoc.ActiveDoc.EndUndoRecord"
-                    eprintfn "failed to set RhinoDoc.ActiveDoc.EndUndoRecord(SeffPlugin.UndoRecordSerial:%d)" SeffPlugin.UndoRecordSerial
+                    eprintfn "Seff.Rhino | failed to set RhinoDoc.ActiveDoc.EndUndoRecord(SeffPlugin.UndoRecordSerial:%d)" SeffPlugin.UndoRecordSerial
 
             RhinoDoc.ActiveDoc.Views.RedrawEnabled <- true
             RhinoDoc.ActiveDoc.Views.Redraw()
-            if showWin then Sync.window.Show() //because it might crash during UI interaction where it is hidden
+            if showWin && not (isNull Sync.showEditor) then Sync.showEditor.Invoke() //because it might crash during UI interaction where it is hidden
             } |> Async.StartImmediate
 
 
@@ -69,8 +70,8 @@ type SeffPlugin () =
             RhinoAppWriteLine.print " * Seff.Rhino  | Scripting Editor For FSharp PlugIn only works on Windows. It needs the WPF framework "
             PlugIns.LoadReturnCode.ErrorNoDialog
         else
-            RhinoAppWriteLine.print  "* loading Seff.Rhino Plugin ..."
-            let canRun () = not <| Rhino.Commands.Command.InCommand()            
+            RhinoAppWriteLine.print  "loading Seff.Rhino Plugin ..."
+            let canRun () = not <| Rhino.Commands.Command.InCommand() 
             let host = "Rhino"
             let hostData = {
                 hostName = host
@@ -84,7 +85,10 @@ type SeffPlugin () =
 
             let seff = Seff.App.createEditorForHosting( hostData )
             SeffPlugin.Seff <- seff
-            Sync.window <- (seff.Window :> Window)
+            Sync.showEditor <- new Action(fun () -> seff.Window.Show())
+            Sync.hideEditor <- new Action(fun () -> seff.Window.Hide())
+            Sync.isEditorVisible <- new Func<bool>(fun () -> seff.Window.Visibility = Visibility.Visible)
+            
 
             seff.Window.Closing.Add (fun e ->
                 if not e.Cancel then // closing might be already cancelled in Seff.fs in main Seff lib.               
@@ -103,7 +107,7 @@ type SeffPlugin () =
                     | WindowState.Maximized    -> seff.Log.AdditionalLogger <- None
                     | WindowState.Minimized |_ -> seff.Log.AdditionalLogger <- SeffPlugin.RhWriter                    
                     
-                |Initializing |NotLoaded  |Evaluating -> ()                    // dont chanage while running                    
+                |Initializing |NotLoaded  |Evaluating -> ()   // don't change while running                    
                 )
             
 
@@ -145,7 +149,7 @@ type SeffPlugin () =
         // then call base.RegisterCommand()
         // or ? Rhino.Runtime.HostUtils.RegisterDynamicCommand(seffPlugin,command)
 
-        //for file in commandsfiles do
+        //for file in commandsFiles do
         // let cmd `= create instance of command derived class
         //    HostUtils.RegisterDynamicCommand(this,cmd)
 
