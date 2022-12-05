@@ -7,18 +7,16 @@ open Rhino.PlugIns
 
 // IMPORTANT:
 // Without this Guid Rhino does not remember the plugin after restart, setting <ProjectGuid> in the new SDK fsproj file does not to work.
-[<assembly: Guid("01dab273-99ae-4760-8695-3f29f4887831")>] //Don't change its used in Rhino.Scripting.dll via reflection
-//System.Guid.NewGuid() //for fsi
+[<assembly: Guid("01dab273-99ae-4760-8695-3f29f4887831")>] //Don't change it !! its used in Rhino.Scripting.dll via reflection to find the hosting editor.
 
 
 // Setting ComVisible to false makes the types in this assembly not visible
 // to COM components.  If you need to access a type in this assembly from
 // COM, set the ComVisible attribute to true on that type.
-//[<assembly: ComVisible(true)>] //needed to access synchronization context of this editor from async evaluation thread? does not work ???
-[<assembly: ComVisible(false)>] //needed to access synchronization context of this editor from async evaluation thread?
+[<assembly: ComVisible(false)>] 
 
 
-//[<assembly: PlugInDescription(DescriptionType.Address, "3670 Woodland Park Avenue North\r\nSeattle, WA 98103")>]
+//[<assembly: PlugInDescription(DescriptionType.Address, "Park Avenue North\r\nSeattle, WA 98103")>]
 [<assembly: PlugInDescription(DescriptionType.Country, "Austria")>]
 [<assembly: PlugInDescription(DescriptionType.Email, "goswin@rothenthal.com")>]
 //[<assembly: PlugInDescription(DescriptionType.Phone, "206-545-6877")>]

@@ -2,11 +2,7 @@
 
 open Rhino
 open System
-open System.Windows
-open Rhino.Runtime
 open Seff
-open Seff.Model
-open Seff.Config
 
 
 module Sync =  //Don't change name  its used in Rhino.Scripting.dll via reflection
@@ -14,6 +10,7 @@ module Sync =  //Don't change name  its used in Rhino.Scripting.dll via reflecti
     let mutable hideEditor = null: Action // Don't change name  its used in Rhino.Scripting.dll via reflection
     let mutable showEditor = null: Action // Don't change name  its used in Rhino.Scripting.dll via reflection
     let mutable isEditorVisible = null: Func<bool> // Don't change name  its used in Rhino.Scripting.dll via reflection
+    let mutable window = null: Windows.Window // Not used via reflection
     
 
 module RhinoAppWriteLine = 
@@ -73,7 +70,7 @@ type SeffPlugin () =
             RhinoAppWriteLine.print  "loading Seff.Rhino Plugin ..."
             let canRun () = not <| Rhino.Commands.Command.InCommand() 
             let host = "Rhino"
-            let hostData = {
+            let hostData : Seff.Config.HostedStartUpData = {
                 hostName = host
                 mainWindowHandel = RhinoApp.MainWindowHandle()
                 fsiCanRun = canRun
@@ -87,13 +84,14 @@ type SeffPlugin () =
             SeffPlugin.Seff <- seff
             Sync.showEditor <- new Action(fun () -> seff.Window.Show())
             Sync.hideEditor <- new Action(fun () -> seff.Window.Hide())
-            Sync.isEditorVisible <- new Func<bool>(fun () -> seff.Window.Visibility = Visibility.Visible)
+            Sync.isEditorVisible <- new Func<bool>(fun () -> seff.Window.Visibility = Windows.Visibility.Visible)
+            Sync.window <- (seff.Window :> Windows.Window)
             
 
             seff.Window.Closing.Add (fun e ->
                 if not e.Cancel then // closing might be already cancelled in Seff.fs in main Seff lib.               
                     // even if closing is not canceled, don't close, just hide window
-                    seff.Window.Visibility <- Visibility.Hidden
+                    seff.Window.Visibility <- Windows.Visibility.Hidden
                     e.Cancel <- true
                     )
 
@@ -103,9 +101,9 @@ type SeffPlugin () =
                     // if the window is hidden log error messages to rhino command line, but not when window is shown
                     // this is also set in SeffRunCurrentScript Command
                     match seff.Window.WindowState with
-                    | WindowState.Normal
-                    | WindowState.Maximized    -> seff.Log.AdditionalLogger <- None
-                    | WindowState.Minimized |_ -> seff.Log.AdditionalLogger <- SeffPlugin.RhWriter                    
+                    | Windows.WindowState.Normal
+                    | Windows.WindowState.Maximized    -> seff.Log.AdditionalLogger <- None
+                    | Windows.WindowState.Minimized |_ -> seff.Log.AdditionalLogger <- SeffPlugin.RhWriter                    
                     
                 |Initializing |NotLoaded  |Evaluating -> ()   // don't change while running                    
                 )

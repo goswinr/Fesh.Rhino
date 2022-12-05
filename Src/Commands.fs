@@ -2,8 +2,6 @@
 
 open Rhino
 open System
-open System.Windows
-open Seff.Util
 open Seff.Model
 open Seff
 open Rhino.Commands
@@ -24,8 +22,8 @@ type LoadEditor () =
 
         else
             Sync.window.Show()
-            Sync.window.Visibility <- Visibility.Visible
-            if Sync.window.WindowState = WindowState.Minimized then Sync.window.WindowState <- WindowState.Normal
+            Sync.window.Visibility <- Windows.Visibility.Visible
+            if Sync.window.WindowState = Windows.WindowState.Minimized then Sync.window.WindowState <- Windows.WindowState.Normal
             State.ShownOnce <- true
             Commands.Result.Success
 
@@ -53,11 +51,11 @@ type RunCurrentScript () =
             else                
                 let seff = SeffPlugin.Seff
                 match Sync.window.Visibility with
-                | Visibility.Visible | Visibility.Collapsed ->
+                | Windows.Visibility.Visible | Windows.Visibility.Collapsed ->
                     RhinoAppWriteLine.print2  "*Seff is running: " seff.Tabs.Current.FormattedFileName
                     
 
-                    // to start running the script after the command has actually completed, making it modeless, so manual undo stack works
+                    // to start running the script after the command has actually completed, making it mode-less, so manual undo stack works
                     async{
                         do! Async.Sleep 30 // wait till command SeffRunCurrentScript actually completes. so that RhinoDoc.ActiveDoc.BeginUndoRecord does not return 0
                         let k = ref 0
@@ -70,9 +68,9 @@ type RunCurrentScript () =
                             RhinoAppWriteLine.print "Cant Run Current Seff Script because another Rhino Command is active"
                         else
                             match Sync.window.WindowState with
-                            | WindowState.Normal
-                            | WindowState.Maximized   -> seff.Tabs.Fsi.Evaluate {editor= seff.Tabs.Current.Editor; amount=All; logger = None}
-                            |WindowState.Minimized |_ -> seff.Tabs.Fsi.Evaluate {editor= seff.Tabs.Current.Editor; amount=All; logger = SeffPlugin.RhWriter}
+                            | Windows.WindowState.Normal
+                            | Windows.WindowState.Maximized   -> seff.Tabs.Fsi.Evaluate {editor= seff.Tabs.Current.Editor; amount=All; logger = None}
+                            | Windows.WindowState.Minimized |_ -> seff.Tabs.Fsi.Evaluate {editor= seff.Tabs.Current.Editor; amount=All; logger = SeffPlugin.RhWriter}
                             
                                 
                     }
@@ -82,11 +80,11 @@ type RunCurrentScript () =
                     Commands.Result.Success
 
 
-                |Visibility.Hidden ->
-                    Sync.window.Visibility <- Visibility.Visible
+                |Windows.Visibility.Hidden ->
+                    Sync.window.Visibility <- Windows.Visibility.Visible
                     let cmd = seff.Commands.RunAllText //TODO or trigger directly via agent post to distinguish triggers from commandline and seff ui?
-                    match MessageBox.Show("Run Script from current Tab?", "Run Script from current Tab?", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.Yes) with
-                    | MessageBoxResult.Yes -> this.RunCommand (doc, mode)
+                    match Windows.MessageBox.Show("Run Script from current Tab?", "Run Script from current Tab?", Windows.MessageBoxButton.YesNo, Windows.MessageBoxImage.Question, Windows.MessageBoxResult.Yes) with
+                    | Windows.MessageBoxResult.Yes -> this.RunCommand (doc, mode)
                     | _ -> Commands.Result.Failure
 
 
