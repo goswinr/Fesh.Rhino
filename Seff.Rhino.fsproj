@@ -42,12 +42,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="7.0.0" /> <!--explicit reference needed for latest FSharp.Compiler.Service-->
+    <PackageReference Update="FSharp.Core" Version="7.0.0" GeneratePathProperty="true" /> <!--explicit reference needed for latest FSharp.Compiler.Service-->
 
     <!--FSharp.Compiler.Service needs to be refernceed here too because
       somehow FSharp.DependencyManager.Nuget doesn't get copied over from /Seff/binHosting/x64/net472
       (don't load it from Nuget see https://github.com/dotnet/fsharp/issues/10467#issuecomment-774430370) -->
-    <PackageReference Include="FSharp.Compiler.Service" Version="42.7.101" />
+    <PackageReference Include="FSharp.Compiler.Service" Version="42.7.101"  GeneratePathProperty="true" />
 
     <!--this reference is needed for tooling only, it might not be installed on host PC. see also https://github.com/fsprojects/IfSharp/issues/213 -->
     <PackageReference Include="NETStandard.Library" Version="2.0.3" GeneratePathProperty="true" />
@@ -59,14 +59,18 @@
     -->
     <PackageReference Include="RhinoCommon" Version="6.7.18199.22081" PrivateAssets="all" ExcludeAssets="runtime" />
       
-
-    <!--
-      <PackageReference Include="Seff" Version="0.0.3" />
-    -->
+    <!-- Thses packages are just added  expliocitly again to pull in XML too below. -->
+    <PackageReference Include="AvalonLog" Version="0.8.2" GeneratePathProperty="true"/>	 
+    <PackageReference Include="FsEx.Wpf" Version="0.3.1"  GeneratePathProperty="true"/>
+	  <PackageReference Include="AvalonEditB" Version="1.5.1" GeneratePathProperty="true"/>	 
+     
     <Reference Include="Seff" HintPath="..\Seff\binHosting\net472\Seff.dll" />	  
+    <!--
+    <PackageReference Include="Seff" Version="0.0.2"  GeneratePathProperty="true"/>
     <Reference Include="AvalonEditB" HintPath="..\Seff\binHosting\net472\AvalonEditB.dll" />
     <Reference Include="AvalonLog" HintPath="..\Seff\binHosting\net472\AvalonLog.dll" />
     <Reference Include="FsEx.Wpf" HintPath="..\Seff\binHosting\net472\FsEx.Wpf.dll" />
+    -->  
   </ItemGroup>
 
   <ItemGroup>
@@ -96,6 +100,15 @@
 
     <!-- needed for intelisense, if netstandart.xml is not installed. -->
     <Copy SourceFiles="$(PkgNETStandard_Library)/build/netstandard2.0/ref/netstandard.xml" DestinationFiles="$(TargetDir)netstandard.xml" ContinueOnError="false" />
+
+
+    <!--because <FSharpCoreIncludeDocFileInOutput>true</FSharpCoreIncludeDocFileInOutput>  does not work in visual studio: -->
+	  <Copy SourceFiles="$(PkgFSharp_Core)/lib/netstandard2.0/FSharp.Core.xml" DestinationFiles="$(TargetDir)FSharp.Core.xml" ContinueOnError="false" />	  
+	  <Copy SourceFiles="$(PkgFSharp_Compiler_Service)/lib/netstandard2.0/FSharp.Compiler.Service.xml" DestinationFiles="$(TargetDir)FSharp.Compiler.Service.xml" ContinueOnError="false" />
+	  <Copy SourceFiles="$(PkgAvalonLog)/lib/net472/AvalonLog.xml" DestinationFiles="$(TargetDir)AvalonLog.xml" ContinueOnError="false" />
+	  <Copy SourceFiles="$(PkgAvalonEditB)/lib/net472/AvalonEditB.xml" DestinationFiles="$(TargetDir)AvalonEditB.xml" ContinueOnError="false" />
+	  <Copy SourceFiles="$(PkgFsEx_Wpf)/lib/net472/FsEx.Wpf.xml" DestinationFiles="$(TargetDir)FsEx.Wpf.xml" ContinueOnError="false" />
+
   </Target>
 
 </Project>
