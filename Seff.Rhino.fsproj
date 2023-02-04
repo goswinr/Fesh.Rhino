@@ -31,7 +31,7 @@
     <Win32Resource>Media/logo.res</Win32Resource>    <!--  for Application Icon in explorer-->
 
     <Configurations>Release</Configurations>
-    <PlatformTarget>x64</PlatformTarget><!--  x64 is required by Rhino, dont use just 'Platform' tag-->    
+    <PlatformTarget>x64</PlatformTarget><!--  x64 is required by Rhino, don't use just 'Platform' tag-->    
   </PropertyGroup>
 
 
@@ -44,7 +44,7 @@
   <ItemGroup>
     <PackageReference Update="FSharp.Core" Version="7.0.0" GeneratePathProperty="true" /> <!--explicit reference needed for latest FSharp.Compiler.Service-->
 
-    <!--FSharp.Compiler.Service needs to be refernceed here too because
+    <!--FSharp.Compiler.Service needs to be referenced here too because
       somehow FSharp.DependencyManager.Nuget doesn't get copied over from /Seff/binHosting/x64/net472
       (don't load it from Nuget see https://github.com/dotnet/fsharp/issues/10467#issuecomment-774430370) -->
     <PackageReference Include="FSharp.Compiler.Service" Version="42.7.101"  GeneratePathProperty="true" />
@@ -54,12 +54,12 @@
 
     
     <!-- Version 6.7 to match minimum of Rhino.Scripting. PrivateAssets="all" ExcludeAssets="runtime" to exclude these dlls from the output folder.	
-    During debugging use the current Rhinocommen dll reference to avoide the ~20 sec of compatibility check when Rhino loads it the first time. 
+    During debugging use the current Rhinocommon dll reference to avoid the ~20 sec of compatibility check when Rhino loads it the first time. 
     <Reference Include="RhinoCommon" HintPath="C:\Program Files\Rhino 7\System\RhinoCommon.dll" Private="False" />
     -->
     <PackageReference Include="RhinoCommon" Version="6.7.18199.22081" PrivateAssets="all" ExcludeAssets="runtime" />
       
-    <!-- Thses packages are just added  expliocitly again to pull in XML too below. -->
+    <!-- These packages are just added  explicitly again to pull in XML too below. -->
     <PackageReference Include="AvalonLog" Version="0.8.2" GeneratePathProperty="true"/>	 
     <PackageReference Include="FsEx.Wpf" Version="0.3.1"  GeneratePathProperty="true"/>
 	  <PackageReference Include="AvalonEditB" Version="1.5.1" GeneratePathProperty="true"/>	 

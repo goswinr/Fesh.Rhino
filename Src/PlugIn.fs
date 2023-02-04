@@ -41,7 +41,7 @@ type SeffPlugin () =
             async{
                 do! Async.SwitchToContext Sync.syncContext
                 lastDoc <- RhinoDoc.ActiveDoc
-                SeffPlugin.UndoRecordSerial <- RhinoDoc.ActiveDoc.BeginUndoRecord "FsiSession"
+                SeffPlugin.UndoRecordSerial <- RhinoDoc.ActiveDoc.BeginUndoRecord "F# script run by Seff.Rhino"
                 } |> Async.StartImmediate
 
     static member AfterEval (showWin) = 
@@ -52,7 +52,7 @@ type SeffPlugin () =
             if lastDoc = RhinoDoc.ActiveDoc then // it might have changed during script run
                 if not <| RhinoDoc.ActiveDoc.EndUndoRecord(SeffPlugin.UndoRecordSerial) then
                     RhinoAppWriteLine.print " * Seff.Rhino | failed to set RhinoDoc.ActiveDoc.EndUndoRecord"
-                    eprintfn "Seff.Rhino | failed to set RhinoDoc.ActiveDoc.EndUndoRecord(SeffPlugin.UndoRecordSerial:%d)" SeffPlugin.UndoRecordSerial
+                    eprintfn " * Seff.Rhino | failed to set RhinoDoc.ActiveDoc.EndUndoRecord(SeffPlugin.UndoRecordSerial:%d)" SeffPlugin.UndoRecordSerial
 
             RhinoDoc.ActiveDoc.Views.RedrawEnabled <- true
             RhinoDoc.ActiveDoc.Views.Redraw()
