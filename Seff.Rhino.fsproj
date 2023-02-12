@@ -19,9 +19,9 @@
     <Product>Seff.Rhino</Product>
     <PackageId>Seff.Rhino</PackageId>
 
-    <Version>1.0.0.0</Version>
-    <AssemblyVersion>1.0.0.0</AssemblyVersion>
-    <FileVersion>1.0.0.0</FileVersion>
+    <Version>1.0.0</Version>
+    <AssemblyVersion>1.0.0</AssemblyVersion>
+    <FileVersion>1.0.0</FileVersion>
 
     <Authors>GoswinR</Authors>
     <Copyright>Goswin Rothenthal 2021</Copyright>
@@ -42,12 +42,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="7.0.0" GeneratePathProperty="true" /> <!--explicit reference needed for latest FSharp.Compiler.Service-->
+    <PackageReference Update="FSharp.Core" Version="7.0.200" GeneratePathProperty="true" /> <!--explicit reference needed for latest FSharp.Compiler.Service-->
 
     <!--FSharp.Compiler.Service needs to be referenced here too because
       somehow FSharp.DependencyManager.Nuget doesn't get copied over from /Seff/binHosting/x64/net472
       (don't load it from Nuget see https://github.com/dotnet/fsharp/issues/10467#issuecomment-774430370) -->
-    <PackageReference Include="FSharp.Compiler.Service" Version="42.7.101"  GeneratePathProperty="true" />
+    <PackageReference Include="FSharp.Compiler.Service" Version="43.7.200"   GeneratePathProperty="true" />
 
     <!--this reference is needed for tooling only, it might not be installed on host PC. see also https://github.com/fsprojects/IfSharp/issues/213 -->
     <PackageReference Include="NETStandard.Library" Version="2.0.3" GeneratePathProperty="true" />
@@ -60,9 +60,9 @@
     <PackageReference Include="RhinoCommon" Version="6.7.18199.22081" PrivateAssets="all" ExcludeAssets="runtime" />
       
     <!-- These packages are just added  explicitly again to pull in XML too below. -->
-    <PackageReference Include="AvalonLog" Version="0.8.2" GeneratePathProperty="true"/>	 
-    <PackageReference Include="FsEx.Wpf" Version="0.3.1"  GeneratePathProperty="true"/>
-	  <PackageReference Include="AvalonEditB" Version="1.5.1" GeneratePathProperty="true"/>	 
+    <PackageReference Include="AvalonLog" Version="0.8.3" GeneratePathProperty="true"/>	 
+    <PackageReference Include="FsEx.Wpf" Version="0.4.0"  GeneratePathProperty="true"/>
+	  <PackageReference Include="AvalonEditB" Version="1.6.0" GeneratePathProperty="true"/>	 
      
     <Reference Include="Seff" HintPath="..\Seff\binHosting\net472\Seff.dll" />	  
     <!--
@@ -95,10 +95,10 @@
     This is only needed if there are recent changes to this file that are not published with to the Seff nuget.  SyntaxHighlightingFSharp.xshd is in the Seff nuget too.-->
     <Copy SourceFiles="../Seff/Src/SyntaxHighlightingFSharp.xshd" DestinationFiles="$(TargetDir)SyntaxHighlightingFSharp.xshd" ContinueOnError="true" />
 
-    <!--dll is needed for editor tooling only, it might not be installed on host PC . seee also  https://github.com/fsprojects/IfSharp/issues/213 -->
+    <!--dll is needed for editor tooling only, it might not be installed on host PC . see also  https://github.com/fsprojects/IfSharp/issues/213 -->
     <Copy SourceFiles="$(PkgNETStandard_Library)/build/netstandard2.0/ref/netstandard.dll" DestinationFiles="$(TargetDir)netstandard.dll" ContinueOnError="false" />
 
-    <!-- needed for intelisense, if netstandart.xml is not installed. -->
+    <!-- needed for docstring type info , if dot net sdk is not installed. -->
     <Copy SourceFiles="$(PkgNETStandard_Library)/build/netstandard2.0/ref/netstandard.xml" DestinationFiles="$(TargetDir)netstandard.xml" ContinueOnError="false" />
 
 

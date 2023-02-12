@@ -58,9 +58,7 @@ type SeffPlugin () =
             RhinoDoc.ActiveDoc.Views.Redraw()
             if showWin && not (isNull Sync.showEditor) then Sync.showEditor.Invoke() //because it might crash during UI interaction where it is hidden
             } |> Async.StartImmediate
-
-
-    //static member val PrintOnceAfterEval = "" with get,set // to be able to print after SeffRunCurrentScript command
+  
 
     override this.OnLoad refErrs = 
         if not Runtime.HostUtils.RunningOnWindows then
@@ -131,7 +129,21 @@ type SeffPlugin () =
                 if ApplicationSettings.CommandAliasList.Add("sr","SeffRunCurrentScript")then
                     RhinoAppWriteLine.print  "* Seff.Rhino Plugin added the command alias 'sr' for 'SeffRunCurrentScript'"
 
-            RhinoAppWriteLine.print  ("Seff."+host + " Plugin loaded.")
+            // Reinizialise Rhino.Scripting just in case it is loadad already in the current AppDomain:
+            // to have showEditor and hideEditor actions setup correctly.
+            AppDomain.CurrentDomain.GetAssemblies()
+            |> Seq.tryFind (fun a -> a.GetName().Name = "Rhino.Scripting")
+            |> Option.iter (fun rsAss -> 
+                try
+                    let rhinoSyncModule = rsAss.GetType("Rhino.RhinoSync")
+                    let init = rhinoSyncModule.GetProperty("initialize").GetValue(rsAss) :?> Action
+                    init.Invoke()
+                    RhinoAppWriteLine.print "Rhino.Scripting.RhinoSync reinitialized." 
+                with e ->
+                    RhinoAppWriteLine.print (sprintf "* Seff.Rhino Plugin Rhino.Scripting.Initialize() failed with %A" e)
+                )
+              
+            RhinoAppWriteLine.print  ("Seff."+host + " plugin loaded.")
             PlugIns.LoadReturnCode.Success
 
 
@@ -140,10 +152,10 @@ type SeffPlugin () =
     // You can override methods here to change the plug-in behavior on
     // loading and shut down, add options pages to the Rhino _Option command
     // and maintain plug-in wide options in a document.
-    override this.CreateCommands() = //to add script files as custom commands
+    //override this.CreateCommands() = //to add script files as custom commands
         // https://discourse.mcneel.com/t/how-to-create-commands-after-plugin-load/47833
 
-        base.CreateCommands()
+        //base.CreateCommands()
         // then call base.RegisterCommand()
         // or ? Rhino.Runtime.HostUtils.RegisterDynamicCommand(seffPlugin,command)
 
