@@ -69,7 +69,7 @@ type RunCurrentScript () =
                         else
                             match Sync.window.WindowState with
                             | Windows.WindowState.Normal
-                            | Windows.WindowState.Maximized   -> seff.Tabs.Fsi.Evaluate {editor= seff.Tabs.Current.Editor; amount=All; logger = None}
+                            | Windows.WindowState.Maximized    -> seff.Tabs.Fsi.Evaluate {editor= seff.Tabs.Current.Editor; amount=All; logger = None}
                             | Windows.WindowState.Minimized |_ -> seff.Tabs.Fsi.Evaluate {editor= seff.Tabs.Current.Editor; amount=All; logger = SeffPlugin.RhWriter}
                             
                                 
@@ -86,7 +86,6 @@ type RunCurrentScript () =
                     match Windows.MessageBox.Show("Run Script from current Tab?", "Run Script from current Tab?", Windows.MessageBoxButton.YesNo, Windows.MessageBoxImage.Question, Windows.MessageBoxResult.Yes) with
                     | Windows.MessageBoxResult.Yes -> this.RunCommand (doc, mode)
                     | _ -> Commands.Result.Failure
-
 
                 | _ -> Commands.Result.Failure // only needed to make F# compiler happy
 

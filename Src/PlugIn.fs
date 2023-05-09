@@ -82,7 +82,17 @@ type SeffPlugin () =
             SeffPlugin.Seff <- seff
             Sync.showEditor <- new Action(fun () -> seff.Window.Show())
             Sync.hideEditor <- new Action(fun () -> seff.Window.Hide())
-            Sync.isEditorVisible <- new Func<bool>(fun () -> seff.Window.Visibility = Windows.Visibility.Visible)
+            Sync.isEditorVisible <- new Func<bool>(fun () -> 
+                // originally : seff.Window.Visibility = Windows.Visibility.Visible but 
+                // this might also show invisible if at the time of calling another window is covering rhino. 
+                // then going back to rhino the ui promt might not be visible because the window would be infont again. 
+                // we have to make sure it is minimized:
+                match seff.Window.WindowState with
+                | Windows.WindowState.Minimized -> false
+                | Windows.WindowState.Normal  | Windows.WindowState.Maximized |_   -> true
+                )
+
+
             Sync.window <- (seff.Window :> Windows.Window)
             
 

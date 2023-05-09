@@ -42,7 +42,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="7.0.200" GeneratePathProperty="true" /> <!--explicit reference needed for latest FSharp.Compiler.Service-->
+    <PackageReference Update="FSharp.Core" Version="7.0.200" GeneratePathProperty="true" /> <!-- an explicit reference update is needed by latest FSharp.Compiler.Service-->
 
     <!--FSharp.Compiler.Service needs to be referenced here too because
       somehow FSharp.DependencyManager.Nuget doesn't get copied over from /Seff/binHosting/x64/net472
@@ -60,8 +60,8 @@
     <PackageReference Include="RhinoCommon" Version="6.7.18199.22081" PrivateAssets="all" ExcludeAssets="runtime" />
       
     <!-- These packages are just added  explicitly again to pull in XML too below. -->
-    <PackageReference Include="AvalonLog" Version="0.8.3" GeneratePathProperty="true"/>	 
-    <PackageReference Include="FsEx.Wpf" Version="0.4.0"  GeneratePathProperty="true"/>
+    <PackageReference Include="AvalonLog"   Version="0.8.3" GeneratePathProperty="true"/>	 
+    <PackageReference Include="FsEx.Wpf"    Version="0.4.0" GeneratePathProperty="true"/>
 	  <PackageReference Include="AvalonEditB" Version="1.6.0" GeneratePathProperty="true"/>	 
      
     <Reference Include="Seff" HintPath="..\Seff\binHosting\net472\Seff.dll" />	  
@@ -103,11 +103,11 @@
 
 
     <!--because <FSharpCoreIncludeDocFileInOutput>true</FSharpCoreIncludeDocFileInOutput>  does not work in visual studio: -->
-	  <Copy SourceFiles="$(PkgFSharp_Core)/lib/netstandard2.0/FSharp.Core.xml" DestinationFiles="$(TargetDir)FSharp.Core.xml" ContinueOnError="false" />	  
 	  <Copy SourceFiles="$(PkgFSharp_Compiler_Service)/lib/netstandard2.0/FSharp.Compiler.Service.xml" DestinationFiles="$(TargetDir)FSharp.Compiler.Service.xml" ContinueOnError="false" />
-	  <Copy SourceFiles="$(PkgAvalonLog)/lib/net472/AvalonLog.xml" DestinationFiles="$(TargetDir)AvalonLog.xml" ContinueOnError="false" />
-	  <Copy SourceFiles="$(PkgAvalonEditB)/lib/net472/AvalonEditB.xml" DestinationFiles="$(TargetDir)AvalonEditB.xml" ContinueOnError="false" />
-	  <Copy SourceFiles="$(PkgFsEx_Wpf)/lib/net472/FsEx.Wpf.xml" DestinationFiles="$(TargetDir)FsEx.Wpf.xml" ContinueOnError="false" />
+	  <Copy SourceFiles="$(PkgFSharp_Core)/lib/netstandard2.0/FSharp.Core.xml" DestinationFiles="$(TargetDir)FSharp.Core.xml" ContinueOnError="false" />	  
+	  <Copy SourceFiles="$(PkgAvalonLog)/lib/net472/AvalonLog.xml"             DestinationFiles="$(TargetDir)AvalonLog.xml"   ContinueOnError="false" />
+	  <Copy SourceFiles="$(PkgAvalonEditB)/lib/net472/AvalonEditB.xml"         DestinationFiles="$(TargetDir)AvalonEditB.xml" ContinueOnError="false" />
+	  <Copy SourceFiles="$(PkgFsEx_Wpf)/lib/net472/FsEx.Wpf.xml"               DestinationFiles="$(TargetDir)FsEx.Wpf.xml"    ContinueOnError="false" />
 
   </Target>
 
