@@ -5,12 +5,13 @@ open System
 open Seff
 
 
-module Sync =  //Don't change name  its used in Rhino.Scripting.dll via reflection
+module Sync =  //Don't change name its used in Rhino.Scripting.dll via reflection
     let syncContext = Threading.SynchronizationContext.Current  // Don't change name  its used in Rhino.Scripting.dll via reflection
     let mutable hideEditor = null: Action // Don't change name  its used in Rhino.Scripting.dll via reflection
     let mutable showEditor = null: Action // Don't change name  its used in Rhino.Scripting.dll via reflection
     let mutable isEditorVisible = null: Func<bool> // Don't change name  its used in Rhino.Scripting.dll via reflection
-    let mutable window = null: Windows.Window // Not used via reflection
+    
+    let mutable editorWindow = null: Windows.Window // Not used via reflection
     
 
 module RhinoAppWriteLine = 
@@ -87,13 +88,17 @@ type SeffPlugin () =
                 // this might also show invisible if at the time of calling another window is covering rhino. 
                 // then going back to rhino the ui promt might not be visible because the window would be infont again. 
                 // we have to make sure it is minimized:
-                match seff.Window.WindowState with
-                | Windows.WindowState.Minimized -> false
-                | Windows.WindowState.Normal  | Windows.WindowState.Maximized |_   -> true
+                async{
+                    do! Async.SwitchToContext FsEx.Wpf.SyncWpf.context
+                    return
+                        match seff.Window.WindowState with
+                        | Windows.WindowState.Minimized -> false
+                        | Windows.WindowState.Normal  | Windows.WindowState.Maximized |_   -> true
+                    }
+                    |> Async.RunSynchronously 
                 )
 
-
-            Sync.window <- (seff.Window :> Windows.Window)
+            Sync.editorWindow <- (seff.Window :> Windows.Window)
             
 
             seff.Window.Closing.Add (fun e ->

@@ -16,14 +16,14 @@ type LoadEditor () =
     static member val Instance = LoadEditor()
 
     static member DoLoad() = 
-        if isNull Sync.window then // set up window on first run
+        if isNull Sync.editorWindow then // set up window on first run
             RhinoAppWriteLine.print  " * Seff Editor Window cant be shown, the Plugin is not properly loaded. try restarting Rhino."
             Commands.Result.Failure
 
         else
-            Sync.window.Show()
-            Sync.window.Visibility <- Windows.Visibility.Visible
-            if Sync.window.WindowState = Windows.WindowState.Minimized then Sync.window.WindowState <- Windows.WindowState.Normal
+            Sync.editorWindow.Show()
+            Sync.editorWindow.Visibility <- Windows.Visibility.Visible
+            if Sync.editorWindow.WindowState = Windows.WindowState.Minimized then Sync.editorWindow.WindowState <- Windows.WindowState.Normal
             State.ShownOnce <- true
             Commands.Result.Success
 
@@ -41,7 +41,7 @@ type RunCurrentScript () =
 
     override this.RunCommand (doc, mode)  = 
 
-        if isNull Sync.window then // set up window on first run
+        if isNull Sync.editorWindow then // set up window on first run
             RhinoAppWriteLine.print  "*Seff Editor Window cant be shown, the Plugin is not properly loaded. Please restart Rhino."
             Commands.Result.Failure
         else
@@ -50,7 +50,7 @@ type RunCurrentScript () =
                 // it needs to be shown once. otherwise Seff.Commands.RunAllText below fails to find any text in Editor
             else                
                 let seff = SeffPlugin.Seff
-                match Sync.window.Visibility with
+                match Sync.editorWindow.Visibility with
                 | Windows.Visibility.Visible | Windows.Visibility.Collapsed ->
                     RhinoAppWriteLine.print2  "*Seff is running: " seff.Tabs.Current.FormattedFileName
                     
@@ -64,13 +64,14 @@ type RunCurrentScript () =
                             do! Async.Sleep 50
                         do! Async.SwitchToContext Sync.syncContext
                         if Command.InCommand() then
-                            seff.Log.PrintfnAppErrorMsg "Cant Run Current Seff Script because another Rhino Command is active"
-                            RhinoAppWriteLine.print "Cant Run Current Seff Script because another Rhino Command is active"
+                            seff.Log.PrintfnAppErrorMsg "Can't Run Current Seff Script because another Rhino Command is active"
+                            RhinoAppWriteLine.print "Can't Run Current Seff Script because another Rhino Command is active"
                         else
-                            match Sync.window.WindowState with
+                            let ed = seff.Tabs.Current.Editor                            
+                            match Sync.editorWindow.WindowState with // if editor is not visible print results to rhino command line too.
                             | Windows.WindowState.Normal
-                            | Windows.WindowState.Maximized    -> seff.Tabs.Fsi.Evaluate {editor= seff.Tabs.Current.Editor; amount=All; logger = None}
-                            | Windows.WindowState.Minimized |_ -> seff.Tabs.Fsi.Evaluate {editor= seff.Tabs.Current.Editor; amount=All; logger = SeffPlugin.RhWriter}
+                            | Windows.WindowState.Maximized    -> seff.Tabs.Fsi.Evaluate {editor=ed; amount=All; logger = None               ; scriptName = ed.FilePath.FileName }
+                            | Windows.WindowState.Minimized |_ -> seff.Tabs.Fsi.Evaluate {editor=ed; amount=All; logger = SeffPlugin.RhWriter; scriptName = ed.FilePath.FileName }
                             
                                 
                     }
@@ -81,7 +82,7 @@ type RunCurrentScript () =
 
 
                 |Windows.Visibility.Hidden ->
-                    Sync.window.Visibility <- Windows.Visibility.Visible
+                    Sync.editorWindow.Visibility <- Windows.Visibility.Visible
                     let cmd = seff.Commands.RunAllText //TODO or trigger directly via agent post to distinguish triggers from commandline and seff ui?
                     match Windows.MessageBox.Show("Run Script from current Tab?", "Run Script from current Tab?", Windows.MessageBoxButton.YesNo, Windows.MessageBoxImage.Question, Windows.MessageBoxResult.Yes) with
                     | Windows.MessageBoxResult.Yes -> this.RunCommand (doc, mode)
