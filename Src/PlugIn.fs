@@ -86,16 +86,11 @@ type SeffPlugin () =
             Sync.isEditorVisible <- new Func<bool>(fun () -> 
                 // originally : seff.Window.Visibility = Windows.Visibility.Visible but 
                 // this might also show invisible if at the time of calling another window is covering rhino. 
-                // then going back to rhino the ui promt might not be visible because the window would be infont again. 
-                // we have to make sure it is minimized:
-                async{
-                    do! Async.SwitchToContext FsEx.Wpf.SyncWpf.context
-                    return
-                        match seff.Window.WindowState with
-                        | Windows.WindowState.Minimized -> false
-                        | Windows.WindowState.Normal  | Windows.WindowState.Maximized |_   -> true
-                    }
-                    |> Async.RunSynchronously 
+                // then going back to rhino the ui prompt might not be visible because the window would be infront again. 
+                // so we have to check if it is minimized:
+                match seff.Window.WindowState with
+                | Windows.WindowState.Minimized -> false
+                | Windows.WindowState.Normal  | Windows.WindowState.Maximized | _   -> true
                 )
 
             Sync.editorWindow <- (seff.Window :> Windows.Window)
