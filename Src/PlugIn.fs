@@ -86,8 +86,10 @@ type SeffPlugin () =
             Sync.isEditorVisible <- new Func<bool>(fun () -> 
                 // originally : seff.Window.Visibility = Windows.Visibility.Visible but 
                 // this might also show invisible if at the time of calling another window is covering rhino. 
-                // then going back to rhino the ui prompt might not be visible because the window would be infront again. 
-                // so we have to check if it is minimized:
+                // then going back to rhino the ui prompt might not be visible because the window would be in front again. 
+                // so we have to check if it is minimized too:
+                seff.Window.Visibility = Windows.Visibility.Visible
+                &&
                 match seff.Window.WindowState with
                 | Windows.WindowState.Minimized -> false
                 | Windows.WindowState.Normal  | Windows.WindowState.Maximized | _   -> true
@@ -95,7 +97,7 @@ type SeffPlugin () =
 
             Sync.editorWindow <- (seff.Window :> Windows.Window)
             
-
+            // just keep everything alive:
             seff.Window.Closing.Add (fun e ->
                 if not e.Cancel then // closing might be already cancelled in Seff.fs in main Seff lib.               
                     // even if closing is not canceled, don't close, just hide window
@@ -109,7 +111,7 @@ type SeffPlugin () =
                     // if the window is hidden log error messages to rhino command line, but not when window is shown
                     // this is also set in SeffRunCurrentScript Command
                     match seff.Window.WindowState with
-                    | Windows.WindowState.Normal
+                    | Windows.WindowState.Normal       -> seff.Log.AdditionalLogger <- None
                     | Windows.WindowState.Maximized    -> seff.Log.AdditionalLogger <- None
                     | Windows.WindowState.Minimized |_ -> seff.Log.AdditionalLogger <- SeffPlugin.RhWriter                    
                     
@@ -139,7 +141,7 @@ type SeffPlugin () =
                 if ApplicationSettings.CommandAliasList.Add("sr","SeffRunCurrentScript")then
                     RhinoAppWriteLine.print  "* Seff.Rhino Plugin added the command alias 'sr' for 'SeffRunCurrentScript'"
 
-            // Reinizialise Rhino.Scripting just in case it is loadad already in the current AppDomain:
+            // Reinitialize Rhino.Scripting just in case it is loaded already in the current AppDomain:
             // to have showEditor and hideEditor actions setup correctly.
             AppDomain.CurrentDomain.GetAssemblies()
             |> Seq.tryFind (fun a -> a.GetName().Name = "Rhino.Scripting")
