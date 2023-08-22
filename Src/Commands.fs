@@ -11,6 +11,7 @@ open Rhino.Commands
 module State = 
     let mutable ShownOnce = false // having this as static member on LoadEditor fails to evaluate !! not sure why.
 
+[<CommandStyle(Style.ScriptRunner)>] // so that RhinoApp.RunScript ( = rs.Command) can be used. https://developer.rhino3d.com/guides/rhinocommon/run-rhino-command-from-plugin/
 type LoadEditor () = 
     inherit Commands.Command()
     static member val Instance = LoadEditor()
@@ -32,7 +33,7 @@ type LoadEditor () =
     override this.RunCommand (doc, mode)  = 
         LoadEditor.DoLoad()
 
-
+[<CommandStyle(Style.ScriptRunner)>] // so that RhinoApp.RunScript ( = rs.Command) can be used. https://developer.rhino3d.com/guides/rhinocommon/run-rhino-command-from-plugin/
 type RunCurrentScript () = 
     inherit Commands.Command()
     static member val Instance = RunCurrentScript()
@@ -52,8 +53,7 @@ type RunCurrentScript () =
                 let seff = SeffPlugin.Seff
                 match Sync.editorWindow.Visibility with
                 | Windows.Visibility.Visible | Windows.Visibility.Collapsed ->
-                    RhinoAppWriteLine.print2  "*Seff is running: " seff.Tabs.Current.FormattedFileName
-                    
+                    RhinoAppWriteLine.print2  "*Seff is running: " seff.Tabs.Current.FormattedFileName                    
 
                     // to start running the script after the command has actually completed, making it mode-less, so manual undo stack works
                     async{
@@ -89,8 +89,7 @@ type RunCurrentScript () =
                     | _ -> Commands.Result.Failure
 
                 | _ -> Commands.Result.Failure // only needed to make F# compiler happy
-
-
+        
 
 //TODO mouse focus: https://discourse.mcneel.com/t/can-rhinocommon-be-used-with-wpf/12/7
 (*
