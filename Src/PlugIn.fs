@@ -45,7 +45,7 @@ type SeffPlugin () =
                 SeffPlugin.UndoRecordSerial <- RhinoDoc.ActiveDoc.BeginUndoRecord "F# script run by Seff.Rhino"
                 } |> Async.StartImmediate
 
-    static member AfterEval (showWin) = 
+    static member AfterEval (showWin) : unit = 
         async{
             do! Async.SwitchToContext Sync.syncContext
             //if SeffPlugin.UndoRecordSerial <> 0u then
@@ -61,7 +61,7 @@ type SeffPlugin () =
             } |> Async.StartImmediate
   
 
-    override this.OnLoad refErrs = 
+    override this.OnLoad(refErrs) : PlugIns.LoadReturnCode = 
         if not Runtime.HostUtils.RunningOnWindows then
             RhinoAppWriteLine.print " * Seff.Rhino  | Scripting Editor For FSharp PlugIn only works on Windows. It needs the WPF framework "
             PlugIns.LoadReturnCode.ErrorNoDialog
@@ -97,17 +97,17 @@ type SeffPlugin () =
 
             Sync.editorWindow <- (seff.Window :> Windows.Window)
             
-            // just keep everything alive:
-            seff.Window.Closing.Add (fun e ->
-                if not e.Cancel then // closing might be already cancelled in Seff.fs in main Seff lib.               
-                    // even if closing is not canceled, don't close, just hide window
-                    seff.Window.Visibility <- Windows.Visibility.Hidden
-                    e.Cancel <- true
-                    )
+            // Could be used to keep everything alive: But then you would be asked twice to save unsaved files. On Closing Seff and closing Rhino.
+            //seff.Window.Closing.Add (fun e ->
+            //    if not e.Cancel then // closing might be already cancelled in Seff.fs in main Seff lib.               
+            //        // even if closing is not canceled, don't close, just hide window
+            //        seff.Window.Visibility <- Windows.Visibility.Hidden
+            //        e.Cancel <- true
+            //        )
 
             seff.Window.StateChanged.Add (fun e ->
                 match seff.Fsi.State with 
-                |FsiState.Ready ->   
+                | Ready ->   
                     // if the window is hidden log error messages to rhino command line, but not when window is shown
                     // this is also set in SeffRunCurrentScript Command
                     match seff.Window.WindowState with
@@ -115,7 +115,7 @@ type SeffPlugin () =
                     | Windows.WindowState.Maximized    -> seff.Log.AdditionalLogger <- None
                     | Windows.WindowState.Minimized |_ -> seff.Log.AdditionalLogger <- SeffPlugin.RhWriter                    
                     
-                |Initializing |NotLoaded  |Evaluating -> ()   // don't change while running                    
+                | Initializing | NotLoaded | Evaluating -> ()   // don't change while running                    
                 )
             
 
@@ -124,7 +124,8 @@ type SeffPlugin () =
             seff.Fsi.OnCanceled.Add     ( fun m -> SeffPlugin.AfterEval(true))  // to unsure UI does not stay frozen if RedrawEnabled is false //showWin because it might crash during UI interaction where it is hidden
             seff.Fsi.OnCompletedOk.Add  ( fun m -> SeffPlugin.AfterEval(false)) // to unsure UI does not stay frozen if RedrawEnabled is false //showWin = false because might be running in background mode from rhino command line
             
-            RhinoDoc.CloseDocument.Add (fun e -> seff.Fsi.CancelIfAsync() ) //during sync eval closing doc should not be possible anyway??
+            //RhinoDoc.CloseDocument.Add (fun e -> seff.Fsi.CancelIfAsync() ) // don't!!  To allow rs.Command to open new files. 
+
             RhinoApp.Closing.Add (fun _ ->
                 seff.Tabs.AskForFileSavingToKnowIfClosingWindowIsOk() |> ignore // to save unsaved files, canceling of closing not possible here, save dialog will show after rhino is closed
                 seff.Fsi.AskIfCancellingIsOk() |> ignore
@@ -137,7 +138,7 @@ type SeffPlugin () =
             RhinoApp.EscapeKeyPressed.Add ( fun e -> ())
 
             // add Alias too if not taken already:
-            if not <|  ApplicationSettings.CommandAliasList.IsAlias("sr") then
+            if not <| ApplicationSettings.CommandAliasList.IsAlias("sr") then
                 if ApplicationSettings.CommandAliasList.Add("sr","SeffRunCurrentScript")then
                     RhinoAppWriteLine.print  "* Seff.Rhino Plugin added the command alias 'sr' for 'SeffRunCurrentScript'"
 

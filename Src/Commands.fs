@@ -40,7 +40,7 @@ type RunCurrentScript () =
 
     override this.EnglishName = "SeffRunCurrentScript"
 
-    override this.RunCommand (doc, mode)  = 
+    override this.RunCommand (doc, mode)  : Result = 
 
         if isNull Sync.editorWindow then // set up window on first run
             RhinoAppWriteLine.print  "*Seff Editor Window cant be shown, the Plugin is not properly loaded. Please restart Rhino."
