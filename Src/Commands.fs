@@ -6,7 +6,7 @@ open Seff.Model
 open Seff
 open Rhino.Commands
 
-//the Command Singleton classes:
+// The Command Singleton classes:
 
 module State = 
     let mutable ShownOnce = false // having this as static member on LoadEditor fails to evaluate !! not sure why.
