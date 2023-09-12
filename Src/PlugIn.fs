@@ -114,11 +114,11 @@ type SeffPlugin () =
                     | Windows.WindowState.Normal    | Windows.WindowState.Maximized    -> seff.Log.AdditionalLogger <- None
                     | Windows.WindowState.Minimized | _                                -> seff.Log.AdditionalLogger <- SeffPlugin.RhWriter                    
                     
-                | Initializing | NotLoaded | Evaluating -> ()   // don't change while running                    
+                | Initializing | NotLoaded | Evaluating | Compiling -> ()   // don't change while running                    
                 )
             
 
-            seff.Fsi.OnStarted.Add      ( fun m -> SeffPlugin.BeforeEval())     // https://github.com/mcneel/rhinocommon/blob/57c3967e33d18205efbe6a14db488319c276cbee/dotnet/rhino/rhinosdkdoc.cs#L857
+            seff.Fsi.OnCompiling.Add    ( fun m -> SeffPlugin.BeforeEval())     // https://github.com/mcneel/rhinocommon/blob/57c3967e33d18205efbe6a14db488319c276cbee/dotnet/rhino/rhinosdkdoc.cs#L857
             seff.Fsi.OnRuntimeError.Add ( fun e -> SeffPlugin.AfterEval(true))  // to unsure UI does not stay frozen if RedrawEnabled is false //showWin because it might crash during UI interaction where it is hidden
             seff.Fsi.OnCanceled.Add     ( fun m -> SeffPlugin.AfterEval(true))  // to unsure UI does not stay frozen if RedrawEnabled is false //showWin because it might crash during UI interaction where it is hidden
             seff.Fsi.OnCompletedOk.Add  ( fun m -> SeffPlugin.AfterEval(false)) // to unsure UI does not stay frozen if RedrawEnabled is false //showWin = false because might be running in background mode from rhino command line
