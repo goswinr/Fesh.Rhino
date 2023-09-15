@@ -60,9 +60,9 @@
     <PackageReference Include="RhinoCommon" Version="6.7.18199.22081" PrivateAssets="all" ExcludeAssets="runtime" />
       
     <!-- These packages are just added  explicitly again to pull in XML too below. -->
-    <PackageReference Include="AvalonLog"  Version="0.10.0" GeneratePathProperty="true" />
+    <PackageReference Include="AvalonLog"  Version="0.11.0" GeneratePathProperty="true" />
     <PackageReference Include="FsEx.Wpf"    Version="0.5.0" GeneratePathProperty="true" />
-    <PackageReference Include="AvalonEditB" Version="2.0.0" GeneratePathProperty="true" />   
+    <PackageReference Include="AvalonEditB" Version="2.1.0" GeneratePathProperty="true" />   
      
     <Reference Include="Seff" HintPath="..\Seff\binHosting\net472\Seff.dll" />	     
   </ItemGroup>
