@@ -1,2 +1,2 @@
-# Seff.Rhino
- Seff | F# Scripting for Rhino
+# Fesh.Rhino
+ Fesh | F# Scripting for Rhino
