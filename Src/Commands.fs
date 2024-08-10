@@ -64,8 +64,8 @@ type RunCurrentScript () =
                             do! Async.Sleep 50
                         do! Async.SwitchToContext Sync.syncContext
                         if Command.InCommand() then
-                            fesh.Log.PrintfnAppErrorMsg "Can't Run Current Fesh Script because another Rhino Command is active"
-                            RhinoAppWriteLine.print "Can't Run Current Fesh Script because another Rhino Command is active"
+                            fesh.Log.PrintfnAppErrorMsg "Can't run current Fesh script because another Rhino command is active"
+                            RhinoAppWriteLine.print "Can't run current Fesh script because another Rhino command is active"
                         else
                             let ed = fesh.Tabs.Current.Editor
                             match Sync.editorWindow.WindowState with // if editor is not visible print results to rhino command line too.
@@ -84,7 +84,7 @@ type RunCurrentScript () =
                 |Windows.Visibility.Hidden ->
                     Sync.editorWindow.Visibility <- Windows.Visibility.Visible
                     let cmd = fesh.Commands.RunAllText //TODO or trigger directly via agent post to distinguish triggers from commandline and fesh ui?
-                    match Windows.MessageBox.Show("Run Script from current Tab?", "Run Script from current Tab?", Windows.MessageBoxButton.YesNo, Windows.MessageBoxImage.Question, Windows.MessageBoxResult.Yes) with
+                    match Windows.MessageBox.Show("Run script from current Tab?", "Run script from current Tab?", Windows.MessageBoxButton.YesNo, Windows.MessageBoxImage.Question, Windows.MessageBoxResult.Yes) with
                     | Windows.MessageBoxResult.Yes -> this.RunCommand (doc, mode)
                     | _ -> Commands.Result.Failure
 

@@ -4,6 +4,8 @@ open Rhino
 open System
 open Fesh
 
+open System.Drawing // fot net 7
+
 
 module Sync =  //Don't change name its used in Rhino.Scripting.dll via reflection
     let syncContext = Threading.SynchronizationContext.Current  // Don't change name  its used in Rhino.Scripting.dll via reflection
@@ -137,9 +139,9 @@ type FeshPlugin () =
             RhinoApp.EscapeKeyPressed.Add(ignore)
 
             // Add an Alias too if not taken already:
-            if not <| ApplicationSettings.CommandAliasList.IsAlias("sr") then
-                if ApplicationSettings.CommandAliasList.Add("sr","FeshRunCurrentScript")then
-                    RhinoAppWriteLine.print  "* Fesh.Rhino Plugin added the command alias 'sr' for 'FeshRunCurrentScript'"
+            if not <| ApplicationSettings.CommandAliasList.IsAlias("fr") then
+                if ApplicationSettings.CommandAliasList.Add("fr","FeshRunCurrentScript")then
+                    RhinoAppWriteLine.print  "* Fesh.Rhino Plugin added the command alias 'fr' for 'FeshRunCurrentScript'"
 
             // Reinitialize Rhino.Scripting just in case it is loaded already in the current AppDomain by another plugin.
             // This is needed to have showEditor and hideEditor actions for Fesh setup correctly.
@@ -156,7 +158,17 @@ type FeshPlugin () =
                 )
 
             RhinoAppWriteLine.print  ("Fesh."+host + " plugin loaded.")
+
+
+
+            if not <| Runtime.InteropServices.RuntimeInformation.FrameworkDescription.StartsWith(".NET Framework") then
+                System.Windows.MessageBox.Show("Fesh.Rhino Plugin currently only works well with .NET Framework. It might crash with .NET 7. \r\n
+                use the command SetDotNetRuntime to change to .NET Framework.")
+                |> ignore
+
             PlugIns.LoadReturnCode.Success
+
+
 
 
     //override this.LoadAtStartup = true //obsolete? load FSI already at Rhino startup ??
