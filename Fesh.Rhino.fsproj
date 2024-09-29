@@ -7,9 +7,10 @@
     <!-- <TargetFrameworks>net48;net7.0-windows</TargetFrameworks> -->
     <!-- https://discourse.mcneel.com/t/rhino-inside-net-core-7-0/166059/7 -->
     <!-- <NoWarn>NU1701</NoWarn> -->
-   <!-- targeting net 7 in still not recommend, (Aug 2024) see
+   <!-- targeting net 7 in still not recommended, (Aug 2024) see
    https://developer.rhino3d.com/guides/rhinocommon/moving-to-dotnet-7/#migrating-your-plugin
    targeting net 7 actually fails to find the System.Drawing.Bitmap reference during build even if System.Drawing.Common is included.
+   using net48 target on net7 will not allow async evaluation.
     -->
     <UseWPF>true</UseWPF>
     <LangVersion>preview</LangVersion> <!-- enables indexing from end -->
