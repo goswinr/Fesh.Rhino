@@ -3,6 +3,7 @@
 open Rhino
 open System
 open Fesh
+open System.Windows
 
 open System.Drawing // fot net 7
 
@@ -15,10 +16,35 @@ module Sync =  //Don't change name its used in Rhino.Scripting.dll via reflectio
 
     let mutable editorWindow = null: Windows.Window // Not used via reflection
 
+    // Fesh wil add this before:
+    // "// This is your default code for new files,"
+    // "// you can change it by going to the menu: File -> Edit Template File"
+    // "// The default code is saved at at " + filePath0
+    let defaultCode =
+        [|
+        """#r "C:/Program Files/Rhino 8/System/RhinoCommon.dll" """
+        """#r "nuget:Rhino.Scripting.Fsharp, 0.8.1"  """
+        ""
+        """open System"""
+        """open Rhino.Scripting"""
+        """open Rhino.Scripting.Fsharp //recommended for F# """
+        """open FsEx // part of Rhino.Scripting"""
+        ""
+        """type rs = RhinoScriptSyntax"""
+        ""
+        """// use the rs object to call RhinoScript functions like in python"""
+        """let crv = rs.GetObject("Select a curve",  rs.Filter.Curve)"""
+        ""
+        |]
+        |> String.concat Environment.NewLine
+
 
 module RhinoAppWriteLine =
     let print txt  = RhinoApp.WriteLine txt  ; RhinoApp.Wait()
     let print2 txt1 txt2 = RhinoApp.WriteLine (txt1+txt2); RhinoApp.Wait()
+
+
+
 
 // the Plugin  and Commands Singletons:
 // Every RhinoCommon .rhp assembly must have one and only one PlugIn-derived
@@ -75,6 +101,7 @@ type FeshPlugin () =
                 hostName = host
                 mainWindowHandel = RhinoApp.MainWindowHandle()
                 fsiCanRun = canRun
+                defaultCode = Some Sync.defaultCode
                 // Add the Icon at the top left of the window and in the status bar, musst be called  after loading window.
                 // Media/LogoCursorTr.ico with Build action : "Resource"
                 // (for the exe file icon in explorer use <Win32Resource>Media\logo.res</Win32Resource>  in fsproj )
@@ -162,8 +189,10 @@ type FeshPlugin () =
 
 
             if not <| Runtime.InteropServices.RuntimeInformation.FrameworkDescription.StartsWith(".NET Framework") then
-                System.Windows.MessageBox.Show("Fesh.Rhino Plugin currently only works well with .NET Framework. It might crash with .NET 7. \r\n
-                use the command SetDotNetRuntime to change to .NET Framework.")
+                MessageBox.Show("Fesh.Rhino Plugin",
+                    "The Fesh.Rhino Plugin currently only works well with .NET Framework. \r\n It might crash with .NET 7. \r\n Please use the Rhino Command 'SetDotNetRuntime' to change to .NET Framework.",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Stop)
                 |> ignore
 
             PlugIns.LoadReturnCode.Success

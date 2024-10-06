@@ -27,14 +27,14 @@
     <Product>Fesh.Rhino</Product>
     <PackageId>Fesh.Rhino</PackageId>
 
-    <Version>0.9.0</Version>
-    <AssemblyVersion>0.9.0</AssemblyVersion>
-    <FileVersion>0.9.0</FileVersion>
+    <Version>0.11.0</Version>
+    <AssemblyVersion>0.11.0</AssemblyVersion>
+    <FileVersion>0.11.0</FileVersion>
 
     <Authors>GoswinR</Authors>
-    <Copyright>Goswin Rothenthal 2021</Copyright>
+    <Copyright>Goswin Rothenthal 2019</Copyright>
 
-    <Description>A Scripting Editor for FSharp in Rhino</Description>
+    <Description>A Scripting Editor for F# in Rhino</Description>
     <ApplicationIcon>Media/logo.ico</ApplicationIcon>
     <Win32Resource>Media/logo.res</Win32Resource>    <!--  for Application Icon in explorer-->
 
@@ -53,14 +53,14 @@
 
   <ItemGroup>
 
-    <PackageReference Include="Fesh" Version="0.9.0" GeneratePathProperty="true" />
+    <PackageReference Include="Fesh" Version="0.11.1" GeneratePathProperty="true" />
     <!-- These packages are just added  explicitly again to pull in XML too below. -->
     <!-- <PackageReference Include="AvalonLog"  Version="0.12.0" GeneratePathProperty="true" /> -->
     <!-- <PackageReference Include="Fittings"    Version="0.6.0" GeneratePathProperty="true" /> -->
     <!-- <PackageReference Include="AvalonEditB" Version="2.2.0" GeneratePathProperty="true" /> -->
 
     <!-- an explicit reference update is needed by latest FSharp.Compiler.Service to match Fesh-->
-    <PackageReference Update="FSharp.Core" Version="8.0.300" GeneratePathProperty="true" />
+    <PackageReference Update="FSharp.Core" Version="8.0.400" GeneratePathProperty="true" />
 
     <!--FSharp.Compiler.Service might need to be referenced here too?  because
       somehow FSharp.DependencyManager.Nuget doesn't get copied over from /Fesh/binHosting/x64/net472
@@ -72,7 +72,7 @@
     During debugging use the current Rhinocommon dll reference to avoid the ~20 sec of compatibility check when Rhino loads it the first time.
     <Reference Include="RhinoCommon" HintPath="C:\Program Files\Rhino 7\System\RhinoCommon.dll" Private="False" />
     -->
-    <PackageReference Include="RhinoCommon" Version="6.7.18199.22081" PrivateAssets="all" ExcludeAssets="runtime" />
+    <PackageReference Include="RhinoCommon" Version="7.0.20314.3001" PrivateAssets="all" ExcludeAssets="runtime" />
     <!-- <PackageReference Include="System.Drawing.Common" Version="8.0.7" ExcludeAssets="runtime" /> for net7.0 ?-->
 
 
