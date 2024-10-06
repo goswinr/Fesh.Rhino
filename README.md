@@ -1,8 +1,9 @@
 ![Logo](https://raw.githubusercontent.com/goswinr/Fesh.Rhino/main/Media/logo128.png)
 # Fesh.Rhino
 
- This repo contains a Rhino plugin to host [Fesh](https://github.com/goswinr/Fesh). Fesh is a fsharp scripting editor based on [AvalonEdit](https://github.com/goswinr/AvalonEditB).
- The editor supports the latest features of F# 8.0 via [Fsharp Compiler Service](https://www.nuget.org/packages/FSharp.Compiler.Service)</a>.
+ This repo contains a Rhino plugin to host [Fesh](https://github.com/goswinr/Fesh).
+ Fesh is a fsharp scripting editor based on [AvalonEdit](https://github.com/goswinr/AvalonEditB).
+ The editor supports the latest features of F# 8.0 via [Fsharp Compiler Service](https://www.nuget.org/packages/FSharp.Compiler.Service)
  It has semantic syntax highlighting, auto completion and typ info tooltips. The output window supports colored text.
 
 Until Rhinocommon is available for .NET 7 this plugin only supports .NET Framework 4.8
