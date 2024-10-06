@@ -15,8 +15,12 @@ As shown in my talk at [FSharpConf 2016](https://www.youtube.com/watch?v=ZY-bvZZ
 ![Screenshot](https://raw.githubusercontent.com/goswinr/Fesh.Rhino/main/Media/screen1.png)
 
 ## Getting started
+After downloading from Releases or compiling via dotnet buid.
+Drag and drop the file Fesh.rhp into Rhino.   
+Then Launch the editor with the command 'Fesh'.
 
-you will always need to add a reference to RhinoCommon.dll
+
+You will always need to add a reference to RhinoCommon.dll
 
 
 ```fsharp
