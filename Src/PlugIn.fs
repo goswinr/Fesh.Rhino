@@ -91,8 +91,30 @@ type FeshPlugin () =
 
     override this.OnLoad(refErrs) : PlugIns.LoadReturnCode =
         if not Runtime.HostUtils.RunningOnWindows then
-            RhinoAppWriteLine.print " * Fesh.Rhino  | Scripting Editor For FSharp PlugIn only works on Windows. It needs the WPF framework "
+            let errMsg = " * the Fesh.Rhino | Scripting Editor For F# PlugIn only works on Windows, not Mac. It depends on the WPF framework "
+            refErrs <- errMsg
+            RhinoAppWriteLine.print errMsg
+            PlugIns.LoadReturnCode.ErrorShowDialog
+
+        elif not <| Runtime.InteropServices.RuntimeInformation.FrameworkDescription.StartsWith(".NET Framework") then
+
+            // Command: SetDotNetRuntime
+            // Currently running in .NET 7.0.7
+            // Select .NET Runtime ( Runtime=NETFramework  NetCoreVersion=v7 ): Runtime
+            // Runtime <NETFramework> ( NETCore  NETFramework ): NETFramework
+            // Select .NET Runtime ( Runtime=NETFramework  NetCoreVersion=v7 )
+            MessageBox.Show(
+                [|
+                    "The Fesh.Rhino Plugin currently only works well with.NET Framework."
+                    "A RhinoCommon target for .NET 7 or 8 is not available yet."
+                    "It might crash with .NET 7 or 8."
+                    "Please use the Rhino Command 'SetDotNetRuntime' to change to .NET Framework."   |] |> String.concat Environment.NewLine,
+                "Fesh.Rhino Plugin | .NET Framework needed",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning)
+            |> ignore
             PlugIns.LoadReturnCode.ErrorNoDialog
+
         else
             RhinoAppWriteLine.print  "loading Fesh.Rhino Plugin ..."
             let canRun () = not <| Rhino.Commands.Command.InCommand()
@@ -188,12 +210,7 @@ type FeshPlugin () =
 
 
 
-            if not <| Runtime.InteropServices.RuntimeInformation.FrameworkDescription.StartsWith(".NET Framework") then
-                MessageBox.Show("Fesh.Rhino Plugin",
-                    "The Fesh.Rhino Plugin currently only works well with .NET Framework. \r\n It might crash with .NET 7. \r\n Please use the Rhino Command 'SetDotNetRuntime' to change to .NET Framework.",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Stop)
-                |> ignore
+
 
             PlugIns.LoadReturnCode.Success
 
