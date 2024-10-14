@@ -21,6 +21,23 @@ module RhinoAppWriteLine =
     let print txt  = RhinoApp.WriteLine txt  ; RhinoApp.Wait()
     let print2 txt1 txt2 = RhinoApp.WriteLine (txt1+txt2); RhinoApp.Wait()
 
+module State =
+    let mutable ShownOnce = false // having this as static member on LoadEditor fails to evaluate !! not sure why.
+
+
+
+module internal App =
+    let showEditor() =
+        if isNull Sync.editorWindow then // set up window on first run
+            RhinoAppWriteLine.print  " * Fesh Editor Window cant be shown, the Plugin is not properly loaded. try restarting Rhino."
+            Commands.Result.Failure
+        else
+            Sync.editorWindow.Show()
+            Sync.editorWindow.Visibility <- Windows.Visibility.Visible
+            if Sync.editorWindow.WindowState = Windows.WindowState.Minimized then Sync.editorWindow.WindowState <- Windows.WindowState.Normal
+            State.ShownOnce <- true
+            Commands.Result.Success
+
 
 module internal Util =
 
@@ -46,7 +63,19 @@ module internal Util =
         |]
         |> String.concat Environment.NewLine
 
-    // let requestedFsCoreVersion = "8.0.400"
+    let requestedFsCoreVersion = "8.0.400"
+
+    // insert just before the last </runtime> tag in Rhino.exe.config
+    let bindingRedirect(version:string) = $"""
+        <!-- binding redirect added automatically by Rhino.Fesh plugin: -->
+        <assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1">
+            <dependentAssembly>
+                <assemblyIdentity name="FSharp.Core" publicKeyToken="b03f5f7f11d50a3a" culture="neutral" />
+                <bindingRedirect oldVersion="0.0.0.0-{version}" newVersion="{version}" />
+            </dependentAssembly>
+        </assemblyBinding>
+    """
+
 
 // the Plugin  and Commands Singletons:
 // Every RhinoCommon .rhp assembly must have one and only one PlugIn-derived
@@ -92,6 +121,7 @@ type FeshPlugin () =
 
 
     override this.OnLoad(refErrs) : PlugIns.LoadReturnCode =
+        AssemblyInfo.track()
         let assemblies = AppDomain.CurrentDomain.GetAssemblies()
 
         // let loadedFsCoreVersion = assemblies |> Seq.tryFind (fun a -> a.GetName().Name = "Fsharp.Core") |> Option.map (fun a -> a.GetName().Version.ToString() )
@@ -134,97 +164,112 @@ type FeshPlugin () =
 
         else
             RhinoAppWriteLine.print  "loading Fesh.Rhino Plugin ..."
-            let canRun () = not <| Rhino.Commands.Command.InCommand()
-            let host = "Rhino"
-            let hostData : Fesh.Config.HostedStartUpData = {
-                hostName = host
-                mainWindowHandel = RhinoApp.MainWindowHandle()
-                fsiCanRun = canRun
-                defaultCode = Some Util.defaultCode
-                // Add the Icon at the top left of the window and in the status bar, musst be called  after loading window.
-                // Media/LogoCursorTr.ico with Build action : "Resource"
-                // (for the exe file icon in explorer use <Win32Resource>Media\logo.res</Win32Resource>  in fsproj )
-                logo = Some (Uri("pack://application:,,,/Fesh.Rhino;component/Media/logo.ico"))
-                }
+            try
+                let canRun () = not <| Rhino.Commands.Command.InCommand()
+                let host = "Rhino"
+                let hostData : Fesh.Config.HostedStartUpData = {
+                    hostName = host
+                    mainWindowHandel = RhinoApp.MainWindowHandle()
+                    fsiCanRun = canRun
+                    defaultCode = Some Util.defaultCode
+                    // Add the Icon at the top left of the window and in the status bar, musst be called  after loading window.
+                    // Media/LogoCursorTr.ico with Build action : "Resource"
+                    // (for the exe file icon in explorer use <Win32Resource>Media\logo.res</Win32Resource>  in fsproj )
+                    logo = Some (Uri("pack://application:,,,/Fesh.Rhino;component/Media/logo.ico"))
+                    }
 
-            let fesh = Fesh.App.createEditorForHosting( hostData )
-            FeshPlugin.Fesh <- fesh
-            Sync.showEditor <- new Action(fun () -> fesh.Window.Show())
-            Sync.hideEditor <- new Action(fun () -> fesh.Window.Hide())
-            Sync.isEditorVisible <- new Func<bool>(fun () ->
-                // originally : fesh.Window.Visibility = Windows.Visibility.Visible but
-                // this might also show invisible if at the time of calling another window is covering rhino.
-                // then going back to rhino the ui prompt might not be visible because the window would be in front again.
-                // so we have to check if it is minimized too:
-                fesh.Window.Visibility = Windows.Visibility.Visible
-                &&
-                match fesh.Window.WindowState with
-                | Windows.WindowState.Minimized                                     -> false
-                | Windows.WindowState.Normal  | Windows.WindowState.Maximized | _   -> true
-                )
-
-            Sync.editorWindow <- (fesh.Window :> Windows.Window)
-
-            // Could be used to keep everything alive: But then you would be asked twice to save unsaved files. On Closing Fesh and closing Rhino.
-            fesh.Window.Closing.Add (fun e ->
-                if not e.Cancel then // closing might be already cancelled in Fesh.fs as a result of asking to save unsaved files.
-                   // even if closing is not canceled, don't close, just hide window
-                   fesh.Window.Visibility <- Windows.Visibility.Hidden
-                   e.Cancel <- true
-                   )
-
-            fesh.Window.StateChanged.Add (fun e ->
-                match fesh.Fsi.State with
-                | Ready ->
-                    // if the window is hidden log error messages to rhino command line, but not when window is shown
-                    // this is also set in FeshRunCurrentScript Command
+                let fesh = Fesh.App.createEditorForHosting( hostData )
+                FeshPlugin.Fesh <- fesh
+                Sync.showEditor <- new Action(fun () -> fesh.Window.Show())
+                Sync.hideEditor <- new Action(fun () -> fesh.Window.Hide())
+                Sync.isEditorVisible <- new Func<bool>(fun () ->
+                    // originally : fesh.Window.Visibility = Windows.Visibility.Visible but
+                    // this might also show invisible if at the time of calling another window is covering rhino.
+                    // then going back to rhino the ui prompt might not be visible because the window would be in front again.
+                    // so we have to check if it is minimized too:
+                    fesh.Window.Visibility = Windows.Visibility.Visible
+                    &&
                     match fesh.Window.WindowState with
-                    | Windows.WindowState.Normal    | Windows.WindowState.Maximized    -> fesh.Log.AdditionalLogger <- None
-                    | Windows.WindowState.Minimized | _                                -> fesh.Log.AdditionalLogger <- FeshPlugin.RhWriter
+                    | Windows.WindowState.Minimized                                     -> false
+                    | Windows.WindowState.Normal  | Windows.WindowState.Maximized | _   -> true
+                    )
 
-                | Initializing | NotLoaded | Evaluating | Compiling -> ()   // don't change while running
-                )
+                Sync.editorWindow <- (fesh.Window :> Windows.Window)
+
+                // Could be used to keep everything alive: But then you would be asked twice to save unsaved files. On Closing Fesh and closing Rhino.
+                fesh.Window.Closing.Add (fun e ->
+                    if not e.Cancel then // closing might be already cancelled in Fesh.fs as a result of asking to save unsaved files.
+                        // even if closing is not canceled, don't close, just hide window
+                        fesh.Window.Visibility <- Windows.Visibility.Hidden
+                        e.Cancel <- true
+                        )
+
+                fesh.Window.StateChanged.Add (fun e ->
+                    match fesh.Fsi.State with
+                    | Ready ->
+                        // if the window is hidden log error messages to rhino command line, but not when window is shown
+                        // this is also set in FeshRunCurrentScript Command
+                        match fesh.Window.WindowState with
+                        | Windows.WindowState.Normal    | Windows.WindowState.Maximized    -> fesh.Log.AdditionalLogger <- None
+                        | Windows.WindowState.Minimized | _                                -> fesh.Log.AdditionalLogger <- FeshPlugin.RhWriter
+
+                    | Initializing | NotLoaded | Evaluating | Compiling -> ()   // don't change while running
+                    )
 
 
-            fesh.Fsi.OnCompiling.Add    ( fun m -> FeshPlugin.BeforeEval())     // https://github.com/mcneel/rhinocommon/blob/57c3967e33d18205efbe6a14db488319c276cbee/dotnet/rhino/rhinosdkdoc.cs#L857
-            fesh.Fsi.OnRuntimeError.Add ( fun e -> FeshPlugin.AfterEval(true))  // to unsure UI does not stay frozen if RedrawEnabled is false //showWin because it might crash during UI interaction where it is hidden
-            fesh.Fsi.OnCanceled.Add     ( fun m -> FeshPlugin.AfterEval(true))  // to unsure UI does not stay frozen if RedrawEnabled is false //showWin because it might crash during UI interaction where it is hidden
-            fesh.Fsi.OnCompletedOk.Add  ( fun m -> FeshPlugin.AfterEval(false)) // to unsure UI does not stay frozen if RedrawEnabled is false //showWin = false because might be running in background mode from rhino command line
+                fesh.Fsi.OnCompiling.Add    ( fun m -> FeshPlugin.BeforeEval())     // https://github.com/mcneel/rhinocommon/blob/57c3967e33d18205efbe6a14db488319c276cbee/dotnet/rhino/rhinosdkdoc.cs#L857
+                fesh.Fsi.OnRuntimeError.Add ( fun e -> FeshPlugin.AfterEval(true))  // to unsure UI does not stay frozen if RedrawEnabled is false //showWin because it might crash during UI interaction where it is hidden
+                fesh.Fsi.OnCanceled.Add     ( fun m -> FeshPlugin.AfterEval(true))  // to unsure UI does not stay frozen if RedrawEnabled is false //showWin because it might crash during UI interaction where it is hidden
+                fesh.Fsi.OnCompletedOk.Add  ( fun m -> FeshPlugin.AfterEval(false)) // to unsure UI does not stay frozen if RedrawEnabled is false //showWin = false because might be running in background mode from rhino command line
 
-            //RhinoDoc.CloseDocument.Add (fun e -> fesh.Fsi.CancelIfAsync() ) // don't do that !! Allow rs.Command to open new files when called async.
+                //RhinoDoc.CloseDocument.Add (fun e -> fesh.Fsi.CancelIfAsync() ) // don't do that !! Allow rs.Command to open new files when called async.
 
-            RhinoApp.Closing.Add (fun _ ->
-                fesh.Tabs.AskForFileSavingToKnowIfClosingWindowIsOk() |> ignore // to save unsaved files, canceling of closing not possible here, save dialog will show after rhino is closed
-                fesh.Fsi.AskIfCancellingIsOk() |> ignore
-                fesh.Fsi.CancelIfAsync()   //sync eval gets canceled anyway
-                )
+                RhinoApp.Closing.Add (fun _ ->
+                    fesh.Tabs.AskForFileSavingToKnowIfClosingWindowIsOk() |> ignore // to save unsaved files, canceling of closing not possible here, save dialog will show after rhino is closed
+                    fesh.Fsi.AskIfCancellingIsOk() |> ignore
+                    fesh.Fsi.CancelIfAsync()   //sync eval gets canceled anyway
+                    )
 
-            // Dummy attachment in sync mode  to prevent access violation exception if first access is in async mode
-            // Don't abort on esc, only on ctrl+break or Rhino.Scripting.EscapeTest()
-            RhinoApp.EscapeKeyPressed.Add(ignore)
+                // Dummy attachment in sync mode  to prevent access violation exception if first access is in async mode
+                // Don't abort on esc, only on ctrl+break or Rhino.Scripting.EscapeTest()
+                RhinoApp.EscapeKeyPressed.Add(ignore)
 
-            // Add an Alias too if not taken already:
-            if not <| ApplicationSettings.CommandAliasList.IsAlias("fr") then
-                if ApplicationSettings.CommandAliasList.Add("fr","FeshRunCurrentScript")then
-                    RhinoAppWriteLine.print  "* Fesh.Rhino Plugin added the command alias 'fr' for 'FeshRunCurrentScript'"
+                // Add an Alias too if not taken already:
+                if not <| ApplicationSettings.CommandAliasList.IsAlias("fr") then
+                    if ApplicationSettings.CommandAliasList.Add("fr","FeshRunCurrentScript")then
+                        RhinoAppWriteLine.print  "* Fesh.Rhino Plugin added the command alias 'fr' for 'FeshRunCurrentScript'"
 
-            // Reinitialize Rhino.Scripting just in case it is loaded already in the current AppDomain by another plugin.
-            // This is needed to have showEditor() and hideEditor() actions for Fesh setup correctly.
-            assemblies
-            |> Seq.tryFind (fun a -> a.GetName().Name = "Rhino.Scripting")
-            |> Option.iter (fun rsAss ->
-                try
-                    let rhinoSyncModule = rsAss.GetType("Rhino.RhinoSync")
-                    let init = rhinoSyncModule.GetProperty("initialize").GetValue(rsAss) :?> Action
-                    init.Invoke()
-                    RhinoAppWriteLine.print "Rhino.Scripting.RhinoSync re-initialized."
-                with e ->
-                    RhinoAppWriteLine.print (sprintf "* Fesh.Rhino Plugin Rhino.Scripting.Initialize() failed with %A" e)
-                )
+                // Reinitialize Rhino.Scripting just in case it is loaded already in the current AppDomain by another plugin.
+                // This is needed to have showEditor() and hideEditor() actions for Fesh setup correctly.
+                assemblies
+                |> Seq.tryFind (fun a -> a.GetName().Name = "Rhino.Scripting")
+                |> Option.iter (fun rsAss ->
+                    try
+                        let rhinoSyncModule = rsAss.GetType("Rhino.RhinoSync")
+                        let init = rhinoSyncModule.GetProperty("initialize").GetValue(rsAss) :?> Action
+                        init.Invoke()
+                        RhinoAppWriteLine.print "Rhino.Scripting.RhinoSync re-initialized."
+                    with e ->
+                        RhinoAppWriteLine.print (sprintf "* Fesh.Rhino Plugin Rhino.Scripting.Initialize() failed with %A" e)
+                    )
 
-            RhinoAppWriteLine.print  ("Fesh."+host + " plugin loaded.")
-
-            PlugIns.LoadReturnCode.Success
+                RhinoAppWriteLine.print  ("Fesh."+host + " plugin loaded.")
+                App.showEditor() |> ignore
+                PlugIns.LoadReturnCode.Success
+            with
+            | e ->
+                let errMsg =
+                    [|
+                    "Fesh.Rhino Plugin failed to load."
+                    "Try to restart Rhino! That is often enough to make it work!"
+                    "If you still have problems,"
+                    "and you have other plugins loaded that are using older versions of 'Fsharp.Core'"
+                    "try to unload or disable them."
+                    |] |> String.concat Environment.NewLine
+                refErrs <- errMsg
+                RhinoAppWriteLine.print e.Message
+                RhinoAppWriteLine.print errMsg
+                PlugIns.LoadReturnCode.ErrorShowDialog
 
 
 

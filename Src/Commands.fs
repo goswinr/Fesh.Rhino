@@ -8,30 +8,17 @@ open Rhino.Commands
 
 // The Command Singleton classes:
 
-module State =
-    let mutable ShownOnce = false // having this as static member on LoadEditor fails to evaluate !! not sure why.
 
 [<CommandStyle(Style.ScriptRunner)>] // so that RhinoApp.RunScript ( = rs.Command) can be used. https://developer.rhino3d.com/guides/rhinocommon/run-rhino-command-from-plugin/
 type LoadEditor () =
     inherit Commands.Command()
     static member val Instance = LoadEditor()
 
-    static member DoLoad() =
-        if isNull Sync.editorWindow then // set up window on first run
-            RhinoAppWriteLine.print  " * Fesh Editor Window cant be shown, the Plugin is not properly loaded. try restarting Rhino."
-            Commands.Result.Failure
-
-        else
-            Sync.editorWindow.Show()
-            Sync.editorWindow.Visibility <- Windows.Visibility.Visible
-            if Sync.editorWindow.WindowState = Windows.WindowState.Minimized then Sync.editorWindow.WindowState <- Windows.WindowState.Normal
-            State.ShownOnce <- true
-            Commands.Result.Success
-
     override this.EnglishName = "Fesh" //The command name as it appears on the Rhino command line.
 
     override this.RunCommand (doc, mode)  =
-        LoadEditor.DoLoad()
+        App.showEditor()
+
 
 [<CommandStyle(Style.ScriptRunner)>] // so that RhinoApp.RunScript ( = rs.Command) can be used. https://developer.rhino3d.com/guides/rhinocommon/run-rhino-command-from-plugin/
 type RunCurrentScript () =
@@ -47,8 +34,8 @@ type RunCurrentScript () =
             Commands.Result.Failure
         else
             if not State.ShownOnce then
-                LoadEditor.DoLoad()
-                // it needs to be shown once. otherwise Fesh.Commands.RunAllText below fails to find any text in Editor
+                App.showEditor()
+                // it needs to be shown once, otherwise Fesh.Commands.RunAllText below fails to find any text in Editor
             else
                 let fesh = FeshPlugin.Fesh
                 match Sync.editorWindow.Visibility with

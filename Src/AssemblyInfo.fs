@@ -1,9 +1,11 @@
-﻿namespace Fesh.Rhino.AssemblyInfo
+﻿namespace Fesh.Rhino
 
 open System.Reflection
 open System.Runtime.CompilerServices
 open System.Runtime.InteropServices
 open Rhino.PlugIns
+
+
 
 // IMPORTANT:
 // Without this Guid Rhino does not remember the plugin after restart, setting <ProjectGuid> in the new SDK fsproj file does not to work.
@@ -23,7 +25,7 @@ open Rhino.PlugIns
 //[<assembly: PlugInDescription(DescriptionType.Fax, "206-545-7321")>]
 [<assembly: PlugInDescription(DescriptionType.Organization, "Studio Rothenthal")>]
 //[<assembly: PlugInDescription(DescriptionType.UpdateUrl, "https://github.com/mcneel/RhinoPbrMaterial")>]
-[<assembly: PlugInDescription(DescriptionType.WebSite, "http://fesh.io/")>]
+[<assembly: PlugInDescription(DescriptionType.WebSite, "https://github.com/goswinr/Fesh.Rhino")>]
 // Icons should be Windows .ico files and contain 32-bit images in the following sizes: 16, 24, 32, 48, and 256.
 // This is a Rhino 6-only description.
 [<assembly: PlugInDescription(DescriptionType.Icon, "Fesh.Rhino.EmbeddedResources.logo.ico")>] // TODO path ok ?
@@ -33,7 +35,7 @@ open Rhino.PlugIns
 //[<assembly: AssemblyTitle("Fesh.Rhino")>]
 //[<assembly: AssemblyDescription("Fesh | FSharp Scripting Editor for Rhino")>]
 //[<assembly: AssemblyConfiguration("")>]
-//[<assembly: AssemblyCompany("Fesh.io")>]
+//[<assembly: AssemblyCompany("Fesh")>]
 //[<assembly: AssemblyProduct("Fesh.Rhino")>]
 //[<assembly: AssemblyCopyright("© Copyright Goswin Rothenthal 2020")>]
 //[<assembly: AssemblyTrademark("")>]
@@ -42,3 +44,8 @@ open Rhino.PlugIns
 //[<assembly: AssemblyFileVersion("0.1.1.0")>]
 
 do ()
+
+
+module AssemblyInfo =
+    // just so that this file does not get ignored by the compiler
+    let track() = ()

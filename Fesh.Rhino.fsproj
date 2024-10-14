@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
   <PropertyGroup>
     <TargetExt>.rhp</TargetExt>
@@ -7,105 +7,79 @@
     <!-- <TargetFrameworks>net48;net7.0-windows</TargetFrameworks> -->
     <!-- https://discourse.mcneel.com/t/rhino-inside-net-core-7-0/166059/7 -->
     <!-- <NoWarn>NU1701</NoWarn> -->
-   <!-- targeting net 7 in still not recommended, (Aug 2024) see
+    <!-- targeting net 7 in still not recommended, (Aug 2024) see
    https://developer.rhino3d.com/guides/rhinocommon/moving-to-dotnet-7/#migrating-your-plugin
    targeting net 7 actually fails to find the System.Drawing.Bitmap reference during build even if System.Drawing.Common is included.
    using net48 target on net7 will not allow async evaluation.
     -->
     <UseWPF>true</UseWPF>
-    <LangVersion>preview</LangVersion> <!-- enables indexing from end -->
-
+    <LangVersion>preview</LangVersion>
+    <!-- enables indexing from end -->
     <NeutralLanguage>en</NeutralLanguage>
-    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>    <!--to only have the english resources-->
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <!--to only have the english resources-->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <FSharpCoreIncludeDocFileInOutput>true</FSharpCoreIncludeDocFileInOutput>
-
     <RootNamespace>Fesh.Rhino</RootNamespace>
     <AssemblyName>Fesh.Rhino</AssemblyName>
     <AssemblyTitle>Fesh.Rhino</AssemblyTitle>
     <Title>Fesh.Rhino</Title>
     <Product>Fesh.Rhino</Product>
     <PackageId>Fesh.Rhino</PackageId>
-
     <Version>0.12.0</Version>
     <AssemblyVersion>0.12.0</AssemblyVersion>
     <FileVersion>0.12.0</FileVersion>
-
     <Authors>GoswinR</Authors>
     <Copyright>Goswin Rothenthal 2019</Copyright>
-
     <Description>A Scripting Editor for F# in Rhino</Description>
     <ApplicationIcon>Media/logo.ico</ApplicationIcon>
-    <Win32Resource>Media/logo.res</Win32Resource>    <!--  for Application Icon in explorer-->
-
+    <Win32Resource>Media/logo.res</Win32Resource>
+    <!--  for Application Icon in explorer-->
     <Configurations>Release</Configurations>
-    <PlatformTarget>x64</PlatformTarget><!--  x64 is required by Rhino, don't use just 'Platform' tag-->
-
+    <PlatformTarget>x64</PlatformTarget>
+    <!--  x64 is required by Rhino, don't use just 'Platform' tag-->
     <Configuration>Release</Configuration>
   </PropertyGroup>
-
-
   <!-- <PropertyGroup Condition="$(Configuration) == 'Debug' AND $([MSBuild]::IsOSPlatform(Windows))">
     <StartProgram>C:\Program Files\Rhino 8\System\Rhino.exe</StartProgram>
     <StartArguments></StartArguments>
     <StartAction>Program</StartAction>
   </PropertyGroup> -->
-
   <ItemGroup>
-
     <PackageReference Include="Fesh" Version="0.12.0" GeneratePathProperty="true" />
     <!-- These packages are just added  explicitly again to pull in XML too below. -->
     <!-- <PackageReference Include="AvalonLog"  Version="0.12.0" GeneratePathProperty="true" /> -->
     <!-- <PackageReference Include="Fittings"    Version="0.6.0" GeneratePathProperty="true" /> -->
     <!-- <PackageReference Include="AvalonEditB" Version="2.2.0" GeneratePathProperty="true" /> -->
-
     <!-- an explicit reference update is needed by latest FSharp.Compiler.Service to match Fesh-->
     <PackageReference Update="FSharp.Core" Version="8.0.400" GeneratePathProperty="true" />
-
-
     <!-- During debugging use the current Rhinocommon dll reference to avoid the ~20 sec of compatibility check when Rhino loads it the first time. -->
     <!-- <Reference Include="RhinoCommon" HintPath="C:\Program Files\Rhino 7\System\RhinoCommon.dll" Private="False" /> -->
     <PackageReference Include="RhinoCommon" Version="7.0.20314.3001" PrivateAssets="all" ExcludeAssets="runtime" />
-
     <!-- <PackageReference Include="System.Drawing.Common" Version="8.0.7" ExcludeAssets="runtime" /> for net7.0 ?-->
-
-
     <!--this reference is needed for tooling only, it might not be installed on host PC. see also https://github.com/fsprojects/IfSharp/issues/213 -->
     <PackageReference Include="NETStandard.Library" Version="2.0.3" GeneratePathProperty="true" />
-
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
-
   </ItemGroup>
-
   <ItemGroup>
-    <EmbeddedResource Include="Media/logo.res" /> <!--  for Application Icon in explorer-->
+    <EmbeddedResource Include="Media/logo.res" />
+    <!--  for Application Icon in explorer-->
     <Resource Include="Media/logo.ico" />
-
     <Compile Include="Src/AssemblyInfo.fs" />
     <Compile Include="Src/PlugIn.fs" />
     <Compile Include="Src/Commands.fs" />
   </ItemGroup>
-
-
   <Target Name="CopyFilesOverAfterBuild" BeforeTargets="AfterBuild">
-
     <!-- take latest SyntaxHighlightingFSharp.xshd from https://github.com/goswinr/Fesh nuget.-->
     <Copy SourceFiles="$(PkgFesh)/SyntaxHighlightingFSharp.xshd" DestinationFiles="$(TargetDir)SyntaxHighlightingFSharp.xshd" ContinueOnError="false" />
-
     <!--netstandard dll is needed for editor tooling only, it might not be installed on host PC. see also  https://github.com/fsprojects/IfSharp/issues/213 -->
     <Copy SourceFiles="$(PkgNETStandard_Library)/build/netstandard2.0/ref/netstandard.dll" DestinationFiles="$(TargetDir)netstandard.dll" ContinueOnError="false" />
     <Copy SourceFiles="$(PkgNETStandard_Library)/build/netstandard2.0/ref/netstandard.xml" DestinationFiles="$(TargetDir)netstandard.xml" ContinueOnError="false" />
-
     <!-- FSharp.Core.xml because <FSharpCoreIncludeDocFileInOutput>true</FSharpCoreIncludeDocFileInOutput>  does not work in visual studio: -->
     <!-- <Copy SourceFiles="$(PkgFSharp_Core)/lib/netstandard2.0/FSharp.Core.xml"                         DestinationFiles="$(TargetDir)FSharp.Core.xml"             ContinueOnError="false" /> -->
     <!-- <Copy SourceFiles="$(PkgFSharp_Compiler_Service)/lib/netstandard2.0/FSharp.Compiler.Service.xml" DestinationFiles="$(TargetDir)FSharp.Compiler.Service.xml" ContinueOnError="false" /> -->
-
     <!-- <Copy SourceFiles="$(PkgAvalonLog)/lib/net472/AvalonLog.xml"     DestinationFiles="$(TargetDir)AvalonLog.xml"   ContinueOnError="false" /> -->
     <!-- <Copy SourceFiles="$(PkgAvalonEditB)/lib/net472/AvalonEditB.xml" DestinationFiles="$(TargetDir)AvalonEditB.xml" ContinueOnError="false" /> -->
     <!-- <Copy SourceFiles="$(PkgFittings)/lib/net472/Fittings.xml"       DestinationFiles="$(TargetDir)Fittings.xml"    ContinueOnError="false" /> -->
-
   </Target>
-
 </Project>
-
-
