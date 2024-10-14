@@ -5,7 +5,7 @@ open System
 open Fesh
 open System.Windows
 
-open System.Drawing // fot net 7
+//open System.Drawing // fot net 7
 
 
 module Sync =  //Don't change name its used in Rhino.Scripting.dll via reflection
@@ -16,6 +16,14 @@ module Sync =  //Don't change name its used in Rhino.Scripting.dll via reflectio
 
     let mutable editorWindow = null: Windows.Window // Not used via reflection
 
+
+module RhinoAppWriteLine =
+    let print txt  = RhinoApp.WriteLine txt  ; RhinoApp.Wait()
+    let print2 txt1 txt2 = RhinoApp.WriteLine (txt1+txt2); RhinoApp.Wait()
+
+
+module internal Util =
+
     // Fesh wil add this before:
     // "// This is your default code for new files,"
     // "// you can change it by going to the menu: File -> Edit Template File"
@@ -23,7 +31,7 @@ module Sync =  //Don't change name its used in Rhino.Scripting.dll via reflectio
     let defaultCode =
         [|
         """#r "C:/Program Files/Rhino 8/System/RhinoCommon.dll" """
-        """#r "nuget:Rhino.Scripting.Fsharp, 0.8.1"  """
+        """#r "nuget:Rhino.Scripting.Fsharp"  """
         ""
         """open System"""
         """open Rhino.Scripting"""
@@ -38,13 +46,7 @@ module Sync =  //Don't change name its used in Rhino.Scripting.dll via reflectio
         |]
         |> String.concat Environment.NewLine
 
-
-module RhinoAppWriteLine =
-    let print txt  = RhinoApp.WriteLine txt  ; RhinoApp.Wait()
-    let print2 txt1 txt2 = RhinoApp.WriteLine (txt1+txt2); RhinoApp.Wait()
-
-
-
+    // let requestedFsCoreVersion = "8.0.400"
 
 // the Plugin  and Commands Singletons:
 // Every RhinoCommon .rhp assembly must have one and only one PlugIn-derived
@@ -90,8 +92,12 @@ type FeshPlugin () =
 
 
     override this.OnLoad(refErrs) : PlugIns.LoadReturnCode =
+        let assemblies = AppDomain.CurrentDomain.GetAssemblies()
+
+        // let loadedFsCoreVersion = assemblies |> Seq.tryFind (fun a -> a.GetName().Name = "Fsharp.Core") |> Option.map (fun a -> a.GetName().Version.ToString() )
+
         if not Runtime.HostUtils.RunningOnWindows then
-            let errMsg = " * the Fesh.Rhino | Scripting Editor For F# PlugIn only works on Windows, not Mac. It depends on the WPF framework "
+            let errMsg = " * The Fesh.Rhino Scripting-Editor-For-F# PlugIn only works on Windows, not Mac. It depends on the WPF framework "
             refErrs <- errMsg
             RhinoAppWriteLine.print errMsg
             PlugIns.LoadReturnCode.ErrorShowDialog
@@ -115,6 +121,17 @@ type FeshPlugin () =
             |> ignore
             PlugIns.LoadReturnCode.ErrorNoDialog
 
+        // elif loadedFsCoreVersion.IsSome && Util.requestedFsCoreVersion <> loadedFsCoreVersion.Value then // another version of Fsharp.Core is loaded
+        //     let errMsg =
+        //         $"The Fesh.Rhino Plugin needs Fsharp.Core version {Util.requestedFsCoreVersion}, but found version " + loadedFsCoreVersion.Value +
+        //         "\r\nYou might have already another plugin loaded using an older version of Fsharp.Core." +
+        //         "\r\nPlease unload the other plugin or update it to use Fsharp.Core version {requestedFsCoreVersion}." +
+        //         "\r\nOr add a binding redirect to Rhino.exe.config. see:" +
+        //         "\r\nhttps://github.com/goswinr/Fesh.Rhino/issues/2"
+        //     refErrs <- errMsg
+        //     RhinoAppWriteLine.print errMsg
+        //     PlugIns.LoadReturnCode.ErrorShowDialog
+
         else
             RhinoAppWriteLine.print  "loading Fesh.Rhino Plugin ..."
             let canRun () = not <| Rhino.Commands.Command.InCommand()
@@ -123,7 +140,7 @@ type FeshPlugin () =
                 hostName = host
                 mainWindowHandel = RhinoApp.MainWindowHandle()
                 fsiCanRun = canRun
-                defaultCode = Some Sync.defaultCode
+                defaultCode = Some Util.defaultCode
                 // Add the Icon at the top left of the window and in the status bar, musst be called  after loading window.
                 // Media/LogoCursorTr.ico with Build action : "Resource"
                 // (for the exe file icon in explorer use <Win32Resource>Media\logo.res</Win32Resource>  in fsproj )
@@ -182,7 +199,6 @@ type FeshPlugin () =
                 fesh.Fsi.CancelIfAsync()   //sync eval gets canceled anyway
                 )
 
-
             // Dummy attachment in sync mode  to prevent access violation exception if first access is in async mode
             // Don't abort on esc, only on ctrl+break or Rhino.Scripting.EscapeTest()
             RhinoApp.EscapeKeyPressed.Add(ignore)
@@ -193,8 +209,8 @@ type FeshPlugin () =
                     RhinoAppWriteLine.print  "* Fesh.Rhino Plugin added the command alias 'fr' for 'FeshRunCurrentScript'"
 
             // Reinitialize Rhino.Scripting just in case it is loaded already in the current AppDomain by another plugin.
-            // This is needed to have showEditor and hideEditor actions for Fesh setup correctly.
-            AppDomain.CurrentDomain.GetAssemblies()
+            // This is needed to have showEditor() and hideEditor() actions for Fesh setup correctly.
+            assemblies
             |> Seq.tryFind (fun a -> a.GetName().Name = "Rhino.Scripting")
             |> Option.iter (fun rsAss ->
                 try
@@ -207,10 +223,6 @@ type FeshPlugin () =
                 )
 
             RhinoAppWriteLine.print  ("Fesh."+host + " plugin loaded.")
-
-
-
-
 
             PlugIns.LoadReturnCode.Success
 

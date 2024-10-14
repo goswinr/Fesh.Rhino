@@ -1,7 +1,10 @@
 ![Logo](https://raw.githubusercontent.com/goswinr/Fesh.Rhino/main/Media/logo128.png)
 # Fesh.Rhino
 
-Fesh.Rhino is an F# scripting editor hosted inside [Rhino3D](https://www.rhino3d.com/) on Windows. Based on [Fesh](https://github.com/goswinr/Fesh).
+![code size](https://img.shields.io/github/languages/code-size/goswinr/Fesh.Rhino.svg)
+[![license](https://img.shields.io/github/license/goswinr/Fesh.Rhino)](LICENSE)
+
+Fesh.Rhino is an F# scripting editor hosted inside [Rhino3D](https://www.rhino3d.com/) on Windows. It is based on [Fesh](https://github.com/goswinr/Fesh).
 It has semantic syntax highlighting, auto completion, type info tooltips and more.
 The output window supports colored text.
 
@@ -23,10 +26,11 @@ The editor might not load properly if you have already another plug-in loaded th
 See this [issue](https://github.com/goswinr/Fesh.Rhino/issues/2.)
 
 ## Get Started Coding
-You will always need to add a reference to RhinoCommon.dll
+All you need is to add a reference to RhinoCommon.dll:
 
 ```fsharp
-#r "C:/Program Files/Rhino 8/System/RhinoCommon.dll" // or where ever you have it
+#r "C:/Program Files/Rhino 8/System/RhinoCommon.dll" // adapt path if needed
+open Rhino
 ```
 
 If you are used to doing Rhino Scripting with Python I recommend using the [Rhino.Scripting](https://github.com/goswinr/Rhino.Scripting) to have the same 900 functions available.
@@ -36,12 +40,13 @@ It provides useful extensions and curried functions for piping and partial appli
 
 ```fsharp
 #r "C:/Program Files/Rhino 8/System/RhinoCommon.dll"
-#r "nuget:Rhino.Scripting.Fsharp, 0.8.0"
+#r "nuget:Rhino.Scripting.Fsharp, 0.8.0" // includes Rhino.Scripting and FsEx
 
 open System
+open Rhino.
 open Rhino.Scripting
-open Rhino.Scripting.Fsharp //recommended for F#
-open FsEx // part of Rhino.Scripting
+open Rhino.Scripting.Fsharp // for curried functions
+open FsEx // for extensions to Fsharp Collections
 
 type rs = RhinoScriptSyntax
 
@@ -58,6 +63,7 @@ See the `FSI` menu for more options.
 You can choose to run the scripts in Synchronous on the UI thread or Asynchronous on a background thread.
 Synchronous mode is the default. Your UI will be blocked while the script is running.
 But the interaction with Rhino is safer.
+
 ![async mode](https://raw.githubusercontent.com/goswinr/Fesh.Rhino/main/Media/async.png)
 
 While the main Rhino Document is officially not thread safe,
@@ -74,6 +80,10 @@ If running async it will automatically marshal all calls that affect the UI to t
 
 ## Changelog
 
-`0.11.0`
+`0.12.0`
+- Synchonous mode is now the default
+- Updated to Fesh 0.12.0
+
+`0.11.1`
 - first public release
 
