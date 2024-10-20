@@ -79,6 +79,10 @@ If running async it will automatically marshal all calls that affect the UI to t
 
 
 ## Changelog
+`0.13.0`
+- Fix crashes of Rhino in case of assembly version conflicts
+- Updated to Fesh 0.13.0
+
 
 `0.12.0`
 - Synchonous mode is now the default
