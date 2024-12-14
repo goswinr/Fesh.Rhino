@@ -5,15 +5,16 @@
 [![build](https://github.com/goswinr/Fesh.Rhino/actions/workflows/build.yml/badge.svg?event=push)](https://github.com/goswinr/Fesh.Rhino/actions/workflows/build.yml)
 [![license](https://img.shields.io/github/license/goswinr/Fesh.Rhino)](LICENSE)
 
-Fesh.Rhino is an F# scripting editor hosted inside [Rhino3D](https://www.rhino3d.com/) on Windows. It is based on [Fesh](https://github.com/goswinr/Fesh).
-It has semantic syntax highlighting, auto completion, type info tooltips and more.
+Fesh.Rhino is an F# scripting editor hosted inside [Rhino3D](https://www.rhino3d.com/) on Windows.\
+ It is based on [Fesh](https://github.com/goswinr/Fesh).\
+It has semantic syntax highlighting, auto completion, type info tooltips and more.\
 The output window supports colored text.
 
-Until [RhinoCommon](https://www.nuget.org/packages/rhinocommon#supportedframeworks-body-tab) is targeted properly for .NET 7 this plugin only supports .NET Framework 4.8.
+Until [RhinoCommon](https://www.nuget.org/packages/rhinocommon#supportedframeworks-body-tab) is targeted properly for .NET 7 this plugin only supports .NET Framework 4.8.\
 In Rhino use the command [SetDotNetRuntime](https://www.rhino3d.com/en/docs/guides/netcore/) to switch between .NET Framework and .NET Core.
 
 
-The example script [LouvreAbuDhabi.fsx](https://github.com/goswinr/Fesh.Rhino/blob/main/LouvreAbuDhabi.fsx) in the root folder generates the axes for cladding of the Louvre Abu Dhabi.
+The example script [LouvreAbuDhabi.fsx](https://github.com/goswinr/Fesh.Rhino/blob/main/LouvreAbuDhabi.fsx) in the root folder generates the axes for cladding of the Louvre Abu Dhabi.\
 As shown in my talk at [FSharpConf 2016](https://www.youtube.com/watch?v=ZY-bvZZZZnE):
 
 ![Screenshot](https://raw.githubusercontent.com/goswinr/Fesh.Rhino/main/Media/screen1.png)
@@ -26,11 +27,11 @@ The recommended way to install is via the Rhino Package Manager command `Package
 Then launch the editor with the command `Fesh`.
 
 ## Manual Installation
-You can also build the plugin from this repository via `dotnet build`.
-Then Drag and drop the file `Fesh.rhp`  from into Rhino.
+You can also build the plugin from this repository via `dotnet build`.\
+Then Drag and drop the file `Fesh.rhp`  from into Rhino.\
 Then launch the editor with the command `Fesh`.
 
-The editor might not load properly if you have already another plug-in loaded that uses an older version of Fsharp.Core.
+The editor might not load properly if you have already another plug-in loaded that uses an older version of Fsharp.Core.\
 See this [issue](https://github.com/goswinr/Fesh.Rhino/issues/2.)
 
 ## Get Started Coding
@@ -41,8 +42,8 @@ All you need is to add a reference to RhinoCommon.dll:
 open Rhino
 ```
 
-If you are used to doing Rhino Scripting with Python I recommend using the [Rhino.Scripting](https://github.com/goswinr/Rhino.Scripting) to have the same 900 functions available.
-In addition I recommend the [Rhino.Scripting.Fsharp](https://github.com/goswinr/Rhino.Scripting.Fsharp) package.
+If you are used to doing Rhino Scripting with Python I recommend using the [Rhino.Scripting](https://github.com/goswinr/Rhino.Scripting) to have the same 900 functions available.\
+In addition I recommend the [Rhino.Scripting.Fsharp](https://github.com/goswinr/Rhino.Scripting.Fsharp) package.\
 It provides useful extensions and curried functions for piping and partial application.
 
 
@@ -63,22 +64,22 @@ let crv = rs.GetObject("Select a curve",  rs.Filter.Curve)
 ```
 
 ## Running
-Run your script by presssing `F5` key.
-Like in Visual Studio you can also just evaluate the selected text by pressing `Alt` + `Enter` keys.
+Run your script by presssing `F5` key.\
+Like in Visual Studio you can also just evaluate the selected text by pressing `Alt` + `Enter` keys.\
 See the `FSI` menu for more options.
 
 ## Blocking the UI thread ?
-You can choose to run the scripts in Synchronous on the UI thread or Asynchronous on a background thread.
-Synchronous mode is the default. Your UI will be blocked while the script is running.
+You can choose to run the scripts in Synchronous on the UI thread or Asynchronous on a background thread.\
+Synchronous mode is the default. Your UI will be blocked while the script is running.\
 But the interaction with Rhino is safer.
 
 ![async mode](https://raw.githubusercontent.com/goswinr/Fesh.Rhino/main/Media/async.png)
 
 While the main Rhino Document is officially not thread safe,
-modifying the Rhino Document from a background thread is actually OK as long as there is only one thread doing it.
+modifying the Rhino Document from a background thread is actually OK as long as there is only one thread doing it.\
 The main reason to use this editor in Async mode is to keep the Rhino UI and the Fesh UI responsive while doing long running operations.
 
-The [Rhino.Scripting](https://github.com/goswinr/Rhino.Scripting) library can be used from any thread.
+The [Rhino.Scripting](https://github.com/goswinr/Rhino.Scripting) library can be used from any thread.\
 If running async it will automatically marshal all calls that affect the UI to the main Rhino UI thread and wait for switching back till completion on UI thread.
 
 ### Changelog

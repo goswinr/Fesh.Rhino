@@ -11,8 +11,10 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-    # ignore:
-    #   - dependency-name: "FSharp.Core"
+    ignore:
+      # keep at Rhino 7
+      - dependency-name: "RhinoCommon"
+
 
   # - package-ecosystem: "nuget"
   #   directory: "/Tests/"

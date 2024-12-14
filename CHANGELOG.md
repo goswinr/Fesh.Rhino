@@ -22,7 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - first public release
 
 [Unreleased]: https://github.com/goswinr/Fesh.Rhino/compare/0.16.1...HEAD
-[0.16.0]: https://github.com/goswinr/Fesh.Rhino/compare/0.13.0...0.16.1
+[0.16.1]: https://github.com/goswinr/Fesh.Rhino/compare/0.13.0...0.16.1
 [0.13.0]: https://github.com/goswinr/Fesh.Rhino/compare/0.11.1...0.13.0
 
 
