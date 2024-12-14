@@ -63,18 +63,18 @@ module internal Util =
         |]
         |> String.concat Environment.NewLine
 
-    let requestedFsCoreVersion = "8.0.400"
+    // let requestedFsCoreVersion = "8.0.400"
 
-    // insert just before the last </runtime> tag in Rhino.exe.config
-    let bindingRedirect(version:string) = $"""
-        <!-- binding redirect added automatically by Rhino.Fesh plugin: -->
-        <assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1">
-            <dependentAssembly>
-                <assemblyIdentity name="FSharp.Core" publicKeyToken="b03f5f7f11d50a3a" culture="neutral" />
-                <bindingRedirect oldVersion="0.0.0.0-{version}" newVersion="{version}" />
-            </dependentAssembly>
-        </assemblyBinding>
-    """
+    // // insert just before the last </runtime> tag in Rhino.exe.config
+    // let bindingRedirect(version:string) = $"""
+    //     <!-- binding redirect added automatically by Rhino.Fesh plugin: -->
+    //     <assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1">
+    //         <dependentAssembly>
+    //             <assemblyIdentity name="FSharp.Core" publicKeyToken="b03f5f7f11d50a3a" culture="neutral" />
+    //             <bindingRedirect oldVersion="0.0.0.0-{version}" newVersion="{version}" />
+    //         </dependentAssembly>
+    //     </assemblyBinding>
+    // """
 
 
 // the Plugin  and Commands Singletons:
@@ -117,7 +117,8 @@ type FeshPlugin () =
             RhinoDoc.ActiveDoc.Views.RedrawEnabled <- true
             RhinoDoc.ActiveDoc.Views.Redraw()
             if showWin && not (isNull Sync.showEditor) then Sync.showEditor.Invoke() //because it might crash during UI interaction where it is hidden
-            } |> Async.StartImmediate
+        }
+        |> Async.StartImmediate
 
 
     override this.OnLoad(refErrs) : PlugIns.LoadReturnCode =
@@ -127,7 +128,7 @@ type FeshPlugin () =
         // let loadedFsCoreVersion = assemblies |> Seq.tryFind (fun a -> a.GetName().Name = "Fsharp.Core") |> Option.map (fun a -> a.GetName().Version.ToString() )
 
         if not Runtime.HostUtils.RunningOnWindows then
-            let errMsg = " * The Fesh.Rhino Scripting-Editor-For-F# PlugIn only works on Windows, not Mac. It depends on the WPF framework "
+            let errMsg = " * The Fesh.Rhino Scripting-Editor-For-F# PlugIn only works on Windows, not Mac.\r\nIt depends on the WPF framework "
             refErrs <- errMsg
             RhinoAppWriteLine.print errMsg
             PlugIns.LoadReturnCode.ErrorShowDialog
@@ -176,6 +177,7 @@ type FeshPlugin () =
                     // Media/LogoCursorTr.ico with Build action : "Resource"
                     // (for the exe file icon in explorer use <Win32Resource>Media\logo.res</Win32Resource>  in fsproj )
                     logo = Some (Uri("pack://application:,,,/Fesh.Rhino;component/Media/logo.ico"))
+                    hostAssembly = Some (Reflection.Assembly.GetAssembly(typeof<FeshPlugin>))
                     }
 
                 let fesh = Fesh.App.createEditorForHosting( hostData )

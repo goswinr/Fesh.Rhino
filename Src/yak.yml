@@ -1,0 +1,32 @@
+name: Fesh
+version: 0.16.0
+url: "https://github.com/goswinr/Fesh.Rhino"
+icon: logo.png
+authors:
+  - Goswin Rothenthal
+description: >
+  Fesh is an F# scripting editor for Rhino on Windows. 
+  It enables scripting Rhino with F# just like (or even better than) Python, C# or VBScript. 
+  It has semantic syntax highlighting, auto completion, type info tooltips and more.
+  The output window supports colored text.
+keywords:
+  - rhinoscripting
+  - fsharp
+
+# https://developer.rhino3d.com/guides/yak/the-package-manifest/
+# https://developer.rhino3d.com/guides/yak/yak-cli-reference/
+# https://discourse.mcneel.com/t/github-action-to-yak/120815/3
+
+# login
+# "C:\Program Files\Rhino 8\System\Yak.exe" login -ci
+# or
+# "C:\Program Files\Rhino 8\System\Yak.exe" login
+# Token stored in %AppData%\Roaming\McNeel\yak.yml
+
+# build:
+# overwrite the version number from yml
+
+# cd ./bin/Release
+# "C:\Program Files\Rhino 8\System\Yak.exe" build --platform win --version 0.16.1
+
+# "C:\Program Files\Rhino 8\System\Yak.exe" push fesh-0.16.0-rh7_0-win.yak

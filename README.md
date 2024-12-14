@@ -2,6 +2,7 @@
 # Fesh.Rhino
 
 ![code size](https://img.shields.io/github/languages/code-size/goswinr/Fesh.Rhino.svg)
+[![build](https://github.com/goswinr/Fesh.Rhino/actions/workflows/build.yml/badge.svg?event=push)](https://github.com/goswinr/Fesh.Rhino/actions/workflows/build.yml)
 [![license](https://img.shields.io/github/license/goswinr/Fesh.Rhino)](LICENSE)
 
 Fesh.Rhino is an F# scripting editor hosted inside [Rhino3D](https://www.rhino3d.com/) on Windows. It is based on [Fesh](https://github.com/goswinr/Fesh).
@@ -17,9 +18,16 @@ As shown in my talk at [FSharpConf 2016](https://www.youtube.com/watch?v=ZY-bvZZ
 
 ![Screenshot](https://raw.githubusercontent.com/goswinr/Fesh.Rhino/main/Media/screen1.png)
 
-## Set Up
-After downloading from [Releases](https://github.com/goswinr/Fesh.Rhino/releases) or compiling via `dotnet build`.
-Drag and drop the file `Fesh.rhp` into Rhino.
+## Installation
+The recommended way to install is via the Rhino Package Manager command `PackageManager` and search for `Fesh`:
+
+![PackageManager](https://raw.githubusercontent.com/goswinr/Fesh.Rhino/main/Media/screenPackage.png)
+
+Then launch the editor with the command `Fesh`.
+
+## Manual Installation
+You can also build the plugin from this repository via `dotnet build`.
+Then Drag and drop the file `Fesh.rhp`  from into Rhino.
 Then launch the editor with the command `Fesh`.
 
 The editor might not load properly if you have already another plug-in loaded that uses an older version of Fsharp.Core.
@@ -73,21 +81,9 @@ The main reason to use this editor in Async mode is to keep the Rhino UI and the
 The [Rhino.Scripting](https://github.com/goswinr/Rhino.Scripting) library can be used from any thread.
 If running async it will automatically marshal all calls that affect the UI to the main Rhino UI thread and wait for switching back till completion on UI thread.
 
+### Changelog
+see [CHANGELOG.md](https://github.com/goswinr/Fesh.Rhino/blob/main/CHANGELOG.md)
 
 ### License
 [MIT](https://github.com/goswinr/Fesh.Rhino/blob/main/LICENSE)
-
-
-## Changelog
-`0.13.0`
-- Fix crashes of Rhino in case of assembly version conflicts
-- Updated to Fesh 0.13.0
-
-
-`0.12.0`
-- Synchonous mode is now the default
-- Updated to Fesh 0.12.0
-
-`0.11.1`
-- first public release
 
