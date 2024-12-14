@@ -1,4 +1,4 @@
-name: Build and Release Standalone
+name: Build and Release Yak
 
 on:
   push:
@@ -36,8 +36,12 @@ jobs:
       # I prepopulated a manifest file and copied it next to the .gha
       working-directory: bin/Release
 
+
     - name: Push new version to YAK
-      run: ..\..\yak.exe push fesh-${{ github.ref_name }}-rh7_0-win.yak
+      run: |
+        $YAK_FILE=$(ls *.yak)
+        echo $YAK_FILE
+        ..\..\yak.exe push $YAK_FILE
       working-directory: bin/Release
       # You should create a secret using the token from here: yak.exe login --ci
       env:
