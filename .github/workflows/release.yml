@@ -21,27 +21,36 @@ jobs:
     - name: Build
       run: dotnet build --configuration Release
 
+    - name: Check version consistency of git tag and CHANGELOG.md
+      # needs in fsproj:
+      # <Target Name="WriteChangelogVersion" AfterTargets="AfterBuild">
+      #   <WriteLinesToFile File="bin/ChangelogVersion.txt" Lines="@(CurrentReleaseChangelog)" Overwrite="true" ContinueOnError="false" />
+      # </Target>
+      id: check_version
+      run: |
+        CHANGELOG_VERSION=$(cat bin/ChangelogVersion.txt | tr -d '[:space:]')  
+        if [ "${{ github.ref_name }}" != "$CHANGELOG_VERSION" ]; then
+          echo "Version mismatch: git tag (${{ github.ref_name }}) and version in CHANGELOG.md ($CHANGELOG_VERSION) are not the same."
+          exit 1
+        fi
 
     # https://discourse.mcneel.com/t/github-action-to-yak/120815/3
 
     - name: Download Yak
       env:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
-      run: curl -o yak.exe http://files.mcneel.com/yak/tools/latest/yak.exe
+      run: curl -o bin\yak.exe http://files.mcneel.com/yak/tools/latest/yak.exe
 
     - name: Build Yak
       env:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
-      run: ..\..\yak.exe build --platform win --version ${{ github.ref_name }}
+      run: ..\yak.exe build --platform win --version ${{ github.ref_name }}
       # I prepopulated a manifest file and copied it next to the .gha
       working-directory: bin/Release
 
 
     - name: Push new version to YAK
-      run: |
-        $YAK_FILE=$(ls *.yak)
-        echo $YAK_FILE
-        ..\..\yak.exe push $YAK_FILE
+      run: ..\yak.exe push *.yak
       working-directory: bin/Release
       # You should create a secret using the token from here: yak.exe login --ci
       env:

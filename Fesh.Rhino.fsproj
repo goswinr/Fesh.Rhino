@@ -75,7 +75,12 @@
     <Compile Include="Src/Commands.fs" />
   </ItemGroup>
 
+
+
   <Target Name="CopyFilesOverAfterBuild" BeforeTargets="AfterBuild">
+
+    <WriteLinesToFile File="bin/ChangelogVersion.txt" Lines="@(CurrentReleaseChangelog)" Overwrite="true" ContinueOnError="false" />
+
     <!-- <Copy SourceFiles="../Fesh/Src/SyntaxHighlightingFSharp.xshd" DestinationFiles="$(TargetDir)SyntaxHighlightingFSharp.xshd" ContinueOnError="false" /> -->
 
     <!-- take latest SyntaxHighlightingFSharp.xshd from https://github.com/goswinr/Fesh nuget.-->
