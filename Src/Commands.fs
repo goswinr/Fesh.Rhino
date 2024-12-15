@@ -14,7 +14,12 @@ type LoadEditor () =
     inherit Commands.Command()
     static member val Instance = LoadEditor()
 
-    override this.EnglishName = "Fesh" //The command name as it appears on the Rhino command line.
+    override this.EnglishName =
+        #if DEBUG
+            "FeshDebug"
+        #else
+            "Fesh" //The command name as it appears on the Rhino command line.
+        #endif
 
     override this.RunCommand (doc, mode)  =
         FeshApp.showEditor()

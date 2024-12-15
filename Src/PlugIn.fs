@@ -212,7 +212,13 @@ type FeshPlugin () =
             RhinoAppWriteLine.print  "loading Fesh.Rhino Plugin ..."
             try
                 let canRun () = not <| Rhino.Commands.Command.InCommand()
-                let host = "Rhino"
+                let host =
+                    #if DEBUG
+                        "RhinoDebug"
+                    #else
+                        "Rhino" //The command name as it appears on the Rhino command line.
+                    #endif
+
                 let hostData : Fesh.Config.HostedStartUpData = {
                     hostName = host
                     mainWindowHandel = RhinoApp.MainWindowHandle()
