@@ -25,10 +25,10 @@ module State =
     let mutable ShownOnce = false // having this as static member on LoadEditor fails to evaluate !! not sure why.
 
 
+module internal FeshApp =
 
-module internal App =
     let showEditor() =
-        if isNull Sync.editorWindow then // set up window on first run
+        if isNull Sync.editorWindow then // sets up window on first run
             RhinoAppWriteLine.print  " * Fesh Editor Window cant be shown, the Plugin is not properly loaded. try restarting Rhino."
             Commands.Result.Failure
         else
@@ -37,6 +37,51 @@ module internal App =
             if Sync.editorWindow.WindowState = Windows.WindowState.Minimized then Sync.editorWindow.WindowState <- Windows.WindowState.Normal
             State.ShownOnce <- true
             Commands.Result.Success
+
+    type Dummy = class end
+
+    open System.Net.Http
+    let checkForNewRelease(fesh: Fesh.Fesh) =
+        async {
+            try
+                use client = new HttpClient()
+                client.DefaultRequestHeaders.UserAgent.ParseAdd("Fesh.Rhino")
+                let! response = client.GetStringAsync("https://api.github.com/repos/goswinr/Fesh.Rhino/tags") |> Async.AwaitTask
+                let version = response |> Fesh.Util.Str.between "\"name\":\"" "\""
+                match version with
+                | None -> fesh.Log.PrintfnInfoMsg "Could get version tag from https://github.com/goswinr/Fesh.Rhino/tags "
+                | Some v ->
+                    let cv = Reflection.Assembly.GetAssembly(typeof<Dummy>).GetName().Version.ToString()
+                    let cv = if cv.EndsWith(".0") then cv[..^2] else cv
+                    if v = cv then
+                        fesh.Log.PrintfnInfoMsg $"You are using the latest version of Fesh for Rhino: {cv}"
+                    else
+                        // let url = response |> Fesh.Util.Str.between "\"url\":\"" "\""
+                        // match url with
+                        // | None -> fesh.Log.PrintfnInfoMsg "Could get version tag commit url from https://github.com/goswinr/Fesh.Rhino/tags "
+                        // | Some url ->
+                        //     let! comm = client.GetStringAsync(url) |> Async.AwaitTask
+                        //     let date  = comm |> Fesh.Util.Str.between "\"date \":\"" "\""
+                        //     match date with
+                        //     | None -> fesh.Log.PrintfnInfoMsg $"Could not get tag commit date from {url}"
+                        //     | Some date ->
+                        //         match DateTime.TryParse(date) with
+                        //         | false, _ -> fesh.Log.PrintfnInfoMsg $"Could not parse tag commit date from {date}"
+                        //         | true, d ->
+                        //             let days = (DateTime.Now - d).Days
+                        //             if days > 2 then
+                        //                 fesh.Log.PrintfnAppErrorMsg $"A newer version of Fesh is available: {v} , you are using {cv}"
+                        //                 fesh.Log.PrintfnAppErrorMsg  "Please visit https://www.food4rhino.com/en/app/fesh"
+                        //                 fesh.Log.PrintfnAppErrorMsg $"Or use the Rhino command 'PackageManager' to update Fesh. There you can also enable auto-updates."
+                        //             else
+                                        fesh.Log.PrintfnAppErrorMsg $"A newer version of Fesh is available: {v} , you are using {cv}"
+                                        fesh.Log.PrintfnAppErrorMsg  "It will be installed automatically if you have auto-updates configured in the Rhino PackageManager."
+                                        fesh.Log.PrintfnAppErrorMsg  "Alternatively you can download it from https://www.food4rhino.com/en/app/fesh"
+
+            with _ ->
+                fesh.Log.PrintfnInfoMsg "Could not check for updates on https://github.com/goswinr/Fesh.Rhino/tags .\r\nAre you offline?"
+        }
+        |> Async.Start
 
 
 module internal Util =
@@ -180,7 +225,7 @@ type FeshPlugin () =
                     hostAssembly = Some (Reflection.Assembly.GetAssembly(typeof<FeshPlugin>))
                     }
 
-                let fesh = Fesh.App.createEditorForHosting( hostData )
+                let fesh:Fesh = Fesh.App.createEditorForHosting( hostData )
                 FeshPlugin.Fesh <- fesh
                 Sync.showEditor <- new Action(fun () -> fesh.Window.Show())
                 Sync.hideEditor <- new Action(fun () -> fesh.Window.Hide())
@@ -256,8 +301,11 @@ type FeshPlugin () =
                     )
 
                 RhinoAppWriteLine.print  ("Fesh."+host + " plugin loaded.")
-                App.showEditor() |> ignore
-                PlugIns.LoadReturnCode.Success
+                match FeshApp.showEditor() with
+                | Commands.Result.Success ->
+                    FeshApp.checkForNewRelease(fesh)
+                    PlugIns.LoadReturnCode.Success
+                | _                       -> PlugIns.LoadReturnCode.ErrorShowDialog
             with
             | e ->
                 let errMsg =

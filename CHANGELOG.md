@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.3] - 2024-12-15
+### Added
+- Messages about Auto-Updates
+
 ## [0.16.2] - 2024-12-15
 ### Added
 - Yak build version check
@@ -25,7 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - first public release
 
-[Unreleased]: https://github.com/goswinr/Fesh.Rhino/compare/0.16.2...HEAD
+[Unreleased]: https://github.com/goswinr/Fesh.Rhino/compare/0.16.3...HEAD
+[0.16.3]: https://github.com/goswinr/Fesh.Rhino/compare/0.16.2...0.16.3
 [0.16.2]: https://github.com/goswinr/Fesh.Rhino/compare/0.16.1...0.16.2
 [0.16.1]: https://github.com/goswinr/Fesh.Rhino/compare/0.13.0...0.16.1
 [0.13.0]: https://github.com/goswinr/Fesh.Rhino/compare/0.11.1...0.13.0

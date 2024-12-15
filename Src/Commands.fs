@@ -17,7 +17,7 @@ type LoadEditor () =
     override this.EnglishName = "Fesh" //The command name as it appears on the Rhino command line.
 
     override this.RunCommand (doc, mode)  =
-        App.showEditor()
+        FeshApp.showEditor()
 
 
 [<CommandStyle(Style.ScriptRunner)>] // so that RhinoApp.RunScript ( = rs.Command) can be used. https://developer.rhino3d.com/guides/rhinocommon/run-rhino-command-from-plugin/
@@ -34,7 +34,7 @@ type RunCurrentScript () =
             Commands.Result.Failure
         else
             if not State.ShownOnce then
-                App.showEditor()
+                FeshApp.showEditor()
                 // it needs to be shown once, otherwise Fesh.Commands.RunAllText below fails to find any text in Editor
             else
                 let fesh = FeshPlugin.Fesh
