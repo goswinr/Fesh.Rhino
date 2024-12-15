@@ -1,4 +1,4 @@
-name: Build and Release Yak
+name: Publish Yak Package
 
 on:
   push:

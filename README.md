@@ -1,17 +1,17 @@
 ![Logo](https://raw.githubusercontent.com/goswinr/Fesh.Rhino/main/Media/logo128.png)
 # Fesh.Rhino
 
-![code size](https://img.shields.io/github/languages/code-size/goswinr/Fesh.Rhino.svg)
 [![build](https://github.com/goswinr/Fesh.Rhino/actions/workflows/build.yml/badge.svg?event=push)](https://github.com/goswinr/Fesh.Rhino/actions/workflows/build.yml)
+[![publish yak](https://github.com/goswinr/Fesh.Rhino/actions/workflows/release.yml/badge.svg?event=push)](https://github.com/goswinr/Fesh.Rhino/actions/workflows/release.yml)
+![latest tag](https://img.shields.io/github/v/tag/goswinr/Fesh.Rhino?label=Latest%20Tag)
+![yak version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fyak.rhino3d.com%2Fpackages%2Ffesh&query=%24.version&logo=rhinoceros&label=Yak%20Package%20Manager&color=%23a3d6ff)
 [![license](https://img.shields.io/github/license/goswinr/Fesh.Rhino)](LICENSE)
+![code size](https://img.shields.io/github/languages/code-size/goswinr/Fesh.Rhino.svg)
 
 Fesh.Rhino is an F# scripting editor hosted inside [Rhino3D](https://www.rhino3d.com/) on Windows.\
- It is based on [Fesh](https://github.com/goswinr/Fesh).\
+It is based on [Fesh](https://github.com/goswinr/Fesh).\
 It has semantic syntax highlighting, auto completion, type info tooltips and more.\
-The output window supports colored text.
-
-Until [RhinoCommon](https://www.nuget.org/packages/rhinocommon#supportedframeworks-body-tab) is targeted properly for .NET 7 this plugin only supports .NET Framework 4.8.\
-In Rhino use the command [SetDotNetRuntime](https://www.rhino3d.com/en/docs/guides/netcore/) to switch between .NET Framework and .NET Core.
+The output window supports colored text via [Fesher](https://github.com/goswinr/Fesher).
 
 
 The example script [LouvreAbuDhabi.fsx](https://github.com/goswinr/Fesh.Rhino/blob/main/LouvreAbuDhabi.fsx) in the root folder generates the axes for cladding of the Louvre Abu Dhabi.\
@@ -20,19 +20,24 @@ As shown in my talk at [FSharpConf 2016](https://www.youtube.com/watch?v=ZY-bvZZ
 ![Screenshot](https://raw.githubusercontent.com/goswinr/Fesh.Rhino/main/Media/screen1.png)
 
 ## Installation
-The recommended way to install is via the Rhino Package Manager command `PackageManager` and search for `Fesh`:
+Install via Food for Rhino https://www.food4rhino.com/en/app/fesh .\
+Or from inside Rhino via the `PackageManager` command, then search for `Fesh`.\
+No admin rights should be needed for this installation.
 
-![PackageManager](https://raw.githubusercontent.com/goswinr/Fesh.Rhino/main/Media/screenPackage.png)
+<!-- ![PackageManager](https://raw.githubusercontent.com/goswinr/Fesh.Rhino/main/Media/screenPackage.png) -->
 
 Then launch the editor with the command `Fesh`.
+Until [RhinoCommon](https://www.nuget.org/packages/rhinocommon#supportedframeworks-body-tab) is targeted properly for .NET 7 this plugin only supports .NET Framework 4.8.\
+In Rhino use the command [SetDotNetRuntime](https://www.rhino3d.com/en/docs/guides/netcore/) to switch between .NET Framework and .NET Core.
 
-## Manual Installation
+### Manual Installation
 You can also build the plugin from this repository via `dotnet build`.\
-Then Drag and drop the file `Fesh.rhp`  from into Rhino.\
+Then drag and drop the file `Fesh.rhp` into Rhino.\
 Then launch the editor with the command `Fesh`.
 
-The editor might not load properly if you have already another plug-in loaded that uses an older version of Fsharp.Core.\
-See this [issue](https://github.com/goswinr/Fesh.Rhino/issues/2.)
+The editor might not load properly if you have already another plug-in loaded that uses an older version of `Fsharp.Core`.\
+See this [issue](https://github.com/goswinr/Fesh.Rhino/issues/2.)\
+Please report any issues you encounter.
 
 ## Get Started Coding
 All you need is to add a reference to RhinoCommon.dll:
