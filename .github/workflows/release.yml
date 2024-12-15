@@ -29,7 +29,9 @@ jobs:
       id: check_version
       shell: bash
       run: |
-        CHANGELOG_VERSION=$(cat bin/ChangelogVersion.txt | tr -d '[:space:]')  
+        CHANGELOG_VERSION=$(cat bin/ChangelogVersion.txt | tr -d '[:space:]')
+        echo "CHANGELOG_VERSION=$CHANGELOG_VERSION"
+        echo "github.ref_name=${{ github.ref_name }}"  
         if [ "${{ github.ref_name }}" != "$CHANGELOG_VERSION" ]; then
           echo "Version mismatch: git tag (${{ github.ref_name }}) and version in CHANGELOG.md ($CHANGELOG_VERSION) are not the same."
           exit 1
@@ -51,7 +53,10 @@ jobs:
 
 
     - name: Push new version to YAK
-      run: ..\yak.exe push *.yak
+      run: |
+        $YAK_FILE=$(ls *.yak)
+        echo $YAK_FILE
+        ..\yak.exe push $YAK_FILE
       working-directory: bin/Release
       # You should create a secret using the token from here: yak.exe login --ci
       env:
