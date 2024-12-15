@@ -27,6 +27,7 @@ jobs:
       #   <WriteLinesToFile File="bin/ChangelogVersion.txt" Lines="@(CurrentReleaseChangelog)" Overwrite="true" ContinueOnError="false" />
       # </Target>
       id: check_version
+      shell: bash
       run: |
         CHANGELOG_VERSION=$(cat bin/ChangelogVersion.txt | tr -d '[:space:]')  
         if [ "${{ github.ref_name }}" != "$CHANGELOG_VERSION" ]; then
