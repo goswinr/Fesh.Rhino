@@ -4,6 +4,7 @@ open Rhino
 open System
 open Fesh
 open System.Windows
+open System.Net.Http
 
 //open System.Drawing // fot net 7
 
@@ -40,7 +41,7 @@ module internal FeshApp =
 
     type Dummy = class end
 
-    open System.Net.Http
+
     let checkForNewRelease(fesh: Fesh.Fesh) =
         async {
             try
