@@ -5,6 +5,7 @@
 [![publish yak](https://github.com/goswinr/Fesh.Rhino/actions/workflows/release.yml/badge.svg?event=push)](https://github.com/goswinr/Fesh.Rhino/actions/workflows/release.yml)
 ![latest tag](https://img.shields.io/github/v/tag/goswinr/Fesh.Rhino?label=Latest%20Tag)
 ![yak version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fyak.rhino3d.com%2Fpackages%2Ffesh&query=%24.version&logo=rhinoceros&label=Yak%20Package%20Manager&color=%23a3d6ff)
+[![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fgoswinr%2FFesh.Rhino&count_bg=%2379C83D&title_bg=%23555555&icon=github.svg&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
 [![license](https://img.shields.io/github/license/goswinr/Fesh.Rhino)](LICENSE)
 ![code size](https://img.shields.io/github/languages/code-size/goswinr/Fesh.Rhino.svg)
 
@@ -27,7 +28,7 @@ No admin rights should be needed for this installation.
 <!-- ![PackageManager](https://raw.githubusercontent.com/goswinr/Fesh.Rhino/main/Media/screenPackage.png) -->
 
 Then launch the editor with the command `Fesh`.
-Until [RhinoCommon](https://www.nuget.org/packages/rhinocommon#supportedframeworks-body-tab) is targeted properly for .NET 7 this plugin only supports .NET Framework 4.8.\
+As long as [RhinoCommon](https://www.nuget.org/packages/rhinocommon#supportedframeworks-body-tab) is not targeted for .NET 7 this plugin only supports .NET Framework 4.8.\
 In Rhino use the command [SetDotNetRuntime](https://www.rhino3d.com/en/docs/guides/netcore/) to switch between .NET Framework and .NET Core.
 
 ### Manual Installation
