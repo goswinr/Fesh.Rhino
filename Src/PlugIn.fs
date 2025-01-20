@@ -50,7 +50,7 @@ module internal FeshApp =
                 let! response = client.GetStringAsync("https://api.github.com/repos/goswinr/Fesh.Rhino/tags") |> Async.AwaitTask
                 let version = response |> Fesh.Util.Str.between "\"name\":\"" "\""
                 match version with
-                | None -> fesh.Log.PrintfnInfoMsg "Could get version tag from https://github.com/goswinr/Fesh.Rhino/tags "
+                | None -> fesh.Log.PrintfnInfoMsg "Could not get latest version tag from https://github.com/goswinr/Fesh.Rhino/tags "
                 | Some v ->
                     let cv = Reflection.Assembly.GetAssembly(typeof<Dummy>).GetName().Version.ToString()
                     let cv = if cv.EndsWith(".0") then cv[..^2] else cv
@@ -82,7 +82,7 @@ module internal FeshApp =
                         fesh.Log.PrintfnAppErrorMsg  "Alternatively you can download it from https://www.food4rhino.com/en/app/fesh"
 
             with _ ->
-                fesh.Log.PrintfnInfoMsg "Could not check for updates on https://www.food4rhino.com/en/app/fesh .\r\nAre you offline?"
+                fesh.Log.PrintfnInfoMsg "Could not check for updates on https://api.github.com/repos/goswinr/Fesh.Rhino/tags .\r\nAre you offline?"
         }
         |> Async.Start
 
