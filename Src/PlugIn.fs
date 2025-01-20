@@ -75,12 +75,14 @@ module internal FeshApp =
                         //                 fesh.Log.PrintfnAppErrorMsg  "Please visit https://www.food4rhino.com/en/app/fesh"
                         //                 fesh.Log.PrintfnAppErrorMsg $"Or use the Rhino command 'PackageManager' to update Fesh. There you can also enable auto-updates."
                         //             else
-                                        fesh.Log.PrintfnAppErrorMsg $"A newer version of Fesh is available: {v} , you are using {cv}"
-                                        fesh.Log.PrintfnAppErrorMsg  "It will be installed automatically if you have auto-updates configured in the Rhino PackageManager."
-                                        fesh.Log.PrintfnAppErrorMsg  "Alternatively you can download it from https://www.food4rhino.com/en/app/fesh"
+                        fesh.Log.PrintfnAppErrorMsg $"A newer version of Fesh is available: {v} , you are using {cv}"
+                        fesh.Log.PrintfnAppErrorMsg  "If you have auto-updates configured in the Rhino PackageManager"
+                        fesh.Log.PrintfnAppErrorMsg  "it will be installed automatically after restarting Rhino."
+                        fesh.Log.PrintfnAppErrorMsg  "Use the Rhino command 'PackageManager' and there the 'Installed' tab to check your settings."
+                        fesh.Log.PrintfnAppErrorMsg  "Alternatively you can download it from https://www.food4rhino.com/en/app/fesh"
 
             with _ ->
-                fesh.Log.PrintfnInfoMsg "Could not check for updates on https://github.com/goswinr/Fesh.Rhino/tags .\r\nAre you offline?"
+                fesh.Log.PrintfnInfoMsg "Could not check for updates on https://www.food4rhino.com/en/app/fesh .\r\nAre you offline?"
         }
         |> Async.Start
 
@@ -189,8 +191,8 @@ type FeshPlugin () =
             MessageBox.Show(
                 [|
                     "The Fesh.Rhino Plugin currently only works well with.NET Framework."
-                    "A RhinoCommon target for .NET 7 or 8 is not available yet."
-                    "It might crash with .NET 7 or 8."
+                    "A RhinoCommon nuget targeting .NET 7  is not available yet."
+                    "It might crash with .NET 7"
                     "Please use the Rhino Command 'SetDotNetRuntime' to change to .NET Framework."   |] |> String.concat Environment.NewLine,
                 "Fesh.Rhino Plugin | .NET Framework needed",
                 MessageBoxButton.OK,

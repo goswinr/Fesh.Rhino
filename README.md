@@ -20,22 +20,27 @@ As shown in my talk at [FSharpConf 2016](https://www.youtube.com/watch?v=ZY-bvZZ
 
 ![Screenshot](https://raw.githubusercontent.com/goswinr/Fesh.Rhino/main/Media/screen1.png)
 
+## .NET 4.8 or .NET 7 ?
+As long as [RhinoCommon](https://www.nuget.org/packages/rhinocommon#supportedframeworks-body-tab) is not targeted for .NET 7 this plugin only supports .NET Framework 4.8.\
+In Rhino use the command [SetDotNetRuntime](https://www.rhino3d.com/en/docs/guides/netcore/) to switch between .NET Framework and .NET Core.
+If you are on the wrong runtime you will get an error message box when trying to load the plugin.
+
 ## Installation
+
+### Food for Rhino
+
 Install via Food for Rhino https://www.food4rhino.com/en/app/fesh .\
 Or from inside Rhino via the `PackageManager` command, then search for `Fesh`.\
 No admin rights should be needed for this installation.
 
-<!-- ![PackageManager](https://raw.githubusercontent.com/goswinr/Fesh.Rhino/main/Media/screenPackage.png) -->
-
 Then launch the editor with the command `Fesh`.
-As long as [RhinoCommon](https://www.nuget.org/packages/rhinocommon#supportedframeworks-body-tab) is not targeted for .NET 7 this plugin only supports .NET Framework 4.8.\
-In Rhino use the command [SetDotNetRuntime](https://www.rhino3d.com/en/docs/guides/netcore/) to switch between .NET Framework and .NET Core.
 
 ### Manual Installation
 You can also build the plugin from this repository via `dotnet build`.\
 Then drag and drop the file `Fesh.rhp` into Rhino.\
 Then launch the editor with the command `Fesh`.
 
+## Known Issues
 The editor might not load properly if you have already another plug-in loaded that uses an older version of `Fsharp.Core`.\
 See this [issue](https://github.com/goswinr/Fesh.Rhino/issues/2.)\
 Please report any issues you encounter.
@@ -88,9 +93,8 @@ The main reason to use this editor in Async mode is to keep the Rhino UI and the
 The [Rhino.Scripting](https://github.com/goswinr/Rhino.Scripting) library can be used from any thread.\
 If running async it will automatically marshal all calls that affect the UI to the main Rhino UI thread and wait for switching back till completion on UI thread.
 
-### Changelog
+## Changelog
 see [CHANGELOG.md](https://github.com/goswinr/Fesh.Rhino/blob/main/CHANGELOG.md)
 
-### License
+## License
 [MIT](https://github.com/goswinr/Fesh.Rhino/blob/main/LICENSE)
-
