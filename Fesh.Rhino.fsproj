@@ -49,7 +49,7 @@
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
 
     <!-- <ProjectReference Include="../Fesh/FeshHosting.fsproj" /> -->
-    <PackageReference Include="Fesh" Version="0.20.0" GeneratePathProperty="true" />
+    <PackageReference Include="Fesh" Version="0.21.0" GeneratePathProperty="true" />
 
     <!-- These packages are just added  explicitly again to pull in XML too below. -->
     <!-- <PackageReference Include="AvalonLog"  Version="0.12.0" GeneratePathProperty="true" /> -->
