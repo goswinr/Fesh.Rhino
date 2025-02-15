@@ -15,6 +15,7 @@
    targeting net 7 actually fails to find the System.Drawing.Bitmap reference during build even if System.Drawing.Common is included.
    using net48 target on net7 will not allow async evaluation.
     -->
+
     <LangVersion>preview</LangVersion>    <!-- enables indexing from end -->
     <NeutralLanguage>en</NeutralLanguage>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>    <!--to only have the english resources-->
