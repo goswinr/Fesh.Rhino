@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.22.0] - 2025-02-15
+### Changed
+- Update to [Fesh 0.22.0](https://github.com/goswinr/Fesh/blob/main/CHANGELOG.md)
+
 ## [0.20.0] - 2025-01-20
 ### Changed
 - Updated to Fesh 0.20.0
@@ -37,7 +41,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - first public release
 
-[Unreleased]: https://github.com/goswinr/Fesh.Rhino/compare/0.20.0...HEAD
+[Unreleased]: https://github.com/goswinr/Fesh.Rhino/compare/0.22.0...HEAD
+[0.22.0]: https://github.com/goswinr/Fesh.Rhino/compare/0.20.0...0.22.0
 [0.20.0]: https://github.com/goswinr/Fesh.Rhino/compare/0.19.0...0.20.0
 [0.19.0]: https://github.com/goswinr/Fesh.Rhino/compare/0.16.3...0.19.0
 [0.16.3]: https://github.com/goswinr/Fesh.Rhino/compare/0.16.2...0.16.3
