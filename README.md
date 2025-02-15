@@ -3,6 +3,8 @@
 
 [![build](https://github.com/goswinr/Fesh.Rhino/actions/workflows/build.yml/badge.svg?event=push)](https://github.com/goswinr/Fesh.Rhino/actions/workflows/build.yml)
 [![publish yak](https://github.com/goswinr/Fesh.Rhino/actions/workflows/release.yml/badge.svg?event=push)](https://github.com/goswinr/Fesh.Rhino/actions/workflows/release.yml)
+[![Check NuGet](https://github.com/goswinr/Fesh.Rhino/actions/workflows/outdatedNuget.yml/badge.svg)](https://github.com/goswinr/Fesh.Rhino/actions/workflows/outdatedNuget.yml)
+
 ![latest tag](https://img.shields.io/github/v/tag/goswinr/Fesh.Rhino?label=Latest%20Tag)
 ![yak version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fyak.rhino3d.com%2Fpackages%2Ffesh&query=%24.version&logo=rhinoceros&label=Yak%20Package%20Manager&color=%23a3d6ff)
 [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fgoswinr%2FFesh.Rhino&count_bg=%2379C83D&title_bg=%23555555&icon=github.svg&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)

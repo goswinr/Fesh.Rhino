@@ -79,7 +79,6 @@
   </ItemGroup>
 
 
-
   <Target Name="CopyFilesOverAfterBuild" BeforeTargets="AfterBuild">
 
     <WriteLinesToFile File="bin/ChangelogVersion.txt" Lines="@(CurrentReleaseChangelog)" Overwrite="true" ContinueOnError="false" />
@@ -91,16 +90,13 @@
     <Copy SourceFiles="Media/logo128.png" DestinationFiles="bin/Release/logo.png" ContinueOnError="false" />
     <Copy SourceFiles="Src/yak.yml" DestinationFiles="bin/Release/manifest.yml" ContinueOnError="false" />
 
-    <!--netstandard dll is needed for editor tooling only, it might not be installed on host PC. see also  https://github.com/fsprojects/IfSharp/issues/213 -->
+    <!--netstandard dll is needed for editor tooling only, it might not be installed on host PC for net48. see also  https://github.com/fsprojects/IfSharp/issues/213 -->
     <Copy SourceFiles="$(PkgNETStandard_Library)/build/netstandard2.0/ref/netstandard.dll" DestinationFiles="$(TargetDir)netstandard.dll" ContinueOnError="false" />
     <Copy SourceFiles="$(PkgNETStandard_Library)/build/netstandard2.0/ref/netstandard.xml" DestinationFiles="$(TargetDir)netstandard.xml" ContinueOnError="false" />
 
     <!-- FSharp.Core.xml because <FSharpCoreIncludeDocFileInOutput>true</FSharpCoreIncludeDocFileInOutput>  does not work in visual studio: -->
     <!-- <Copy SourceFiles="$(PkgFesh)/FSharp.Core.xml" DestinationFiles="$(TargetDir)FSharp.Core.xml" ContinueOnError="false" /> -->
     <!-- <Copy SourceFiles="$(PkgFSharp_Core)/lib/netstandard2.0/FSharp.Core.xml"                         DestinationFiles="$(TargetDir)FSharp.Core.xml"             ContinueOnError="false" /> -->
-    <!-- <Copy SourceFiles="$(PkgFSharp_Compiler_Service)/lib/netstandard2.0/FSharp.Compiler.Service.xml" DestinationFiles="$(TargetDir)FSharp.Compiler.Service.xml" ContinueOnError="false" /> -->
-    <!-- <Copy SourceFiles="$(PkgAvalonLog)/lib/net472/AvalonLog.xml"     DestinationFiles="$(TargetDir)AvalonLog.xml"   ContinueOnError="false" /> -->
-    <!-- <Copy SourceFiles="$(PkgAvalonEditB)/lib/net472/AvalonEditB.xml" DestinationFiles="$(TargetDir)AvalonEditB.xml" ContinueOnError="false" /> -->
-    <!-- <Copy SourceFiles="$(PkgFittings)/lib/net472/Fittings.xml"       DestinationFiles="$(TargetDir)Fittings.xml"    ContinueOnError="false" /> -->
+
   </Target>
 </Project>
