@@ -19,7 +19,7 @@ jobs:
         dotnet-version: '9.x'
 
     - name: Build
-      run: dotnet build --configuration Release
+      run: dotnet build --configuration Release --output bin/ReleaseYak
 
     - name: Check version consistency of git tag and CHANGELOG.md
       # needs in fsproj:
@@ -48,8 +48,8 @@ jobs:
       env:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
       run: ..\yak.exe build --platform win --version ${{ github.ref_name }}
-      # I prepopulated a manifest file and copied it next to the .gha
-      working-directory: bin/Release
+
+      working-directory: bin/ReleaseYak
 
 
     - name: Push new version to YAK
@@ -57,7 +57,7 @@ jobs:
         $YAK_FILE=$(ls *.yak)
         echo $YAK_FILE
         ..\yak.exe push $YAK_FILE
-      working-directory: bin/Release
+      working-directory: bin/ReleaseYak
       # You should create a secret using the token from here: yak.exe login --ci
       env:
         YAK_TOKEN: ${{ secrets.YAK_TOKEN }}
