@@ -21,6 +21,7 @@
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>    <!--to only have the english resources-->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <FSharpCoreIncludeDocFileInOutput>true</FSharpCoreIncludeDocFileInOutput>
+    <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference> <!-- needed so that the Fesh nuget can pull in  the latest version for dotnet-outdated tool -->
 
     <RootNamespace>Fesh.Rhino</RootNamespace>
     <AssemblyName>Fesh.Rhino</AssemblyName>
@@ -50,14 +51,7 @@
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
 
     <!-- <ProjectReference Include="../Fesh/FeshHosting.fsproj" /> -->
-    <PackageReference Include="Fesh" Version="0.22.0" GeneratePathProperty="true" />
-
-    <!-- These packages are just added  explicitly again to pull in XML too below. -->
-    <!-- <PackageReference Include="AvalonLog"  Version="0.12.0" GeneratePathProperty="true" /> -->
-    <!-- <PackageReference Include="Fittings"    Version="0.6.0" GeneratePathProperty="true" /> -->
-    <!-- <PackageReference Include="AvalonEditB" Version="2.2.0" GeneratePathProperty="true" /> -->
-    <!-- an explicit reference update is needed by latest FSharp.Compiler.Service to match Fesh-->
-    <!-- <PackageReference Update="FSharp.Core" Version="8.0.400" GeneratePathProperty="true" /> -->
+    <PackageReference Include="Fesh" Version="0.23.0" GeneratePathProperty="true" />
 
     <!-- During debugging use the current Rhinocommon dll reference to avoid the ~20 sec of compatibility check when Rhino loads it the first time. -->
     <!-- <Reference Include="RhinoCommon" HintPath="C:\Program Files\Rhino 7\System\RhinoCommon.dll" Private="False" /> -->
@@ -65,7 +59,7 @@
 
     <!-- <PackageReference Include="System.Drawing.Common" Version="8.0.7" ExcludeAssets="runtime" /> for net7.0 ?-->
     <!--this reference is needed for tooling only, it might not be installed on host PC. see also https://github.com/fsprojects/IfSharp/issues/213 -->
-    <PackageReference Include="NETStandard.Library" Version="2.0.3" GeneratePathProperty="true" />
+    <PackageReference Include="NETStandard.Library" Version="2.0.3" Condition="'$(TargetFramework)' == 'net48'" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
     <PackageReference Include="Ionide.KeepAChangelog.Tasks" Version="0.1.8" PrivateAssets="all" />
   </ItemGroup>
@@ -73,30 +67,26 @@
   <ItemGroup>
     <EmbeddedResource Include="Media/logo.res" />  <!--  for Application Icon in explorer-->
     <Resource Include="Media/logo.ico" />
+    <Content Include="Media/logo128.png" TargetPath="logo.png" />
+    <Content Include="Src/yak.yml" TargetPath="manifest.yml" />
+
     <Compile Include="Src/AssemblyInfo.fs" />
     <Compile Include="Src/PlugIn.fs" />
     <Compile Include="Src/Commands.fs" />
+
+    <Content Include="$(PkgFesh)/FSharp.Core.xml" CopyToOutputDirectory="Always"  />
+    <Content Include="$(PkgFesh)/SyntaxHighlightingFSharp.xshd" CopyToOutputDirectory="Always"  />
+    <Content Include="$(PkgNETStandard_Library)/build/netstandard2.0/ref/netstandard.dll" Condition="'$(TargetFramework)' == 'net48'" CopyToOutputDirectory="Always" TargetPath="netstandard.dll" />
+    <Content Include="$(PkgNETStandard_Library)/build/netstandard2.0/ref/netstandard.xml" Condition="'$(TargetFramework)' == 'net48'" CopyToOutputDirectory="Always" TargetPath="netstandard.xml" />
+
   </ItemGroup>
 
 
-  <Target Name="CopyFilesOverAfterBuild" BeforeTargets="AfterBuild">
-
+  <Target Name="CopyFilesOverAfterBuild" AfterTargets="AfterBuild">
+    <!-- to check output from Ionide.KeepAChangelog.Tasks current git tag in gh actions -->
     <WriteLinesToFile File="bin/ChangelogVersion.txt" Lines="@(CurrentReleaseChangelog)" Overwrite="true" ContinueOnError="false" />
-
-    <!-- <Copy SourceFiles="../Fesh/Src/SyntaxHighlightingFSharp.xshd" DestinationFiles="$(TargetDir)SyntaxHighlightingFSharp.xshd" ContinueOnError="false" /> -->
-
-    <!-- take latest SyntaxHighlightingFSharp.xshd from https://github.com/goswinr/Fesh nuget.-->
-    <Copy SourceFiles="$(PkgFesh)/SyntaxHighlightingFSharp.xshd" DestinationFiles="$(TargetDir)SyntaxHighlightingFSharp.xshd" ContinueOnError="false" />
-    <Copy SourceFiles="Media/logo128.png" DestinationFiles="bin/Release/logo.png" ContinueOnError="false" />
-    <Copy SourceFiles="Src/yak.yml" DestinationFiles="bin/Release/manifest.yml" ContinueOnError="false" />
-
-    <!--netstandard dll is needed for editor tooling only, it might not be installed on host PC for net48. see also  https://github.com/fsprojects/IfSharp/issues/213 -->
-    <Copy SourceFiles="$(PkgNETStandard_Library)/build/netstandard2.0/ref/netstandard.dll" DestinationFiles="$(TargetDir)netstandard.dll" ContinueOnError="false" />
-    <Copy SourceFiles="$(PkgNETStandard_Library)/build/netstandard2.0/ref/netstandard.xml" DestinationFiles="$(TargetDir)netstandard.xml" ContinueOnError="false" />
-
-    <!-- FSharp.Core.xml because <FSharpCoreIncludeDocFileInOutput>true</FSharpCoreIncludeDocFileInOutput>  does not work in visual studio: -->
-    <!-- <Copy SourceFiles="$(PkgFesh)/FSharp.Core.xml" DestinationFiles="$(TargetDir)FSharp.Core.xml" ContinueOnError="false" /> -->
-    <!-- <Copy SourceFiles="$(PkgFSharp_Core)/lib/netstandard2.0/FSharp.Core.xml"                         DestinationFiles="$(TargetDir)FSharp.Core.xml"             ContinueOnError="false" /> -->
-
+    <!-- <Copy SourceFiles="Media/logo128.png" DestinationFiles="bin/Release/logo.png" ContinueOnError="false" /> -->
+    <!-- <Copy SourceFiles="Src/yak.yml" DestinationFiles="bin/Release/manifest.yml" ContinueOnError="false" /> -->
   </Target>
+
 </Project>
