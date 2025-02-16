@@ -67,8 +67,8 @@
   <ItemGroup>
     <EmbeddedResource Include="Media/logo.res" />  <!--  for Application Icon in explorer-->
     <Resource Include="Media/logo.ico" />
-    <Content Include="Media/logo128.png" TargetPath="logo.png" />
-    <Content Include="Src/yak.yml" TargetPath="manifest.yml" />
+    <Content Include="Media/logo128.png" TargetPath="logo.png" CopyToOutputDirectory="Always" />
+    <Content Include="Src/yak.yml" TargetPath="manifest.yml" CopyToOutputDirectory="Always" />
 
     <Compile Include="Src/AssemblyInfo.fs" />
     <Compile Include="Src/PlugIn.fs" />
