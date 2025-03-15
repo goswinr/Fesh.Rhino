@@ -96,12 +96,11 @@ module internal Util =
     let defaultCode =
         [|
         """#r "C:/Program Files/Rhino 8/System/RhinoCommon.dll" """
-        """#r "nuget:Rhino.Scripting.Fsharp"  """
+        """#r "nuget:Rhino.Scripting.FSharp"  """
         ""
         """open System"""
         """open Rhino.Scripting"""
-        """open Rhino.Scripting.Fsharp //recommended for F# """
-        """open FsEx // part of Rhino.Scripting"""
+        """open Rhino.Scripting.FSharp //recommended for F# """
         ""
         """type rs = RhinoScriptSyntax"""
         ""
