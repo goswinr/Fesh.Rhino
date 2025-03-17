@@ -51,7 +51,7 @@
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
 
     <!-- <ProjectReference Include="../Fesh/FeshHosting.fsproj" /> -->
-    <PackageReference Include="Fesh" Version="0.23.0" GeneratePathProperty="true" />
+    <PackageReference Include="Fesh" Version="0.24.0" GeneratePathProperty="true" />
 
     <!-- During debugging use the current Rhinocommon dll reference to avoid the ~20 sec of compatibility check when Rhino loads it the first time. -->
     <!-- <Reference Include="RhinoCommon" HintPath="C:\Program Files\Rhino 7\System\RhinoCommon.dll" Private="False" /> -->
@@ -74,8 +74,8 @@
     <Compile Include="Src/PlugIn.fs" />
     <Compile Include="Src/Commands.fs" />
 
-    <Content Include="$(PkgFesh)/FSharp.Core.xml" CopyToOutputDirectory="Always"  />
-    <Content Include="$(PkgFesh)/SyntaxHighlightingFSharp.xshd" CopyToOutputDirectory="Always"  />
+    <Content Include="$(PkgFesh)/FSharp.Core.xml" CopyToOutputDirectory="Always" />
+    <Content Include="$(PkgFesh)/SyntaxHighlightingFSharp.xshd" CopyToOutputDirectory="Always" />
     <Content Include="$(PkgNETStandard_Library)/build/netstandard2.0/ref/netstandard.dll" Condition="'$(TargetFramework)' == 'net48'" CopyToOutputDirectory="Always" TargetPath="netstandard.dll" />
     <Content Include="$(PkgNETStandard_Library)/build/netstandard2.0/ref/netstandard.xml" Condition="'$(TargetFramework)' == 'net48'" CopyToOutputDirectory="Always" TargetPath="netstandard.xml" />
 
