@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.23.0] - 2024-02-16
+## [0.24.0] - 2025-03-17
+### Added
+- Update to [Fesh 0.24.0](https://github.com/goswinr/Fesh/blob/main/CHANGELOG.md)
+
+## [0.23.0] - 2025-02-16
 ### Fixed
 - include FSharp.Core.xml
 
@@ -45,17 +49,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - first public release
 
-[Unreleased]: https://github.com/goswinr/Fesh.Rhino/compare/0.23.0...HEAD
+[Unreleased]: https://github.com/goswinr/Fesh.Rhino/compare/0.24.0...HEAD
+[0.24.0]: https://github.com/goswinr/Fesh.Rhino/compare/0.23.0...0.24.0
 [0.23.0]: https://github.com/goswinr/Fesh.Rhino/compare/0.22.0...0.23.0
 [0.22.0]: https://github.com/goswinr/Fesh.Rhino/compare/0.20.0...0.22.0
 [0.20.0]: https://github.com/goswinr/Fesh.Rhino/compare/0.19.0...0.20.0
 [0.19.0]: https://github.com/goswinr/Fesh.Rhino/compare/0.16.3...0.19.0
 [0.16.3]: https://github.com/goswinr/Fesh.Rhino/compare/0.16.2...0.16.3
 [0.16.2]: https://github.com/goswinr/Fesh.Rhino/compare/0.16.1...0.16.2
-[0.16.1]: https://github.com/goswinr/Fesh.Rhino/compare/0.13.0...0.16.1
 [0.13.0]: https://github.com/goswinr/Fesh.Rhino/compare/0.11.1...0.13.0
+[0.11.1]: https://github.com/goswinr/Fesh.Rhino/releases/tag/0.11.1
 
-
+<!-- use to get tag dates:
 <!-- use to get tag dates:
 git log --tags --simplify-by-decoration --pretty="format:%ci %d"
 -->

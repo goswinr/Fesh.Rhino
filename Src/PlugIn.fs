@@ -96,7 +96,7 @@ module internal Util =
     let defaultCode =
         [|
         """#r "C:/Program Files/Rhino 8/System/RhinoCommon.dll" """
-        """#r "nuget:Rhino.Scripting.FSharp"  """
+        """#r "nuget:Rhino.Scripting.FSharp" """
         ""
         """open System"""
         """open Rhino.Scripting"""
@@ -140,7 +140,7 @@ type FeshPlugin () =
 
     static member val Instance = FeshPlugin() // singleton pattern needed for Rhino. http://stackoverflow.com/questions/2691565/how-to-implement-singleton-pattern-syntax
 
-    static member val UndoRecordSerial = 0u with get,set
+    static member val UndoRecordSerial: Option<uint32> = None with get,set
 
     static member val Fesh = Unchecked.defaultof<Fesh> with get,set
 
@@ -148,8 +148,8 @@ type FeshPlugin () =
             async{
                 do! Async.SwitchToContext Sync.syncContext
                 lastDoc <- RhinoDoc.ActiveDoc
-                FeshPlugin.UndoRecordSerial <- RhinoDoc.ActiveDoc.BeginUndoRecord "F# script run by Fesh.Rhino"
-                } |> Async.StartImmediate
+                FeshPlugin.UndoRecordSerial <- Some (RhinoDoc.ActiveDoc.BeginUndoRecord "F# script run by Fesh.Rhino")
+                } |> Async.RunSynchronously
 
     static member AfterEval (showWin) : unit =
         async{
@@ -157,15 +157,20 @@ type FeshPlugin () =
             //if FeshPlugin.UndoRecordSerial <> 0u then
 
             if lastDoc = RhinoDoc.ActiveDoc then // it might have changed during script run
-                if not <| RhinoDoc.ActiveDoc.EndUndoRecord(FeshPlugin.UndoRecordSerial) then
-                    RhinoAppWriteLine.print " * Fesh.Rhino | failed to set RhinoDoc.ActiveDoc.EndUndoRecord"
-                    eprintfn " * Fesh.Rhino | failed to set RhinoDoc.ActiveDoc.EndUndoRecord(FeshPlugin.UndoRecordSerial:%d)" FeshPlugin.UndoRecordSerial
+                match FeshPlugin.UndoRecordSerial with
+                | None -> ()
+                | Some serial ->
+                    FeshPlugin.UndoRecordSerial <- None // so a record is only eneded once
+                    if not <| RhinoDoc.ActiveDoc.EndUndoRecord(serial) then
+                        RhinoAppWriteLine.print " * Fesh.Rhino | failed to set RhinoDoc.ActiveDoc.EndUndoRecord"
+                        eprintfn " * Fesh.Rhino | failed to set RhinoDoc.ActiveDoc.EndUndoRecord(FeshPlugin.UndoRecordSerial:%d)" serial
+
 
             RhinoDoc.ActiveDoc.Views.RedrawEnabled <- true
             RhinoDoc.ActiveDoc.Views.Redraw()
             if showWin && not (isNull Sync.showEditor) then Sync.showEditor.Invoke() //because it might crash during UI interaction where it is hidden
         }
-        |> Async.StartImmediate
+        |> Async.RunSynchronously
 
 
     override this.OnLoad(refErrs) : PlugIns.LoadReturnCode =
