@@ -7,9 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.25.0] - 2025-03-17
+### Added
+- Update to [Fesh 0.25.0](https://github.com/goswinr/Fesh/blob/main/CHANGELOG.md#0250)
+
 ## [0.24.0] - 2025-03-17
 ### Added
-- Update to [Fesh 0.24.0](https://github.com/goswinr/Fesh/blob/main/CHANGELOG.md)
+- Update to [Fesh 0.24.0](https://github.com/goswinr/Fesh/blob/main/CHANGELOG.md#0241)
 
 ## [0.23.0] - 2025-02-16
 ### Fixed
@@ -17,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.22.0] - 2025-02-15
 ### Changed
-- Update to [Fesh 0.22.0](https://github.com/goswinr/Fesh/blob/main/CHANGELOG.md)
+- Update to [Fesh 0.22.0](https://github.com/goswinr/Fesh/blob/main/CHANGELOG.md#0220)
 
 ## [0.20.0] - 2025-01-20
 ### Changed
@@ -49,7 +53,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - first public release
 
-[Unreleased]: https://github.com/goswinr/Fesh.Rhino/compare/0.24.0...HEAD
+[Unreleased]: https://github.com/goswinr/Fesh.Rhino/compare/0.25.0...HEAD
+[0.25.0]: https://github.com/goswinr/Fesh.Rhino/compare/0.24.0...0.25.0
 [0.24.0]: https://github.com/goswinr/Fesh.Rhino/compare/0.23.0...0.24.0
 [0.23.0]: https://github.com/goswinr/Fesh.Rhino/compare/0.22.0...0.23.0
 [0.22.0]: https://github.com/goswinr/Fesh.Rhino/compare/0.20.0...0.22.0
@@ -57,6 +62,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [0.19.0]: https://github.com/goswinr/Fesh.Rhino/compare/0.16.3...0.19.0
 [0.16.3]: https://github.com/goswinr/Fesh.Rhino/compare/0.16.2...0.16.3
 [0.16.2]: https://github.com/goswinr/Fesh.Rhino/compare/0.16.1...0.16.2
+[0.16.1]: https://github.com/goswinr/Fesh.Rhino/compare/0.13.0...0.16.1
 [0.13.0]: https://github.com/goswinr/Fesh.Rhino/compare/0.11.1...0.13.0
 [0.11.1]: https://github.com/goswinr/Fesh.Rhino/releases/tag/0.11.1
 
