@@ -145,11 +145,12 @@ type FeshPlugin () =
     static member val Fesh = Unchecked.defaultof<Fesh> with get,set
 
     static member BeforeEval () =
-            async{
-                do! Async.SwitchToContext Sync.syncContext
-                lastDoc <- RhinoDoc.ActiveDoc
-                FeshPlugin.UndoRecordSerial <- Some (RhinoDoc.ActiveDoc.BeginUndoRecord "F# script run by Fesh.Rhino")
-                } |> Async.RunSynchronously
+        async{
+            do! Async.SwitchToContext Sync.syncContext
+            lastDoc <- RhinoDoc.ActiveDoc
+            FeshPlugin.UndoRecordSerial <- Some (RhinoDoc.ActiveDoc.BeginUndoRecord "F# script run by Fesh.Rhino")
+        }
+        |> Async.StartImmediate // fails :Async.RunSynchronously
 
     static member AfterEval (showWin) : unit =
         async{
@@ -170,7 +171,7 @@ type FeshPlugin () =
             RhinoDoc.ActiveDoc.Views.Redraw()
             if showWin && not (isNull Sync.showEditor) then Sync.showEditor.Invoke() //because it might crash during UI interaction where it is hidden
         }
-        |> Async.RunSynchronously
+        |> Async.StartImmediate // fails :Async.RunSynchronously
 
 
     override this.OnLoad(refErrs) : PlugIns.LoadReturnCode =
