@@ -43,7 +43,7 @@
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
 
     <!-- <ProjectReference Include="../Fesh/FeshHosting.fsproj" /> -->
-    <PackageReference Include="Fesh" Version="0.25.0" GeneratePathProperty="true" />
+    <PackageReference Include="Fesh" Version="0.26.0" GeneratePathProperty="true" />
 
     <!-- During debugging use the current Rhinocommon dll reference to avoid the ~20 sec of compatibility check when Rhino loads it the first time. -->
     <!-- <Reference Include="RhinoCommon" HintPath="C:\Program Files\Rhino 7\System\RhinoCommon.dll" Private="False" /> -->
