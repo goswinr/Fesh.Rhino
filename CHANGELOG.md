@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.26.1] - 2025-03-17
+### Added
+- Update to [Fesh 0.26.0](https://github.com/goswinr/Fesh/blob/main/CHANGELOG.md#0260)
+
 ## [0.25.1] - 2025-03-22
 ### Changed
 - Revert async mode in before and after eval hooks from 0.24.0
@@ -57,7 +61,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - first public release
 
-[Unreleased]: https://github.com/goswinr/Fesh.Rhino/compare/0.25.1...HEAD
+[Unreleased]: https://github.com/goswinr/Fesh.Rhino/compare/0.26.1...HEAD
+[0.26.1]: https://github.com/goswinr/Fesh.Rhino/compare/0.25.1...0.26.1
 [0.25.1]: https://github.com/goswinr/Fesh.Rhino/compare/0.25.0...0.25.1
 [0.25.0]: https://github.com/goswinr/Fesh.Rhino/compare/0.24.0...0.25.0
 [0.24.0]: https://github.com/goswinr/Fesh.Rhino/compare/0.23.0...0.24.0
