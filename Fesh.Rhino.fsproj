@@ -58,7 +58,8 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Media/logo.res" />  <!--  for Application Icon in explorer-->
-    <Resource Include="Media/logo.ico" />
+    <EmbeddedResource Include="Media/logo.ico" /> <!--  used in Rhino Plugin assembly info -->
+    <Resource Include="Media/logo.ico" /> <!-- used in HostedStartUpData -->
     <Content Include="Media/logo128.png" TargetPath="logo.png" CopyToOutputDirectory="Always" />
     <Content Include="Src/yak.yml" TargetPath="manifest.yml" CopyToOutputDirectory="Always" />
     <Content Include="$(PkgFesh)/SyntaxHighlightingFSharp.xshd" CopyToOutputDirectory="Always" />

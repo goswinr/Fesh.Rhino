@@ -235,11 +235,11 @@ type FeshPlugin () =
                     // Add the Icon at the top left of the window and in the status bar, musst be called  after loading window.
                     // Media/LogoCursorTr.ico with Build action : "Resource"
                     // (for the exe file icon in explorer use <Win32Resource>Media\logo.res</Win32Resource>  in fsproj )
-                    logo = Some (Uri("pack://application:,,,/Fesh.Rhino;component/Media/logo.ico"))
-                    hostAssembly = Some (Reflection.Assembly.GetAssembly(typeof<FeshPlugin>))
+                    logo = Some (Uri "pack://application:,,,/Fesh.Rhino;component/Media/logo.ico")
+                    hostAssembly = Some (Reflection.Assembly.GetAssembly typeof<FeshPlugin>)
                     }
 
-                let fesh:Fesh = Fesh.App.createEditorForHosting( hostData )
+                let fesh:Fesh = Fesh.App.createEditorForHosting hostData
                 FeshPlugin.Fesh <- fesh
                 Sync.showEditor <- new Action(fun () -> fesh.Window.Show())
                 Sync.hideEditor <- new Action(fun () -> fesh.Window.Hide())
@@ -255,7 +255,7 @@ type FeshPlugin () =
                     | Windows.WindowState.Normal  | Windows.WindowState.Maximized | _   -> true
                     )
 
-                Sync.editorWindow <- (fesh.Window :> Windows.Window)
+                Sync.editorWindow <- fesh.Window :> Windows.Window
 
                 // Could be used to keep everything alive: But then you would be asked twice to save unsaved files. On Closing Fesh and closing Rhino.
                 fesh.Window.Closing.Add (fun e ->
@@ -279,9 +279,9 @@ type FeshPlugin () =
 
 
                 fesh.Fsi.OnCompiling.Add    ( fun m -> FeshPlugin.BeforeEval())     // https://github.com/mcneel/rhinocommon/blob/57c3967e33d18205efbe6a14db488319c276cbee/dotnet/rhino/rhinosdkdoc.cs#L857
-                fesh.Fsi.OnRuntimeError.Add ( fun e -> FeshPlugin.AfterEval(true))  // to unsure UI does not stay frozen if RedrawEnabled is false //showWin because it might crash during UI interaction where it is hidden
-                fesh.Fsi.OnCanceled.Add     ( fun m -> FeshPlugin.AfterEval(true))  // to unsure UI does not stay frozen if RedrawEnabled is false //showWin because it might crash during UI interaction where it is hidden
-                fesh.Fsi.OnCompletedOk.Add  ( fun m -> FeshPlugin.AfterEval(false)) // to unsure UI does not stay frozen if RedrawEnabled is false //showWin = false because might be running in background mode from rhino command line
+                fesh.Fsi.OnRuntimeError.Add ( fun e -> FeshPlugin.AfterEval true)  // to unsure UI does not stay frozen if RedrawEnabled is false //showWin because it might crash during UI interaction where it is hidden
+                fesh.Fsi.OnCanceled.Add     ( fun m -> FeshPlugin.AfterEval true)  // to unsure UI does not stay frozen if RedrawEnabled is false //showWin because it might crash during UI interaction where it is hidden
+                fesh.Fsi.OnCompletedOk.Add  ( fun m -> FeshPlugin.AfterEval false) // to unsure UI does not stay frozen if RedrawEnabled is false //showWin = false because might be running in background mode from rhino command line
 
                 //RhinoDoc.CloseDocument.Add (fun e -> fesh.Fsi.CancelIfAsync() ) // don't do that !! Allow rs.Command to open new files when called async.
 
@@ -307,7 +307,7 @@ type FeshPlugin () =
                 |> Option.iter (fun rsAss ->
                     try
                         let rhinoSyncModule = rsAss.GetType("Rhino.RhinoSync")
-                        let init = rhinoSyncModule.GetProperty("initialize").GetValue(rsAss) :?> Action
+                        let init = rhinoSyncModule.GetProperty("initialize").GetValue rsAss :?> Action
                         init.Invoke()
                         RhinoAppWriteLine.print "Rhino.Scripting.RhinoSync re-initialized."
                     with e ->
@@ -317,7 +317,7 @@ type FeshPlugin () =
                 RhinoAppWriteLine.print  ("Fesh."+host + " plugin loaded.")
                 match FeshApp.showEditor() with
                 | Commands.Result.Success ->
-                    FeshApp.checkForNewRelease(fesh)
+                    FeshApp.checkForNewRelease fesh
                     PlugIns.LoadReturnCode.Success
                 | _                       -> PlugIns.LoadReturnCode.ErrorShowDialog
             with

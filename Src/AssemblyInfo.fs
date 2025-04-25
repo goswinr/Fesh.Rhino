@@ -31,7 +31,7 @@ open Rhino.PlugIns
 [<assembly: PlugInDescription(DescriptionType.WebSite, "https://github.com/goswinr/Fesh.Rhino")>]
 // Icons should be Windows .ico files and contain 32-bit images in the following sizes: 16, 24, 32, 48, and 256.
 // This is a Rhino 6-only description.
-[<assembly: PlugInDescription(DescriptionType.Icon, "Fesh.Rhino.EmbeddedResources.logo.ico")>] // TODO path ok ?
+[<assembly: PlugInDescription(DescriptionType.Icon, "Fesh.Rhino.Media.logo.ico")>] // https://discourse.mcneel.com/t/plug-in-icon-does-not-appear-in-options-plug-ins/119242/2
 
 
 // done in new SDK fsproj file:
