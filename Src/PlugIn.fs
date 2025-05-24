@@ -1,4 +1,4 @@
-﻿namespace Fesh.Rhino // Don't change name  its used in Rhino.Scripting.dll via reflection
+namespace Fesh.Rhino // Don't change name  its used in Rhino.Scripting.dll via reflection
 
 open Rhino
 open System
@@ -237,6 +237,7 @@ type FeshPlugin () =
                     // (for the exe file icon in explorer use <Win32Resource>Media\logo.res</Win32Resource>  in fsproj )
                     logo = Some (Uri "pack://application:,,,/Fesh.Rhino;component/Media/logo.ico")
                     hostAssembly = Some (Reflection.Assembly.GetAssembly typeof<FeshPlugin>)
+                    canRunAsync = true // FSI can run async, so that it does not block the UI thread.
                     }
 
                 let fesh:Fesh = Fesh.App.createEditorForHosting hostData

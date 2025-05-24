@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+## [0.27.0] - 2025-05-25
+### Added
+- Update to [Fesh 0.27.0](https://github.com/goswinr/Fesh/blob/main/CHANGELOG.md#0270)
+
 ## [0.26.3] - 2025-04-14
 ### Added
 - Update to [Fesh 0.26.3](https://github.com/goswinr/Fesh/blob/main/CHANGELOG.md#0263)
@@ -64,7 +68,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - first public release
 
-[Unreleased]: https://github.com/goswinr/Fesh.Rhino/compare/0.26.3...HEAD
+[Unreleased]: https://github.com/goswinr/Fesh.Rhino/compare/0.27.0...HEAD
+[0.27.0]: https://github.com/goswinr/Fesh.Rhino/compare/0.26.3...0.27.0
 [0.26.3]: https://github.com/goswinr/Fesh.Rhino/compare/0.26.1...0.26.3
 [0.26.1]: https://github.com/goswinr/Fesh.Rhino/compare/0.25.1...0.26.1
 [0.25.1]: https://github.com/goswinr/Fesh.Rhino/compare/0.25.0...0.25.1
