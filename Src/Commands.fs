@@ -22,7 +22,7 @@ type LoadEditor () =
         #endif
 
     override this.RunCommand (doc, mode)  =
-        FeshApp.showEditor()
+        FeshApp.showEditorWindow(None)
 
 
 [<CommandStyle(Style.ScriptRunner)>] // so that RhinoApp.RunScript ( = rs.Command) can be used. https://developer.rhino3d.com/guides/rhinocommon/run-rhino-command-from-plugin/
@@ -34,22 +34,22 @@ type RunCurrentScript () =
 
     override this.RunCommand (doc, mode)  : Result =
 
-        if isNull Sync.editorWindow then // set up window on first run
+        if isNull FeshApp.editorWindow then // set up window on first run
             RhCmdAndConsole.printn  "*Fesh Editor Window cant be shown, the Plugin is not properly loaded. Please restart Rhino."
             Commands.Result.Failure
         else
             if not State.ShownOnce then
-                FeshApp.showEditor()
+                FeshApp.showEditorWindow(None)
                 // it needs to be shown once, otherwise Fesh.Commands.RunAllText below fails to find any text in Editor
             else
                 let fesh = FeshPlugin.Fesh
-                match Sync.editorWindow.Visibility with
+                match FeshApp.editorWindow.Visibility with
                 | Windows.Visibility.Visible | Windows.Visibility.Collapsed ->
                     RhCmdAndConsole.printn  $"*Fesh is running: {fesh.Tabs.Current.FormattedFileName}"
 
-                    // to start running the script after the command has actually completed, making it mode-less, so manual undo stack works
+                    // to start running the script after the command has actually completed, making it mode-less, so that the manual undo stack works
                     async{
-                        do! Async.Sleep 30 // wait till command FeshRunCurrentScript actually completes. so that RhinoDoc.ActiveDoc.BeginUndoRecord does not return 0
+                        do! Async.Sleep 50 // wait till command FeshRunCurrentScript actually completes. so that RhinoDoc.ActiveDoc.BeginUndoRecord does not return 0
                         let k = ref 0
                         while Command.InCommand() && !k < 20 do // wait up to 1.5 sec more ?
                             incr k
@@ -60,12 +60,10 @@ type RunCurrentScript () =
                             RhCmdAndConsole.printn "Can't run current Fesh script because another Rhino command is active"
                         else
                             let ed = fesh.Tabs.Current.Editor
-                            match Sync.editorWindow.WindowState with // if editor is not visible print results to rhino command line too.
+                            match FeshApp.editorWindow.WindowState with // if editor is not visible print results to rhino command line too.
                             | Windows.WindowState.Normal
                             | Windows.WindowState.Maximized    -> fesh.Tabs.Fsi.Evaluate {editor=ed; amount=All; logger = None               ; scriptName = ed.FilePath.FileName }
                             | Windows.WindowState.Minimized |_ -> fesh.Tabs.Fsi.Evaluate {editor=ed; amount=All; logger = FeshPlugin.RhWriter; scriptName = ed.FilePath.FileName }
-
-
                     }
                     |> Async.Start
 
@@ -74,7 +72,7 @@ type RunCurrentScript () =
 
 
                 |Windows.Visibility.Hidden ->
-                    Sync.editorWindow.Visibility <- Windows.Visibility.Visible
+                    FeshApp.editorWindow.Visibility <- Windows.Visibility.Visible
                     let cmd = fesh.Commands.RunAllText //TODO or trigger directly via agent post to distinguish triggers from commandline and fesh ui?
                     match Windows.MessageBox.Show("Run script from current Tab?", "Run script from current Tab?", Windows.MessageBoxButton.YesNo, Windows.MessageBoxImage.Question, Windows.MessageBoxResult.Yes) with
                     | Windows.MessageBoxResult.Yes -> this.RunCommand (doc, mode)

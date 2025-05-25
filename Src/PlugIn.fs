@@ -6,8 +6,6 @@ open Fesh
 open System.Windows
 open System.Net.Http
 
-//open System.Drawing // fot net 7
-
 
 module RhCmdAndConsole =
     let print txt  =
@@ -26,7 +24,6 @@ module Sync =  //Don't change name its used in Rhino.Scripting.dll via reflectio
     let mutable showEditor = fun() -> () // Don't change name  its used in Rhino.Scripting.dll via reflection
     let mutable isEditorVisible = new Func<bool>(fun () -> false) // Don't change name  its used in Rhino.Scripting.dll via reflection
 
-    let mutable editorWindow = null: Windows.Window // Not used via reflection
 
     /// Red green blue text
     let mutable printFeshLogColor  = // Don't change name  its used in Rhino.Scripting.dll via reflection
@@ -40,21 +37,25 @@ module Sync =  //Don't change name its used in Rhino.Scripting.dll via reflectio
 
 
 
-
 module State =
     let mutable ShownOnce = false // having this as static member on LoadEditor fails to evaluate !! not sure why.
 
 
 module internal FeshApp =
+    let mutable editorWindow = null: Windows.Window // Not used via reflection
 
-    let showEditor() =
-        if isNull Sync.editorWindow then // sets up window on first run
+    let showEditorWindow(win: Windows.Window option) =
+        match win with
+        | Some w -> editorWindow <- w
+        | None   -> ()
+
+        if isNull editorWindow then // sets up window on first run
             RhCmdAndConsole.printn  " * Fesh Editor Window cant be shown, the Plugin is not properly loaded. try restarting Rhino."
             Commands.Result.Failure
         else
-            Sync.editorWindow.Show()
-            Sync.editorWindow.Visibility <- Windows.Visibility.Visible
-            if Sync.editorWindow.WindowState = Windows.WindowState.Minimized then Sync.editorWindow.WindowState <- Windows.WindowState.Normal
+            editorWindow.Show()
+            editorWindow.Visibility <- Windows.Visibility.Visible
+            if editorWindow.WindowState = Windows.WindowState.Minimized then editorWindow.WindowState <- Windows.WindowState.Normal
             State.ShownOnce <- true
             Commands.Result.Success
 
@@ -65,8 +66,8 @@ module internal FeshApp =
         async {
             try
                 use client = new HttpClient()
-                client.DefaultRequestHeaders.UserAgent.ParseAdd("Fesh.Rhino")
-                let! response = client.GetStringAsync("https://api.github.com/repos/goswinr/Fesh.Rhino/tags") |> Async.AwaitTask
+                client.DefaultRequestHeaders.UserAgent.ParseAdd "Fesh.Rhino"
+                let! response = client.GetStringAsync "https://api.github.com/repos/goswinr/Fesh.Rhino/tags" |> Async.AwaitTask
                 let version = response |> Fesh.Util.Str.between "\"name\":\"" "\""
                 match version with
                 | None -> fesh.Log.PrintfnInfoMsg "Could not get latest version tag from https://github.com/goswinr/Fesh.Rhino/tags "
@@ -130,7 +131,6 @@ module internal Util =
         |> String.concat Environment.NewLine
 
     // let requestedFsCoreVersion = "8.0.400"
-
     // // insert just before the last </runtime> tag in Rhino.exe.config
     // let bindingRedirect(version:string) = $"""
     //     <!-- binding redirect added automatically by Rhino.Fesh plugin: -->
@@ -184,7 +184,6 @@ type FeshPlugin () =
                     if not <| RhinoDoc.ActiveDoc.EndUndoRecord(serial) then
                         RhCmdAndConsole.printn " * Fesh.Rhino | failed to set RhinoDoc.ActiveDoc.EndUndoRecord"
                         eprintfn " * Fesh.Rhino | failed to set RhinoDoc.ActiveDoc.EndUndoRecord(FeshPlugin.UndoRecordSerial:%d)" serial
-
 
             RhinoDoc.ActiveDoc.Views.RedrawEnabled <- true
             RhinoDoc.ActiveDoc.Views.Redraw()
@@ -261,24 +260,28 @@ type FeshPlugin () =
 
                 let fesh:Fesh = Fesh.App.createEditorForHosting hostData
                 FeshPlugin.Fesh <- fesh
-                Sync.showEditor <- fun () -> fesh.Window.Show()
-                Sync.hideEditor <- fun () -> fesh.Window.Hide()
-                Sync.isEditorVisible <- new Func<bool>(fun () ->
-                    // originally : fesh.Window.Visibility = Windows.Visibility.Visible but
-                    // this might also show invisible if at the time of calling another window is covering rhino.
-                    // then going back to rhino the ui prompt might not be visible because the window would be in front again.
-                    // so we have to check if it is minimized too:
-                    fesh.Window.Visibility = Windows.Visibility.Visible
-                    &&
-                    match fesh.Window.WindowState with
-                    | Windows.WindowState.Minimized                                     -> false
-                    | Windows.WindowState.Normal  | Windows.WindowState.Maximized | _   -> true
-                    )
 
-                Sync.editorWindow       <- fesh.Window :> Windows.Window
-                Sync.printFeshLogColor  <- new Action<int,int,int,string> (fun r g b s -> fesh.Log.AvalonLog.AppendWithColor(r,g,b,s))
-                Sync.printnFeshLogColor <- new Action<int,int,int,string> (fun r g b s -> fesh.Log.AvalonLog.AppendLineWithColor(r,g,b,s))
-                Sync.clearFeshLog       <- fun () -> fesh.Log.AvalonLog.Clear()
+
+                fesh.Window.Loaded.Add (fun _ ->
+
+                    Sync.showEditor      <- fun () -> fesh.Window.Show()
+                    Sync.hideEditor      <- fun () -> fesh.Window.Hide()
+                    Sync.isEditorVisible <- new Func<bool>(fun () ->
+                        // originally : fesh.Window.Visibility = Windows.Visibility.Visible but
+                        // this might also show invisible if at the time of calling another window is covering rhino.
+                        // then going back to rhino the ui prompt might not be visible because the window would be in front again.
+                        // so we have to check if it is minimized too:
+                        fesh.Window.Visibility = Windows.Visibility.Visible
+                        &&
+                        match fesh.Window.WindowState with
+                        | Windows.WindowState.Minimized                                     -> false
+                        | Windows.WindowState.Normal  | Windows.WindowState.Maximized | _   -> true
+                        )
+
+                    Sync.printFeshLogColor  <- new Action<int,int,int,string> (fun r g b s -> fesh.Log.AvalonLog.AppendWithColor(r,g,b,s))
+                    Sync.printnFeshLogColor <- new Action<int,int,int,string> (fun r g b s -> fesh.Log.AvalonLog.AppendLineWithColor(r,g,b,s))
+                    Sync.clearFeshLog       <- fun () -> fesh.Log.AvalonLog.Clear()
+                    )
 
                 // Could be used to keep everything alive: But then you would be asked twice to save unsaved files. On Closing Fesh and closing Rhino.
                 fesh.Window.Closing.Add (fun e ->
@@ -338,11 +341,12 @@ type FeshPlugin () =
                     )
 
                 RhCmdAndConsole.printn  ("Fesh."+host + " plugin loaded.")
-                match FeshApp.showEditor() with
+                match FeshApp.showEditorWindow(Some fesh.Window) with
                 | Commands.Result.Success ->
                     FeshApp.checkForNewRelease fesh
                     PlugIns.LoadReturnCode.Success
-                | _                       -> PlugIns.LoadReturnCode.ErrorShowDialog
+                | _   ->
+                    PlugIns.LoadReturnCode.ErrorShowDialog
             with
             | e ->
                 let errMsg =
