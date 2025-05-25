@@ -22,10 +22,10 @@ As shown in my talk at [FSharpConf 2016](https://www.youtube.com/watch?v=ZY-bvZZ
 
 ![Screenshot](https://raw.githubusercontent.com/goswinr/Fesh.Rhino/main/Media/screen1.png)
 
-## .NET 4.8 or .NET 7 ?
+## .NET Framework or .NET Core?
 This plugin supports .NET Framework 4.8.<br>
 .NET 7 is supported if your Rhino version is higher than 8.19 (may 2025).<br>
-If you installed Fesh via the [Package Manager](https://www.rhino3d.com/features/package-manager/) then the correct message will be picked automatically<br>
+If you installed Fesh via the [Package Manager](https://www.rhino3d.com/features/package-manager/) then the correct framework will be picked automatically.<br>
 In Rhino use the command [SetDotNetRuntime](https://www.rhino3d.com/en/docs/guides/netcore/) to switch between .NET Framework and .NET Core.
 If you are on the wrong runtime you will get an error message box when trying to load the plugin.
 
@@ -45,7 +45,7 @@ Then drag and drop the file `Fesh.rhp` into Rhino.<br>
 Then launch the editor with the command `Fesh`.
 
 ## Known Issues
-The editor might not load properly if you have already another plug-in loaded that uses an older version of `Fsharp.Core`.<br>
+The editor might not load properly if you already have another plug-in loaded that uses an older version of `Fsharp.Core`.<br>
 See this [issue](https://github.com/goswinr/Fesh.Rhino/issues/2.)<br>
 Please report any issues you encounter.
 
@@ -78,12 +78,12 @@ let crv = rs.GetObject("Select a curve",  rs.Filter.Curve)
 ```
 
 ## Running
-Run your script by presssing `F5` key.<br>
+Run your script by pressing `F5` key.<br>
 Like in Visual Studio you can also just evaluate the selected text by pressing `Alt` + `Enter` keys.<br>
 See the `FSI` menu for more options.
 
-## Blocking the UI thread ?
-You can choose to run the scripts in Synchronous on the UI thread or Asynchronous on a background thread.<br>
+## Blocking the UI thread
+You can choose to run the scripts in Synchronous mode on the UI thread or asynchronous mode on a background thread.<br>
 Synchronous mode is the default. Your UI will be blocked while the script is running.<br>
 But the interaction with Rhino is safer.
 
@@ -91,13 +91,13 @@ But the interaction with Rhino is safer.
 
 While the main Rhino Document is officially not thread safe,
 modifying the Rhino Document from a background thread is actually OK as long as there is only one thread doing it.<br>
-The main reason to use this editor in Async mode is to keep the Rhino UI and the Fesh UI responsive while doing long running operations.
+The main reason to use this editor in async mode is to keep the Rhino UI and the Fesh UI responsive while doing long-running operations.
 
 The [Rhino.Scripting](https://github.com/goswinr/Rhino.Scripting) library can be used from any thread.<br>
 If running async it will automatically marshal all calls that affect the UI to the main Rhino UI thread and wait for switching back till completion on UI thread.
 
 ## Changelog
-see [CHANGELOG.md](https://github.com/goswinr/Fesh.Rhino/blob/main/CHANGELOG.md)
+See [CHANGELOG.md](https://github.com/goswinr/Fesh.Rhino/blob/main/CHANGELOG.md)
 
 ## License
 [MIT](https://github.com/goswinr/Fesh.Rhino/blob/main/LICENSE)
