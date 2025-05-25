@@ -35,17 +35,17 @@ type RunCurrentScript () =
     override this.RunCommand (doc, mode)  : Result =
 
         if isNull FeshApp.editorWindow then // set up window on first run
-            RhCmdAndConsole.printn  "*Fesh Editor Window cant be shown, the Plugin is not properly loaded. Please restart Rhino."
+            RhCmdLn.printn  "*Fesh Editor Window cant be shown, the Plugin is not properly loaded. Please restart Rhino."
             Commands.Result.Failure
         else
-            if not State.ShownOnce then
+            if not FeshApp.wasShownOnce then
                 FeshApp.showEditorWindow(None)
                 // it needs to be shown once, otherwise Fesh.Commands.RunAllText below fails to find any text in Editor
             else
                 let fesh = FeshPlugin.Fesh
                 match FeshApp.editorWindow.Visibility with
                 | Windows.Visibility.Visible | Windows.Visibility.Collapsed ->
-                    RhCmdAndConsole.printn  $"*Fesh is running: {fesh.Tabs.Current.FormattedFileName}"
+                    RhCmdLn.printn  $"*Fesh is running: {fesh.Tabs.Current.FormattedFileName}"
 
                     // to start running the script after the command has actually completed, making it mode-less, so that the manual undo stack works
                     async{
@@ -57,7 +57,7 @@ type RunCurrentScript () =
                         do! Async.SwitchToContext Sync.syncContext
                         if Command.InCommand() then
                             fesh.Log.PrintfnAppErrorMsg "Can't run current Fesh script because another Rhino command is active"
-                            RhCmdAndConsole.printn "Can't run current Fesh script because another Rhino command is active"
+                            RhCmdLn.printn "Can't run current Fesh script because another Rhino command is active"
                         else
                             let ed = fesh.Tabs.Current.Editor
                             match FeshApp.editorWindow.WindowState with // if editor is not visible print results to rhino command line too.

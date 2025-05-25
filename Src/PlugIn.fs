@@ -6,40 +6,38 @@ open Fesh
 open System.Windows
 open System.Net.Http
 
-module RhCmdAndConsole =
+module RhCmdLn =
     let print txt  =
         RhinoApp.Write txt
-        Console.Write txt
+        // Console.Write txt
         RhinoApp.Wait()
 
     let printn txt =
         RhinoApp.WriteLine txt
-        Console.WriteLine txt
+        // Console.WriteLine txt
         RhinoApp.Wait()
 
 module Sync =  //Don't change name its used in Rhino.Scripting.dll via reflection
     let syncContext = System.Threading.SynchronizationContext.Current  // Don't change name  its used in Rhino.Scripting.dll via reflection
-    let mutable hideEditor = fun() -> ()  // Don't change name  its used in Rhino.Scripting.dll via reflection
-    let mutable showEditor = fun() -> () // Don't change name  its used in Rhino.Scripting.dll via reflection
+    let mutable hideEditor = Action(fun() -> ())  // Don't change name  its used in Rhino.Scripting.dll via reflection
+    let mutable showEditor = Action(fun() -> ()) // Don't change name  its used in Rhino.Scripting.dll via reflection
     let mutable isEditorVisible = new Func<bool>(fun () -> false) // Don't change name  its used in Rhino.Scripting.dll via reflection
 
     /// Red green blue text
     let mutable printFeshLogColor  = // Don't change name  its used in Rhino.Scripting.dll via reflection
-        new Action<int,int,int,string> (fun r g b s -> RhCmdAndConsole.print s)
+        new Action<int,int,int,string> (fun r g b s -> RhCmdLn.print s)
 
     /// Red green blue text
     let mutable printnFeshLogColor  = // Don't change name  its used in Rhino.Scripting.dll via reflection
-        new Action<int,int,int,string> (fun r g b s -> RhCmdAndConsole.printn s)
+        new Action<int,int,int,string> (fun r g b s -> RhCmdLn.printn s)
 
-    let mutable clearFeshLog = fun () ->() // Don't change name  its used in Rhino.Scripting.dll via reflection
-
-
-
-module State =
-    let mutable ShownOnce = false // having this as static member on LoadEditor fails to evaluate !! not sure why.
+    let mutable clearFeshLog = Action(fun() -> ()) // Don't change name  its used in Rhino.Scripting.dll via reflection
 
 
 module internal FeshApp =
+
+    let mutable wasShownOnce = false // having this as static member on LoadEditor fails to evaluate !! not sure why.
+
     let mutable editorWindow = null: Windows.Window // Not used via reflection
 
     let showEditorWindow(win: Windows.Window option) =
@@ -48,13 +46,13 @@ module internal FeshApp =
         | None   -> ()
 
         if isNull editorWindow then // sets up window on first run
-            RhCmdAndConsole.printn  " * Fesh Editor Window cant be shown, the Plugin is not properly loaded. try restarting Rhino."
+            RhCmdLn.printn  " * Fesh Editor Window cant be shown, the Plugin is not properly loaded. try restarting Rhino."
             Commands.Result.Failure
         else
             editorWindow.Show()
             editorWindow.Visibility <- Windows.Visibility.Visible
             if editorWindow.WindowState = Windows.WindowState.Minimized then editorWindow.WindowState <- Windows.WindowState.Normal
-            State.ShownOnce <- true
+            wasShownOnce <- true
             Commands.Result.Success
 
     type Dummy = class end
@@ -179,26 +177,23 @@ type FeshPlugin () =
                 | Some serial ->
                     FeshPlugin.UndoRecordSerial <- None // so a record is only eneded once
                     if not <| RhinoDoc.ActiveDoc.EndUndoRecord(serial) then
-                        RhCmdAndConsole.printn " * Fesh.Rhino | failed to set RhinoDoc.ActiveDoc.EndUndoRecord"
+                        RhCmdLn.printn " * Fesh.Rhino | failed to set RhinoDoc.ActiveDoc.EndUndoRecord"
                         eprintfn " * Fesh.Rhino | failed to set RhinoDoc.ActiveDoc.EndUndoRecord(FeshPlugin.UndoRecordSerial:%d)" serial
 
             RhinoDoc.ActiveDoc.Views.RedrawEnabled <- true
             RhinoDoc.ActiveDoc.Views.Redraw()
-            if showWin then Sync.showEditor() //because it might crash during UI interaction where it is hidden
+            if showWin then Sync.showEditor.Invoke() //Action //because it might crash during UI interaction where it is hidden
         }
         |> Async.StartImmediate // fails :Async.RunSynchronously
 
 
     override this.OnLoad(refErrs) : PlugIns.LoadReturnCode =
         AssemblyInfo.track()
-        let assemblies = AppDomain.CurrentDomain.GetAssemblies()
-
-        // let loadedFsCoreVersion = assemblies |> Seq.tryFind (fun a -> a.GetName().Name = "Fsharp.Core") |> Option.map (fun a -> a.GetName().Version.ToString() )
 
         if not Runtime.HostUtils.RunningOnWindows then
             let errMsg = " * The Fesh.Rhino Scripting-Editor-For-F# PlugIn only works on Windows, not Mac.\r\nIt depends on the WPF framework "
             refErrs <- errMsg
-            RhCmdAndConsole.printn errMsg
+            RhCmdLn.printn errMsg
             PlugIns.LoadReturnCode.ErrorShowDialog
 
     #if NET7
@@ -244,7 +239,7 @@ type FeshPlugin () =
         //     PlugIns.LoadReturnCode.ErrorShowDialog
 
         else
-            RhCmdAndConsole.printn  "loading Fesh.Rhino Plugin ..."
+            RhCmdLn.printn  "loading Fesh.Rhino Plugin ..."
             try
                 let canRun () = not <| Rhino.Commands.Command.InCommand()
                 let host =
@@ -270,11 +265,10 @@ type FeshPlugin () =
                 let fesh:Fesh = Fesh.App.createEditorForHosting hostData
                 FeshPlugin.Fesh <- fesh
 
-
                 fesh.Window.Loaded.Add (fun _ ->
 
-                    Sync.showEditor      <- fun () -> fesh.Window.Show()
-                    Sync.hideEditor      <- fun () -> fesh.Window.Hide()
+                    Sync.showEditor      <- Action(fun () -> fesh.Window.Show())
+                    Sync.hideEditor      <- Action(fun () -> fesh.Window.Hide())
                     Sync.isEditorVisible <- new Func<bool>(fun () ->
                         // originally : fesh.Window.Visibility = Windows.Visibility.Visible but
                         // this might also show invisible if at the time of calling another window is covering rhino.
@@ -289,7 +283,26 @@ type FeshPlugin () =
 
                     Sync.printFeshLogColor  <- new Action<int,int,int,string> (fun r g b s -> fesh.Log.AvalonLog.AppendWithColor(r,g,b,s))
                     Sync.printnFeshLogColor <- new Action<int,int,int,string> (fun r g b s -> fesh.Log.AvalonLog.AppendLineWithColor(r,g,b,s))
-                    Sync.clearFeshLog       <- fun () -> fesh.Log.AvalonLog.Clear()
+                    Sync.clearFeshLog       <- Action(fun () -> fesh.Log.AvalonLog.Clear())
+
+                    async {
+                        // Reinitialize Rhino.Scripting just in case it is loaded already in the current AppDomain by another plugin.
+                        // This is needed to have showEditor() and hideEditor() actions for Fesh setup correctly.
+                        // let assemblies = AppDomain.CurrentDomain.GetAssemblies()
+                        // let loadedFsCoreVersion = assemblies |> Seq.tryFind (fun a -> a.GetName().Name = "Fsharp.Core") |> Option.map (fun a -> a.GetName().Version.ToString() )
+                        let assemblies = AppDomain.CurrentDomain.GetAssemblies()
+                        assemblies
+                        |> Seq.tryFind (fun a -> a.GetName().Name = "Rhino.Scripting")
+                        |> Option.iter (fun rsAss ->
+                            try
+                                let rhinoSyncModule = rsAss.GetType "Rhino.RhinoSync"
+                                let init = rhinoSyncModule.GetProperty("initialize").GetValue rsAss :?> Action
+                                init.Invoke()
+                                RhCmdLn.printn "Rhino.Scripting.RhinoSync re-initialized."
+                            with e ->
+                                RhCmdLn.printn (sprintf "* Fesh.Rhino Plugin Rhino.Scripting.Initialize() failed with %A" e)
+                            )
+                        } |> Async.Start
                     )
 
                 // Could be used to keep everything alive: But then you would be asked twice to save unsaved files. On Closing Fesh and closing Rhino.
@@ -333,23 +346,12 @@ type FeshPlugin () =
                 // Add an Alias too if not taken already:
                 if not <| ApplicationSettings.CommandAliasList.IsAlias("fr") then
                     if ApplicationSettings.CommandAliasList.Add("fr","FeshRunCurrentScript")then
-                        RhCmdAndConsole.printn  "* Fesh.Rhino Plugin added the command alias 'fr' for 'FeshRunCurrentScript'"
+                        RhCmdLn.printn  "* Fesh.Rhino Plugin added the command alias 'fr' for 'FeshRunCurrentScript'"
 
-                // Reinitialize Rhino.Scripting just in case it is loaded already in the current AppDomain by another plugin.
-                // This is needed to have showEditor() and hideEditor() actions for Fesh setup correctly.
-                assemblies
-                |> Seq.tryFind (fun a -> a.GetName().Name = "Rhino.Scripting")
-                |> Option.iter (fun rsAss ->
-                    try
-                        let rhinoSyncModule = rsAss.GetType("Rhino.RhinoSync")
-                        let init = rhinoSyncModule.GetProperty("initialize").GetValue rsAss :?> Action
-                        init.Invoke()
-                        RhCmdAndConsole.printn "Rhino.Scripting.RhinoSync re-initialized."
-                    with e ->
-                        RhCmdAndConsole.printn (sprintf "* Fesh.Rhino Plugin Rhino.Scripting.Initialize() failed with %A" e)
-                    )
 
-                RhCmdAndConsole.printn  ("Fesh."+host + " plugin loaded.")
+                // only now load and show the window:
+
+                RhCmdLn.printn  ("Fesh."+host + " plugin loaded.")
                 match FeshApp.showEditorWindow(Some fesh.Window) with
                 | Commands.Result.Success ->
                     FeshApp.checkForNewRelease fesh
@@ -367,8 +369,8 @@ type FeshPlugin () =
                     "try to unload or disable them."
                     |] |> String.concat Environment.NewLine
                 refErrs <- errMsg
-                RhCmdAndConsole.printn e.Message
-                RhCmdAndConsole.printn errMsg
+                RhCmdLn.printn e.Message
+                RhCmdLn.printn errMsg
                 PlugIns.LoadReturnCode.ErrorShowDialog
 
 
