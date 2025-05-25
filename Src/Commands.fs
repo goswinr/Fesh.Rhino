@@ -35,7 +35,7 @@ type RunCurrentScript () =
     override this.RunCommand (doc, mode)  : Result =
 
         if isNull Sync.editorWindow then // set up window on first run
-            RhinoAppWriteLine.print  "*Fesh Editor Window cant be shown, the Plugin is not properly loaded. Please restart Rhino."
+            RhCmdAndConsole.printn  "*Fesh Editor Window cant be shown, the Plugin is not properly loaded. Please restart Rhino."
             Commands.Result.Failure
         else
             if not State.ShownOnce then
@@ -45,7 +45,7 @@ type RunCurrentScript () =
                 let fesh = FeshPlugin.Fesh
                 match Sync.editorWindow.Visibility with
                 | Windows.Visibility.Visible | Windows.Visibility.Collapsed ->
-                    RhinoAppWriteLine.print2  "*Fesh is running: " fesh.Tabs.Current.FormattedFileName
+                    RhCmdAndConsole.printn  $"*Fesh is running: {fesh.Tabs.Current.FormattedFileName}"
 
                     // to start running the script after the command has actually completed, making it mode-less, so manual undo stack works
                     async{
@@ -57,7 +57,7 @@ type RunCurrentScript () =
                         do! Async.SwitchToContext Sync.syncContext
                         if Command.InCommand() then
                             fesh.Log.PrintfnAppErrorMsg "Can't run current Fesh script because another Rhino command is active"
-                            RhinoAppWriteLine.print "Can't run current Fesh script because another Rhino command is active"
+                            RhCmdAndConsole.printn "Can't run current Fesh script because another Rhino command is active"
                         else
                             let ed = fesh.Tabs.Current.Editor
                             match Sync.editorWindow.WindowState with // if editor is not visible print results to rhino command line too.
