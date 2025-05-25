@@ -1,4 +1,4 @@
-namespace Fesh.Rhino // Don't change name  its used in Rhino.Scripting.dll via reflection
+﻿namespace Fesh.Rhino // Don't change name  its used in Rhino.Scripting.dll via reflection
 
 open Rhino
 open System
@@ -22,8 +22,8 @@ module RhCmdAndConsole =
 
 module Sync =  //Don't change name its used in Rhino.Scripting.dll via reflection
     let syncContext = System.Threading.SynchronizationContext.Current  // Don't change name  its used in Rhino.Scripting.dll via reflection
-    let mutable hideEditor = Action<unit>(fun () ->())  // Don't change name  its used in Rhino.Scripting.dll via reflection
-    let mutable showEditor = Action<unit>(fun () ->())// Don't change name  its used in Rhino.Scripting.dll via reflection
+    let mutable hideEditor = fun() -> ()  // Don't change name  its used in Rhino.Scripting.dll via reflection
+    let mutable showEditor = fun() -> () // Don't change name  its used in Rhino.Scripting.dll via reflection
     let mutable isEditorVisible = new Func<bool>(fun () -> false) // Don't change name  its used in Rhino.Scripting.dll via reflection
 
     let mutable editorWindow = null: Windows.Window // Not used via reflection
@@ -36,8 +36,8 @@ module Sync =  //Don't change name its used in Rhino.Scripting.dll via reflectio
     let mutable printnFeshLogColor  = // Don't change name  its used in Rhino.Scripting.dll via reflection
         new Action<int,int,int,string> (fun r g b s -> RhCmdAndConsole.printn s)
 
-    let mutable clearFeshLog = // Don't change name  its used in Rhino.Scripting.dll via reflection
-        Action<unit>(fun () ->())
+    let mutable clearFeshLog = fun () ->() // Don't change name  its used in Rhino.Scripting.dll via reflection
+
 
 
 
@@ -188,7 +188,7 @@ type FeshPlugin () =
 
             RhinoDoc.ActiveDoc.Views.RedrawEnabled <- true
             RhinoDoc.ActiveDoc.Views.Redraw()
-            if showWin && not (isNull Sync.showEditor) then Sync.showEditor.Invoke() //because it might crash during UI interaction where it is hidden
+            if showWin then Sync.showEditor() //because it might crash during UI interaction where it is hidden
         }
         |> Async.StartImmediate // fails :Async.RunSynchronously
 
@@ -261,8 +261,8 @@ type FeshPlugin () =
 
                 let fesh:Fesh = Fesh.App.createEditorForHosting hostData
                 FeshPlugin.Fesh <- fesh
-                Sync.showEditor <- new Action<unit>(fun () -> fesh.Window.Show())
-                Sync.hideEditor <- new Action<unit>(fun () -> fesh.Window.Hide())
+                Sync.showEditor <- fun () -> fesh.Window.Show()
+                Sync.hideEditor <- fun () -> fesh.Window.Hide()
                 Sync.isEditorVisible <- new Func<bool>(fun () ->
                     // originally : fesh.Window.Visibility = Windows.Visibility.Visible but
                     // this might also show invisible if at the time of calling another window is covering rhino.
@@ -278,7 +278,7 @@ type FeshPlugin () =
                 Sync.editorWindow       <- fesh.Window :> Windows.Window
                 Sync.printFeshLogColor  <- new Action<int,int,int,string> (fun r g b s -> fesh.Log.AvalonLog.AppendWithColor(r,g,b,s))
                 Sync.printnFeshLogColor <- new Action<int,int,int,string> (fun r g b s -> fesh.Log.AvalonLog.AppendLineWithColor(r,g,b,s))
-                Sync.clearFeshLog       <- new Action<unit>(fun () ->fesh.Log.AvalonLog.Clear())
+                Sync.clearFeshLog       <- fun () -> fesh.Log.AvalonLog.Clear()
 
                 // Could be used to keep everything alive: But then you would be asked twice to save unsaved files. On Closing Fesh and closing Rhino.
                 fesh.Window.Closing.Add (fun e ->
