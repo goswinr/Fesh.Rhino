@@ -6,7 +6,6 @@ open Fesh
 open System.Windows
 open System.Net.Http
 
-
 module RhCmdAndConsole =
     let print txt  =
         RhinoApp.Write txt
@@ -23,7 +22,6 @@ module Sync =  //Don't change name its used in Rhino.Scripting.dll via reflectio
     let mutable hideEditor = fun() -> ()  // Don't change name  its used in Rhino.Scripting.dll via reflection
     let mutable showEditor = fun() -> () // Don't change name  its used in Rhino.Scripting.dll via reflection
     let mutable isEditorVisible = new Func<bool>(fun () -> false) // Don't change name  its used in Rhino.Scripting.dll via reflection
-
 
     /// Red green blue text
     let mutable printFeshLogColor  = // Don't change name  its used in Rhino.Scripting.dll via reflection
@@ -60,7 +58,6 @@ module internal FeshApp =
             Commands.Result.Success
 
     type Dummy = class end
-
 
     let checkForNewRelease(fesh: Fesh.Fesh) =
         async {
@@ -204,8 +201,20 @@ type FeshPlugin () =
             RhCmdAndConsole.printn errMsg
             PlugIns.LoadReturnCode.ErrorShowDialog
 
-        elif not <| Runtime.InteropServices.RuntimeInformation.FrameworkDescription.StartsWith(".NET Framework") then
-
+    #if NET7
+        elif Runtime.InteropServices.RuntimeInformation.FrameworkDescription.StartsWith ".NET Framework" then
+            MessageBox.Show(
+                [|
+                    "The loaded Fesh.Rhino Plugin is compiled for .NETcore 7.0 but Rhino is running on .NET Framework 4.8"
+                    "You can use the Rhino Command 'SetDotNetRuntime' to change Rhino's runtime to .NETcore 7.0"
+                |] |> String.concat Environment.NewLine,
+                "Fesh.Rhino Plugin | .NETcore 7.0 needed",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning)
+            |> ignore
+            PlugIns.LoadReturnCode.ErrorNoDialog
+    #else
+        elif not <| Runtime.InteropServices.RuntimeInformation.FrameworkDescription.StartsWith ".NET Framework" then
             // Command: SetDotNetRuntime
             // Currently running in .NET 7.0.7
             // Select .NET Runtime ( Runtime=NETFramework  NetCoreVersion=v7 ): Runtime
@@ -213,15 +222,15 @@ type FeshPlugin () =
             // Select .NET Runtime ( Runtime=NETFramework  NetCoreVersion=v7 )
             MessageBox.Show(
                 [|
-                    "The Fesh.Rhino Plugin currently only works well with.NET Framework."
-                    "A RhinoCommon nuget targeting .NET 7  is not available yet."
-                    "It might crash with .NET 7"
-                    "Please use the Rhino Command 'SetDotNetRuntime' to change to .NET Framework."   |] |> String.concat Environment.NewLine,
+                    "The loaded Fesh.Rhino Plugin is compiled for .NET Framework 4.8 but Rhino is running on .NETcore 7.0"
+                    "You can use the Rhino Command 'SetDotNetRuntime' to change Rhino's runtime to .NET Framework 4.8"
+                |] |> String.concat Environment.NewLine,
                 "Fesh.Rhino Plugin | .NET Framework needed",
                 MessageBoxButton.OK,
                 MessageBoxImage.Warning)
             |> ignore
             PlugIns.LoadReturnCode.ErrorNoDialog
+    #endif
 
         // elif loadedFsCoreVersion.IsSome && Util.requestedFsCoreVersion <> loadedFsCoreVersion.Value then // another version of Fsharp.Core is loaded
         //     let errMsg =
