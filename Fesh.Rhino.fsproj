@@ -40,12 +40,12 @@
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
 
     <!-- <ProjectReference Include="../Fesh/FeshHosting.fsproj" /> -->
-    <PackageReference Include="Fesh" Version="0.27.0"       Condition="'$(TargetFramework)' == 'net48'"          GeneratePathProperty="true" />
-    <PackageReference Include="Fesh" Version="0.27.0-net7"  Condition="'$(TargetFramework)' == 'net7.0-windows'" GeneratePathProperty="true" />
+    <PackageReference Include="Fesh" Version="0.28.0" Condition="'$(TargetFramework)' == 'net48'" GeneratePathProperty="true" />
+    <PackageReference Include="Fesh" Version="0.28.0-net7" Condition="'$(TargetFramework)' == 'net7.0-windows'" GeneratePathProperty="true" />
 
     <!-- During debugging use the current Rhinocommon dll reference to avoid the ~20 sec of compatibility check when Rhino loads it the first time. -->
     <!-- <Reference Include="RhinoCommon" HintPath="C:\Program Files\Rhino 7\System\RhinoCommon.dll" Private="False" /> -->
-    <PackageReference Include="RhinoCommon" Version="7.0.20314.3001"  Condition="'$(TargetFramework)' == 'net48'"          PrivateAssets="all" ExcludeAssets="runtime" /> <!--should be the same version as Rhino.Scripting and Rhino.Scripting.Extension -->
+    <PackageReference Include="RhinoCommon" Version="7.0.20314.3001" Condition="'$(TargetFramework)' == 'net48'" PrivateAssets="all" ExcludeAssets="runtime" /> <!--should be the same version as Rhino.Scripting and Rhino.Scripting.Extension -->
     <PackageReference Include="RhinoCommon" Version="8.19.25132.1001" Condition="'$(TargetFramework)' == 'net7.0-windows'" PrivateAssets="all" ExcludeAssets="runtime" /><!--should be the same version as Rhino.Scripting and Rhino.Scripting.Extension -->
 
 
@@ -59,9 +59,9 @@
     <EmbeddedResource Include="Media/logo.res" />  <!--  for Application Icon in explorer-->
     <EmbeddedResource Include="Media/logo.ico" /> <!--  used in Rhino Plugin assembly info -->
     <Resource Include="Media/logo.ico" /> <!-- used in HostedStartUpData -->
-    <Content Include="Media/logo128.png" TargetPath="../logo.png"     CopyToOutputDirectory="Always" />
-    <Content Include="Src/yak.yml"       TargetPath="../manifest.yml" CopyToOutputDirectory="Always" />
-    <Content Include="$(PkgFesh)/SyntaxHighlightingFSharp.xshd"    CopyToOutputDirectory="Always" />
+    <Content Include="Media/logo128.png" TargetPath="../logo.png" CopyToOutputDirectory="Always" />
+    <Content Include="Src/yak.yml" TargetPath="../manifest.yml" CopyToOutputDirectory="Always" />
+    <Content Include="$(PkgFesh)/SyntaxHighlightingFSharp.xshd" CopyToOutputDirectory="Always" />
 
     <Compile Include="Src/AssemblyInfo.fs" />
     <Compile Include="Src/PlugIn.fs" />
