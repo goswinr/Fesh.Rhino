@@ -13,7 +13,7 @@
 
 Fesh.Rhino is an F# scripting editor hosted inside [Rhino3D](https://www.rhino3d.com/) on Windows.<br>
 It is based on [Fesh](https://github.com/goswinr/Fesh).<br>
-It has semantic syntax highlighting, auto completion, type info tooltips and more.<br>
+It has semantic syntax highlighting, auto-completion, type info tooltips and more.<br>
 The output window supports colored text via [Fesher](https://github.com/goswinr/Fesher).
 
 
@@ -24,7 +24,7 @@ As shown in my talk at [FSharpConf 2016](https://www.youtube.com/watch?v=ZY-bvZZ
 
 ## .NET Framework or .NET Core?
 This plugin supports .NET Framework 4.8.<br>
-.NET 7 is supported if your Rhino version is higher than 8.19 (may 2025).<br>
+.NET 7 is supported if your Rhino version is higher than 8.19 (May 2025).<br>
 If you installed Fesh via the [Package Manager](https://www.rhino3d.com/features/package-manager/) then the correct framework will be picked automatically.<br>
 In Rhino use the command [SetDotNetRuntime](https://www.rhino3d.com/en/docs/guides/netcore/) to switch between .NET Framework and .NET Core.
 If you are on the wrong runtime you will get an error message box when trying to load the plugin.
@@ -33,7 +33,7 @@ If you are on the wrong runtime you will get an error message box when trying to
 
 ### Food for Rhino
 
-Install via Food for Rhino https://www.food4rhino.com/en/app/fesh .<br>
+Install via Food for Rhino: https://www.food4rhino.com/en/app/fesh<br>
 Or from inside Rhino via the `PackageManager` command, then search for `Fesh`.<br>
 No admin rights should be needed for this installation.
 
@@ -41,12 +41,12 @@ Then launch the editor with the command `Fesh`.
 
 ### Manual Installation
 You can also build the plugin from this repository via `dotnet build`.<br>
-Then drag and drop the file `Fesh.rhp` into Rhino.<br>
+Then drag and drop the file `Fesh.Rhino.rhp` into Rhino.<br>
 Then launch the editor with the command `Fesh`.
 
 ## Known Issues
-The editor might not load properly if you already have another plug-in loaded that uses an older version of `Fsharp.Core`.<br>
-See this [issue](https://github.com/goswinr/Fesh.Rhino/issues/2.)<br>
+The editor might not load properly if you already have another plugin loaded that uses an older version of `FSharp.Core`.<br>
+See this [issue](https://github.com/goswinr/Fesh.Rhino/issues/2).<br>
 Please report any issues you encounter.
 
 ## Get Started Coding
@@ -73,7 +73,7 @@ open Rhino.Scripting.FSharp // for curried functions
 
 type rs = RhinoScriptSyntax
 
-// use the rs object to call RhinoScript functions like in python
+// use the rs object to call RhinoScript functions like in Python
 let crv = rs.GetObject("Select a curve",  rs.Filter.Curve)
 ```
 
@@ -89,12 +89,12 @@ But the interaction with Rhino is safer.
 
 ![async mode](https://raw.githubusercontent.com/goswinr/Fesh.Rhino/main/Media/async.png)
 
-While the main Rhino Document is officially not thread safe,
+While the main Rhino Document is officially not thread-safe,
 modifying the Rhino Document from a background thread is actually OK as long as there is only one thread doing it.<br>
 The main reason to use this editor in async mode is to keep the Rhino UI and the Fesh UI responsive while doing long-running operations.
 
 The [Rhino.Scripting](https://github.com/goswinr/Rhino.Scripting) library can be used from any thread.<br>
-If running async it will automatically marshal all calls that affect the UI to the main Rhino UI thread and wait for switching back till completion on UI thread.
+If running async it will automatically marshal all calls that affect the UI to the main Rhino UI thread and wait for switching back until completion on the UI thread.
 
 ## Changelog
 See [CHANGELOG.md](https://github.com/goswinr/Fesh.Rhino/blob/main/CHANGELOG.md)
