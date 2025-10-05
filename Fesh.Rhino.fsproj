@@ -40,8 +40,8 @@
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
 
     <!-- <ProjectReference Include="../Fesh/FeshHosting.fsproj" /> -->
-    <PackageReference Include="Fesh" Version="0.28.0" Condition="'$(TargetFramework)' == 'net48'" GeneratePathProperty="true" />
-    <PackageReference Include="Fesh" Version="0.28.0-net7" Condition="'$(TargetFramework)' == 'net7.0-windows'" GeneratePathProperty="true" />
+    <PackageReference Include="Fesh" Version="0.28.1" Condition="'$(TargetFramework)' == 'net48'" GeneratePathProperty="true" />
+    <PackageReference Include="Fesh" Version="0.28.1-net7" Condition="'$(TargetFramework)' == 'net7.0-windows'" GeneratePathProperty="true" />
 
     <!-- During debugging use the current Rhinocommon dll reference to avoid the ~20 sec of compatibility check when Rhino loads it the first time. -->
     <!-- <Reference Include="RhinoCommon" HintPath="C:\Program Files\Rhino 7\System\RhinoCommon.dll" Private="False" /> -->

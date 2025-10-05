@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.28.1] - 2025-10-05
+### Changed
+- Update to [Fesh 0.28.1](https://github.com/goswinr/Fesh/blob/main/CHANGELOG.md#0281)
+
+
 ## [0.28.0] - 2025-06-13
 ### Changed
 - Update to [Fesh 0.28.0](https://github.com/goswinr/Fesh/blob/main/CHANGELOG.md#0280)
