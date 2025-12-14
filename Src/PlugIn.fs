@@ -196,7 +196,7 @@ type FeshPlugin () =
             RhCmdLn.printn errMsg
             PlugIns.LoadReturnCode.ErrorShowDialog
 
-    #if NET7
+    #if NET8
         elif Runtime.InteropServices.RuntimeInformation.FrameworkDescription.StartsWith ".NET Framework" then
             MessageBox.Show(
                 [|
