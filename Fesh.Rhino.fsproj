@@ -26,7 +26,7 @@
      <!-- <Version></Version> taken from CHANGELOG.md by Ionide.KeepAChangelog.Tasks -->
 
     <Authors>GoswinR</Authors>
-    <Copyright>Goswin Rothenthal 2019</Copyright>
+    <Copyright>Goswin Rothenthal 2019-2026</Copyright>
     <Description>A Scripting Editor for F# in Rhino</Description>
 
     <ApplicationIcon>Media/logo.ico</ApplicationIcon>
@@ -40,10 +40,14 @@
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
 
     <!-- <ProjectReference Include="../Fesh/FeshHosting.fsproj" /> -->
-    <PackageReference Include="Fesh" Version="0.29.0" Condition="'$(TargetFramework)' == 'net48'" GeneratePathProperty="true" />
-    <PackageReference Include="Fesh" Version="0.29.0-net7" Condition="'$(TargetFramework)' == 'net8.0-windows'" GeneratePathProperty="true" />
-    <PackageReference Include="FSharp.Compiler.Service" Version="43.10.101" />
-    <PackageReference Update="FSharp.Core" Version="10.0.101" /> <!--even if this comes from Fesh reference already add it here again , may help solve F# core issues ? -->
+    <PackageReference Include="Fesh" Version="0.29.3"      Condition="'$(TargetFramework)' == 'net48'" GeneratePathProperty="true" />
+    <PackageReference Include="Fesh" Version="0.29.3-net8" Condition="'$(TargetFramework)' != 'net48'" GeneratePathProperty="true" />
+
+     <!-- build the NET core nuget for F#8 so that dependencies like System.Diagnostics.DiagnosticSource are also for Net80 and load properly in Rhino and Revit:-->
+    <PackageReference Include="FSharp.Compiler.Service" Version="43.10.101" Condition="'$(TargetFramework)' == 'net48'" />
+    <PackageReference Include="FSharp.Compiler.Service" Version="43.8.403"  Condition="'$(TargetFramework)' != 'net48'" />
+    <PackageReference Include="FSharp.Core" Version="10.0.101"  Condition="'$(TargetFramework)' == 'net48'"/>
+    <PackageReference Update="FSharp.Core" Version="8.0.403"   Condition="'$(TargetFramework)' != 'net48'"/>
 
     <!-- During debugging use the current Rhinocommon dll reference to avoid the ~20 sec of compatibility check when Rhino loads it the first time. -->
     <!-- <Reference Include="RhinoCommon" HintPath="C:\Program Files\Rhino 7\System\RhinoCommon.dll" Private="False" /> -->
@@ -68,7 +72,6 @@
     <Content Include="$(PkgFesh)/SyntaxHighlightingFSharp.xshd" CopyToOutputDirectory="Always" />
     <Content Include="$(PkgNETStandard_Library)/build/netstandard2.0/ref/netstandard.dll" Condition="'$(TargetFramework)' == 'net48'" CopyToOutputDirectory="Always" />
     <Content Include="$(PkgNETStandard_Library)/build/netstandard2.0/ref/netstandard.xml" Condition="'$(TargetFramework)' == 'net48'" CopyToOutputDirectory="Always" />
-
 
     <Compile Include="Src/AssemblyInfo.fs" />
     <Compile Include="Src/PlugIn.fs" />
