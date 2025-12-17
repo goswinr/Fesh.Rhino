@@ -23,17 +23,12 @@ As shown in my talk at [FSharpConf 2016](https://www.youtube.com/watch?v=ZY-bvZZ
 ![Screenshot](https://raw.githubusercontent.com/goswinr/Fesh.Rhino/main/Media/screen1.png)
 
 ## .NET Framework or .NET Core?
-Currently only .NET Framework works. (using the latest Rhino8)<br>
-Set the runtime in Rhino to .NET Framework 4.8 via the command [SetDotNetRuntime](https://www.rhino3d.com/en/docs/guides/netcore/).<br>
-See bug: https://discourse.mcneel.com/t/net7-plugin-fails-to-load-if-it-was-loaded-already/208500
 
-
-~~This plugin supports .NET Framework 4.8.<br>
-.NET 8 is supported if your Rhino version is higher than 8.19 (May 2025).<br>
+This plugin supports .NET Framework 4.8.<br>
+.NET 8 is supported too if your Rhino version is higher than 8.19 (May 2025).<br>
 If you installed Fesh via the [Package Manager](https://www.rhino3d.com/features/package-manager/) then the correct framework will be picked automatically.<br>
 In Rhino use the command [SetDotNetRuntime](https://www.rhino3d.com/en/docs/guides/netcore/) to switch between .NET Framework and .NET Core.
-If you are on the wrong runtime you will get an error message box when trying to load the plugin.~~
-
+If you are on the wrong runtime you will get an error message box when trying to load the plugin.
 
 ## Installation
 
