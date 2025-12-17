@@ -3,16 +3,19 @@
   <PropertyGroup>
     <TargetExt>.rhp</TargetExt>
     <UseWPF>true</UseWPF>
-    <PlatformTarget>x64</PlatformTarget>    <!--  x64 is required by Rhino, don't use just 'Platform' tag-->
+    <!-- <PlatformTarget>x64</PlatformTarget> -->
+    <!--  x64 might be required by Rhino, don't use just Platform tag -->
+
     <TargetFrameworks>net48;net8.0-windows</TargetFrameworks>
-    <DefineConstants Condition="'$(TargetFramework)' == 'net8.0-windows'">NET8</DefineConstants>
+    <DefineConstants Condition="'$(TargetFramework)' != 'net48'">NET8</DefineConstants>
 
     <LangVersion>preview</LangVersion>    <!-- enables indexing from end -->
     <NeutralLanguage>en</NeutralLanguage>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>    <!--to only have the english resources-->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
-    <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference> <!-- needed so that the Fesh nuget can pull in  the latest version for dotnet-outdated tool -->
+    <!-- <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>  -->
+    <!-- DisableImplicitFSharpCoreReference was needed so that the Fesh nuget can pull in  the latest version for dotnet-outdated tool -->
     <CopyDebugSymbolFilesFromPackages>true</CopyDebugSymbolFilesFromPackages>
     <CopyDocumentationFilesFromPackages>true</CopyDocumentationFilesFromPackages>
 
@@ -44,10 +47,10 @@
     <PackageReference Include="Fesh" Version="0.29.3-net8" Condition="'$(TargetFramework)' != 'net48'" GeneratePathProperty="true" />
 
      <!-- build the NET core nuget for F#8 so that dependencies like System.Diagnostics.DiagnosticSource are also for Net80 and load properly in Rhino and Revit:-->
-    <PackageReference Include="FSharp.Compiler.Service" Version="43.10.101" Condition="'$(TargetFramework)' == 'net48'" />
-    <PackageReference Include="FSharp.Compiler.Service" Version="43.8.403"  Condition="'$(TargetFramework)' != 'net48'" />
-    <PackageReference Include="FSharp.Core" Version="10.0.101"  Condition="'$(TargetFramework)' == 'net48'"/>
-    <PackageReference Update="FSharp.Core" Version="8.0.403"   Condition="'$(TargetFramework)' != 'net48'"/>
+    <PackageReference Update="FSharp.Compiler.Service" Version="43.10.101" Condition="'$(TargetFramework)' == 'net48'" />
+    <PackageReference Update="FSharp.Compiler.Service" Version="43.8.403"  Condition="'$(TargetFramework)' != 'net48'" />
+    <PackageReference Update="FSharp.Core" Version="10.0.101"  Condition="'$(TargetFramework)' == 'net48'"/>
+    <PackageReference Update="FSharp.Core" Version="8.0.403"   Condition="'$(TargetFramework)' != 'net48'" GeneratePathProperty="true"  />
 
     <!-- During debugging use the current Rhinocommon dll reference to avoid the ~20 sec of compatibility check when Rhino loads it the first time. -->
     <!-- <Reference Include="RhinoCommon" HintPath="C:\Program Files\Rhino 7\System\RhinoCommon.dll" Private="False" /> -->
@@ -59,8 +62,6 @@
     <PackageReference Include="NETStandard.Library" Version="2.0.3" Condition="'$(TargetFramework)' == 'net48'" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
     <PackageReference Include="Ionide.KeepAChangelog.Tasks" Version="0.1.8" PrivateAssets="all" />
-
-
   </ItemGroup>
 
   <ItemGroup>
@@ -76,6 +77,7 @@
     <Compile Include="Src/AssemblyInfo.fs" />
     <Compile Include="Src/PlugIn.fs" />
     <Compile Include="Src/Commands.fs" />
+
   </ItemGroup>
 
 

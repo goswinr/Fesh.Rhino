@@ -10,7 +10,8 @@ open Rhino.PlugIns
 // IMPORTANT:
 // Without this Guid Rhino does not remember the plugin after restart, setting <ProjectGuid> in the new SDK fsproj file does not to work.
 #if DEBUG
-[<assembly: Guid("e5fab201-4690-49da-8017-203cab8cc11f")>] // so that debug loading and yak install work side by side
+// or do not include a guid for Debug so that Rhino forgets the plugin on restart
+// [<assembly: Guid("e5fab201-4690-49da-8017-203cab8cc11f")>] // so that debug loading and yak install work side by side
 #else
 [<assembly: Guid("01dab273-99ae-4760-8695-3f29f4887831")>] //Don't change it !! its used in Rhino.Scripting.dll via reflection to find the hosting editor.
 #endif

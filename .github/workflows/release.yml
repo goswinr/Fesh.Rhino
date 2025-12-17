@@ -19,7 +19,20 @@ jobs:
         dotnet-version: '10.x'
 
     - name: Build
-      run: dotnet build --configuration Release
+      # use --self-contained to copy all dependencies into the publish folder
+      # *.deps.json seems to be not used in net8 in Rhino.
+      run: |
+        dotnet publish --self-contained --configuration Release --framework net48
+        dotnet publish --self-contained --configuration Release --framework net8.0-windows
+
+    - name: Move publish files to root
+      # This is to make sure there is only one folder containing all files.
+      shell: pwsh
+      run: |
+        Move-Item   -Path "bin\Release\net48\publish\*" -Destination "bin\Release\net48" -Force
+        Remove-Item -Path "bin\Release\net48\publish" -Recurse -Force      
+        Move-Item   -Path "bin\Release\net8.0-windows\publish\*" -Destination "bin\Release\net8.0-windows" -Force
+        Remove-Item -Path "bin\Release\net8.0-windows\publish" -Recurse -Force
 
     - name: Check version consistency of git tag and CHANGELOG.md
       # needs in fsproj:

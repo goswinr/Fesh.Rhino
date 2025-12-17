@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.29.4] - 2025-12-17
+### Changed
+- Try again to fix issue with FSharp.Core not loading in Rhino net8 runtime by using `dotnet publish --framework net8.0-windows --self-contained`
+
 
 ## [0.29.3] - 2025-12-14
 ### Changed
