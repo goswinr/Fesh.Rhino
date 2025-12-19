@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.30.1] - 2025-12-14
+### Changed
+- Update to [Fesh 0.30.1](https://github.com/goswinr/Fesh/blob/main/CHANGELOG.md#0301)
+- warn on if rhino .is in net7 runtime.
+
+
 ## [0.29.4] - 2025-12-17
 ### Changed
 - Try again to fix issue with FSharp.Core not loading in Rhino net8 runtime by using `dotnet publish --framework net8.0-windows --self-contained`
@@ -109,7 +115,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - first public release
 
-[Unreleased]: https://github.com/goswinr/Fesh.Rhino/compare/0.29.0...HEAD
+[Unreleased]: https://github.com/goswinr/Fesh.Rhino/compare/0.30.1...HEAD
+[0.30.1]: https://github.com/goswinr/Fesh.Rhino/compare/0.29.4...0.30.1
+[0.29.4]: https://github.com/goswinr/Fesh.Rhino/compare/0.29.3...0.29.4
+[0.29.3]: https://github.com/goswinr/Fesh.Rhino/compare/0.29.0...0.29.3
 [0.29.0]: https://github.com/goswinr/Fesh.Rhino/compare/0.28.1...0.29.0
 [0.28.1]: https://github.com/goswinr/Fesh.Rhino/compare/0.28.0...0.28.1
 [0.28.0]: https://github.com/goswinr/Fesh.Rhino/compare/0.27.4...0.28.0
