@@ -51,14 +51,14 @@
 
     <!--RhinoCommon should be the same version as Rhino.Scripting and Rhino.Scripting.FSharp -->
     <PackageReference Include="RhinoCommon" Version="8.19.25132.1001" PrivateAssets="all" ExcludeAssets="runtime" />
-    <PackageReference Include="Fesh" Version="0.30.1-net8"  GeneratePathProperty="true" />
+    <PackageReference Include="Fesh" Version="0.31.0-net8"  GeneratePathProperty="true" />
   </ItemGroup>
 
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net48'">
      <!--RhinoCommon should be the same version as Rhino.Scripting and Rhino.Scripting.FSharp -->
     <PackageReference Include="RhinoCommon" Version="7.0.20314.3001"  PrivateAssets="all" ExcludeAssets="runtime" />
-    <PackageReference Include="Fesh" Version="0.30.1-net472"  GeneratePathProperty="true" />
+    <PackageReference Include="Fesh" Version="0.31.0-net472"  GeneratePathProperty="true" />
 
     <!-- The NETStandard.Library reference is needed for tooling only, it might not be installed on host PC. see also https://github.com/fsprojects/IfSharp/issues/213 -->
     <PackageReference Include="NETStandard.Library" Version="2.0.3" GeneratePathProperty="true" />
