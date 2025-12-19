@@ -24,6 +24,11 @@ jobs:
       run: |
         dotnet publish --self-contained --configuration Release --framework net48
         dotnet publish --self-contained --configuration Release --framework net8.0-windows
+      # https://discourse.mcneel.com/t/all-f-plugins-fail-to-load-on-net-8/213721/5
+      # Self contained will include all dependencies for NET Core. It will be duplicated and potentially dangerous if you provide it with your plugin,
+      # since Rhino comes with NET 8 itself (but in a different minor version). However you can try to
+      # use -p:PublishTrimmed=true (or as an option in the csproj) to only get the relevant parts of NET 8 used in your plugin.
+      # You just need to be aware not to use Reflection. In this case its dangerous to publish trimmed.
 
     - name: Move publish files to root
       # This is to make sure there is only one folder containing all files.

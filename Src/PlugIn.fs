@@ -109,33 +109,27 @@ module internal Util =
     // "// you can change it by going to the menu: File -> Edit Template File"
     // "// The default code is saved at at " + filePath0
     let defaultCode =
+        let path = RhinoApp.GetExecutableDirectory().FullName.Replace("\\", "/")
         [|
-        """#r "C:/Program Files/Rhino 8/System/RhinoCommon.dll" """
-        """#r "nuget:Rhino.Scripting.FSharp" """
+        $"""#I "{path}" """
+        """#r "RhinoCommon.dll"  """
+        """#r "nuget: Rhino.Scripting.FSharp" """
+        """#r "nuget: ResizeArrayT" """
         ""
-        """open System"""
-        """open Rhino.Scripting"""
-        """open Rhino.Scripting.FSharp //recommended for F# """
+        """open System """
+        """open ResizeArrayT """
+        """open Rhino.Scripting """
+        """open Rhino.Scripting.FSharp  """
         ""
-        """type rs = RhinoScriptSyntax"""
+        """type rs = RhinoScriptSyntax """
         ""
-        """// use the rs object to call RhinoScript functions like in python"""
+        """// use the static members on rs to call RhinoScript functions like in python. e.g.:"""
         """let crv = rs.GetObject("Select a curve",  rs.Filter.Curve)"""
+        ""
+        "// press F5 to run the script"
         ""
         |]
         |> String.concat Environment.NewLine
-
-    // let requestedFsCoreVersion = "8.0.400"
-    // // insert just before the last </runtime> tag in Rhino.exe.config
-    // let bindingRedirect(version:string) = $"""
-    //     <!-- binding redirect added automatically by Rhino.Fesh plugin: -->
-    //     <assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1">
-    //         <dependentAssembly>
-    //             <assemblyIdentity name="FSharp.Core" publicKeyToken="b03f5f7f11d50a3a" culture="neutral" />
-    //             <bindingRedirect oldVersion="0.0.0.0-{version}" newVersion="{version}" />
-    //         </dependentAssembly>
-    //     </assemblyBinding>
-    // """
 
 
 // the Plugin  and Commands Singletons:
@@ -187,6 +181,145 @@ type FeshPlugin () =
         |> Async.StartImmediate // fails :Async.RunSynchronously
 
 
+
+    member this.WhenLoading(refErrs:byref<string>): PlugIns.LoadReturnCode  =
+        RhCmdLn.printn  "loading Fesh.Rhino Plugin ..."
+        try
+            let canRun () = not <| Rhino.Commands.Command.InCommand()
+            let feshHost =
+                #if DEBUG
+                    "RhinoDebug"
+                #else
+                    "Rhino"
+                #endif
+
+            let hostData : Fesh.Config.HostedStartUpData = {
+                hostName = feshHost
+                mainWindowHandel = RhinoApp.MainWindowHandle()
+                fsiCanRun = canRun
+                defaultCode = Some Util.defaultCode
+                // Add the Icon at the top left of the window and in the status bar, musst be called  after loading window.
+                // Media/LogoCursorTr.ico with Build action : "Resource"
+                // (for the exe file icon in explorer use <Win32Resource>Media\logo.res</Win32Resource>  in fsproj )
+                logo = Some (Uri "pack://application:,,,/Fesh.Rhino;component/Media/logo.ico")
+                hostAssembly = Some (Reflection.Assembly.GetAssembly typeof<FeshPlugin>)
+                canRunAsync = true // FSI can run async, so that it does not block the UI thread.
+                }
+
+            let fesh:Fesh = Fesh.App.createEditorForHosting hostData
+            FeshPlugin.Fesh <- fesh
+
+            fesh.Window.Loaded.Add (fun _ ->
+
+                Sync.showEditor      <- Action(fun () -> fesh.Window.Show())
+                Sync.hideEditor      <- Action(fun () -> fesh.Window.Hide())
+                Sync.isEditorVisible <- new Func<bool>(fun () ->
+                    // originally : fesh.Window.Visibility = Windows.Visibility.Visible but
+                    // this might also show invisible if at the time of calling another window is covering rhino.
+                    // then going back to rhino the ui prompt might not be visible because the window would be in front again.
+                    // so we have to check if it is minimized too:
+                    fesh.Window.Visibility = Windows.Visibility.Visible
+                    &&
+                    match fesh.Window.WindowState with
+                    | Windows.WindowState.Minimized                                     -> false
+                    | Windows.WindowState.Normal  | Windows.WindowState.Maximized | _   -> true
+                    )
+
+                Sync.printFeshLogColor  <- new Action<int,int,int,string> (fun r g b s -> fesh.Log.AvalonLog.AppendWithColor(r,g,b,s))
+                Sync.printnFeshLogColor <- new Action<int,int,int,string> (fun r g b s -> fesh.Log.AvalonLog.AppendLineWithColor(r,g,b,s))
+                Sync.clearFeshLog       <- Action(fun () -> fesh.Log.AvalonLog.Clear())
+
+                async {
+                    // Reinitialize Rhino.Scripting just in case it is loaded already in the current AppDomain by another plugin.
+                    // This is needed to have showEditor() and hideEditor() actions for Fesh setup correctly.
+                    // let assemblies = AppDomain.CurrentDomain.GetAssemblies()
+                    // let loadedFsCoreVersion = assemblies |> Seq.tryFind (fun a -> a.GetName().Name = "Fsharp.Core") |> Option.map (fun a -> a.GetName().Version.ToString() )
+                    let assemblies = AppDomain.CurrentDomain.GetAssemblies()
+                    assemblies
+                    |> Seq.tryFind (fun a -> a.GetName().Name = "Rhino.Scripting")
+                    |> Option.iter (fun rsAss ->
+                        try
+                            let rhinoSyncModule = rsAss.GetType "Rhino.RhinoSync"
+                            let init = rhinoSyncModule.GetProperty("initialize").GetValue rsAss :?> Action
+                            init.Invoke()
+                            RhCmdLn.printn "Rhino.Scripting.RhinoSync re-initialized."
+                        with e ->
+                            RhCmdLn.printn (sprintf "* Fesh.Rhino Plugin Rhino.Scripting.Initialize() failed with %A" e)
+                        )
+                    } |> Async.Start
+                )
+
+            // Could be used to keep everything alive: But then you would be asked twice to save unsaved files. On Closing Fesh and closing Rhino.
+            fesh.Window.Closing.Add (fun e ->
+                if not e.Cancel then // closing might be already cancelled in Fesh.fs as a result of asking to save unsaved files.
+                    // even if closing is not canceled, don't close, just hide window
+                    fesh.Window.Visibility <- Windows.Visibility.Hidden
+                    e.Cancel <- true
+                    )
+
+            fesh.Window.StateChanged.Add (fun e ->
+                match fesh.Fsi.State with
+                | Ready ->
+                    // if the window is hidden log error messages to rhino command line, but not when window is shown
+                    // this is also set in FeshRunCurrentScript Command
+                    match fesh.Window.WindowState with
+                    | Windows.WindowState.Normal    | Windows.WindowState.Maximized    -> fesh.Log.AdditionalLogger <- None
+                    | Windows.WindowState.Minimized | _                                -> fesh.Log.AdditionalLogger <- FeshPlugin.RhWriter
+
+                | Initializing | NotLoaded | Evaluating | Compiling -> ()   // don't change while running
+                )
+
+
+            fesh.Fsi.OnCompiling.Add    ( fun m -> FeshPlugin.BeforeEval())     // https://github.com/mcneel/rhinocommon/blob/57c3967e33d18205efbe6a14db488319c276cbee/dotnet/rhino/rhinosdkdoc.cs#L857
+            fesh.Fsi.OnRuntimeError.Add ( fun e -> FeshPlugin.AfterEval true)  // to unsure UI does not stay frozen if RedrawEnabled is false //showWin because it might crash during UI interaction where it is hidden
+            fesh.Fsi.OnCanceled.Add     ( fun m -> FeshPlugin.AfterEval true)  // to unsure UI does not stay frozen if RedrawEnabled is false //showWin because it might crash during UI interaction where it is hidden
+            fesh.Fsi.OnCompletedOk.Add  ( fun m -> FeshPlugin.AfterEval false) // to unsure UI does not stay frozen if RedrawEnabled is false //showWin = false because might be running in background mode from rhino command line
+
+            //RhinoDoc.CloseDocument.Add (fun e -> fesh.Fsi.CancelIfAsync() ) // don't do that !! Allow rs.Command to open new files when called async.
+
+            RhinoApp.Closing.Add (fun _ ->
+                fesh.Tabs.AskForFileSavingToKnowIfClosingWindowIsOk() |> ignore // to save unsaved files, canceling of closing not possible here, save dialog will show after rhino is closed
+                fesh.Fsi.AskIfCancellingIsOk() |> ignore
+                fesh.Fsi.CancelIfAsync()   //sync eval gets canceled anyway
+                )
+
+            // A first Dummy attachment in sync mode to prevent access violation exception if first access is in async mode from Rhino.Scripting dll
+            // Don't abort on esc, only on ctrl+break or Rhino.Scripting.EscapeTest()
+            RhinoApp.EscapeKeyPressed.Add(ignore)
+
+            // Add an Alias too if not taken already:
+            if not <| ApplicationSettings.CommandAliasList.IsAlias "fr" then
+                if ApplicationSettings.CommandAliasList.Add("fr","FeshRunCurrentScript")then
+                    RhCmdLn.printn  "* Fesh.Rhino Plugin added the command alias 'fr' for 'FeshRunCurrentScript'"
+
+
+            // only now load and show the window:
+
+            RhCmdLn.printn  ("Fesh."+feshHost + " plugin loaded.")
+            match FeshApp.showEditorWindow(Some fesh.Window) with
+            | Commands.Result.Success ->
+                FeshApp.checkForNewRelease fesh
+                PlugIns.LoadReturnCode.Success
+            | _   ->
+                PlugIns.LoadReturnCode.ErrorShowDialog
+        with
+        | e ->
+            let errMsg =
+                [|
+                "Fesh.Rhino Plugin failed to load."
+                "Try to restart Rhino! That is often enough to make it work!"
+                "If you still have problems,"
+                "and you have other plugins loaded that are using older versions of 'Fsharp.Core'"
+                "try to unload or disable them."
+                |] |> String.concat Environment.NewLine
+            refErrs <- errMsg
+            RhCmdLn.printn e.Message
+            RhCmdLn.printn errMsg
+            PlugIns.LoadReturnCode.ErrorShowDialog
+
+
+
+
     override this.OnLoad(refErrs) : PlugIns.LoadReturnCode =
         AssemblyInfo.track()
 
@@ -195,183 +328,55 @@ type FeshPlugin () =
             refErrs <- errMsg
             RhCmdLn.printn errMsg
             PlugIns.LoadReturnCode.ErrorShowDialog
-
-    #if NET8
-        elif Runtime.InteropServices.RuntimeInformation.FrameworkDescription.StartsWith ".NET Framework" then
-            MessageBox.Show(
-                [|
-                    "The loaded Fesh.Rhino Plugin is compiled for .NETcore 7.0 but Rhino is running on .NET Framework 4.8"
-                    "You can use the Rhino Command 'SetDotNetRuntime' to change Rhino's runtime to .NETcore 7.0"
-                |] |> String.concat Environment.NewLine,
-                "Fesh.Rhino Plugin | .NETcore 7.0 needed",
-                MessageBoxButton.OK,
-                MessageBoxImage.Warning)
-            |> ignore
-            PlugIns.LoadReturnCode.ErrorNoDialog
-    #else
-        elif not <| Runtime.InteropServices.RuntimeInformation.FrameworkDescription.StartsWith ".NET Framework" then
-            // Command: SetDotNetRuntime
-            // Currently running in .NET 7.0.7
-            // Select .NET Runtime ( Runtime=NETFramework  NetCoreVersion=v7 ): Runtime
-            // Runtime <NETFramework> ( NETCore  NETFramework ): NETFramework
-            // Select .NET Runtime ( Runtime=NETFramework  NetCoreVersion=v7 )
-            MessageBox.Show(
-                [|
-                    "The loaded Fesh.Rhino Plugin is compiled for .NET Framework 4.8 but Rhino is running on .NETcore 7.0"
-                    "You can use the Rhino Command 'SetDotNetRuntime' to change Rhino's runtime to .NET Framework 4.8"
-                |] |> String.concat Environment.NewLine,
-                "Fesh.Rhino Plugin | .NET Framework needed",
-                MessageBoxButton.OK,
-                MessageBoxImage.Warning)
-            |> ignore
-            PlugIns.LoadReturnCode.ErrorNoDialog
-    #endif
-
-        // elif loadedFsCoreVersion.IsSome && Util.requestedFsCoreVersion <> loadedFsCoreVersion.Value then // another version of Fsharp.Core is loaded
-        //     let errMsg =
-        //         $"The Fesh.Rhino Plugin needs Fsharp.Core version {Util.requestedFsCoreVersion}, but found version " + loadedFsCoreVersion.Value +
-        //         "\r\nYou might have already another plugin loaded using an older version of Fsharp.Core." +
-        //         "\r\nPlease unload the other plugin or update it to use Fsharp.Core version {requestedFsCoreVersion}." +
-        //         "\r\nOr add a binding redirect to Rhino.exe.config. see:" +
-        //         "\r\nhttps://github.com/goswinr/Fesh.Rhino/issues/2"
-        //     refErrs <- errMsg
-        //     RhinoAppWriteLine.printn errMsg
-        //     PlugIns.LoadReturnCode.ErrorShowDialog
-
         else
-            RhCmdLn.printn  "loading Fesh.Rhino Plugin ..."
-            try
-                let canRun () = not <| Rhino.Commands.Command.InCommand()
-                let host =
-                    #if DEBUG
-                        "RhinoDebug"
-                    #else
-                        "Rhino" //The command name as it appears on the Rhino command line.
-                    #endif
 
-                let hostData : Fesh.Config.HostedStartUpData = {
-                    hostName = host
-                    mainWindowHandel = RhinoApp.MainWindowHandle()
-                    fsiCanRun = canRun
-                    defaultCode = Some Util.defaultCode
-                    // Add the Icon at the top left of the window and in the status bar, musst be called  after loading window.
-                    // Media/LogoCursorTr.ico with Build action : "Resource"
-                    // (for the exe file icon in explorer use <Win32Resource>Media\logo.res</Win32Resource>  in fsproj )
-                    logo = Some (Uri "pack://application:,,,/Fesh.Rhino;component/Media/logo.ico")
-                    hostAssembly = Some (Reflection.Assembly.GetAssembly typeof<FeshPlugin>)
-                    canRunAsync = true // FSI can run async, so that it does not block the UI thread.
-                    }
+            let frameworkDescription = Runtime.InteropServices.RuntimeInformation.FrameworkDescription
 
-                let fesh:Fesh = Fesh.App.createEditorForHosting hostData
-                FeshPlugin.Fesh <- fesh
-
-                fesh.Window.Loaded.Add (fun _ ->
-
-                    Sync.showEditor      <- Action(fun () -> fesh.Window.Show())
-                    Sync.hideEditor      <- Action(fun () -> fesh.Window.Hide())
-                    Sync.isEditorVisible <- new Func<bool>(fun () ->
-                        // originally : fesh.Window.Visibility = Windows.Visibility.Visible but
-                        // this might also show invisible if at the time of calling another window is covering rhino.
-                        // then going back to rhino the ui prompt might not be visible because the window would be in front again.
-                        // so we have to check if it is minimized too:
-                        fesh.Window.Visibility = Windows.Visibility.Visible
-                        &&
-                        match fesh.Window.WindowState with
-                        | Windows.WindowState.Minimized                                     -> false
-                        | Windows.WindowState.Normal  | Windows.WindowState.Maximized | _   -> true
-                        )
-
-                    Sync.printFeshLogColor  <- new Action<int,int,int,string> (fun r g b s -> fesh.Log.AvalonLog.AppendWithColor(r,g,b,s))
-                    Sync.printnFeshLogColor <- new Action<int,int,int,string> (fun r g b s -> fesh.Log.AvalonLog.AppendLineWithColor(r,g,b,s))
-                    Sync.clearFeshLog       <- Action(fun () -> fesh.Log.AvalonLog.Clear())
-
-                    async {
-                        // Reinitialize Rhino.Scripting just in case it is loaded already in the current AppDomain by another plugin.
-                        // This is needed to have showEditor() and hideEditor() actions for Fesh setup correctly.
-                        // let assemblies = AppDomain.CurrentDomain.GetAssemblies()
-                        // let loadedFsCoreVersion = assemblies |> Seq.tryFind (fun a -> a.GetName().Name = "Fsharp.Core") |> Option.map (fun a -> a.GetName().Version.ToString() )
-                        let assemblies = AppDomain.CurrentDomain.GetAssemblies()
-                        assemblies
-                        |> Seq.tryFind (fun a -> a.GetName().Name = "Rhino.Scripting")
-                        |> Option.iter (fun rsAss ->
-                            try
-                                let rhinoSyncModule = rsAss.GetType "Rhino.RhinoSync"
-                                let init = rhinoSyncModule.GetProperty("initialize").GetValue rsAss :?> Action
-                                init.Invoke()
-                                RhCmdLn.printn "Rhino.Scripting.RhinoSync re-initialized."
-                            with e ->
-                                RhCmdLn.printn (sprintf "* Fesh.Rhino Plugin Rhino.Scripting.Initialize() failed with %A" e)
-                            )
-                        } |> Async.Start
-                    )
-
-                // Could be used to keep everything alive: But then you would be asked twice to save unsaved files. On Closing Fesh and closing Rhino.
-                fesh.Window.Closing.Add (fun e ->
-                    if not e.Cancel then // closing might be already cancelled in Fesh.fs as a result of asking to save unsaved files.
-                        // even if closing is not canceled, don't close, just hide window
-                        fesh.Window.Visibility <- Windows.Visibility.Hidden
-                        e.Cancel <- true
-                        )
-
-                fesh.Window.StateChanged.Add (fun e ->
-                    match fesh.Fsi.State with
-                    | Ready ->
-                        // if the window is hidden log error messages to rhino command line, but not when window is shown
-                        // this is also set in FeshRunCurrentScript Command
-                        match fesh.Window.WindowState with
-                        | Windows.WindowState.Normal    | Windows.WindowState.Maximized    -> fesh.Log.AdditionalLogger <- None
-                        | Windows.WindowState.Minimized | _                                -> fesh.Log.AdditionalLogger <- FeshPlugin.RhWriter
-
-                    | Initializing | NotLoaded | Evaluating | Compiling -> ()   // don't change while running
-                    )
-
-
-                fesh.Fsi.OnCompiling.Add    ( fun m -> FeshPlugin.BeforeEval())     // https://github.com/mcneel/rhinocommon/blob/57c3967e33d18205efbe6a14db488319c276cbee/dotnet/rhino/rhinosdkdoc.cs#L857
-                fesh.Fsi.OnRuntimeError.Add ( fun e -> FeshPlugin.AfterEval true)  // to unsure UI does not stay frozen if RedrawEnabled is false //showWin because it might crash during UI interaction where it is hidden
-                fesh.Fsi.OnCanceled.Add     ( fun m -> FeshPlugin.AfterEval true)  // to unsure UI does not stay frozen if RedrawEnabled is false //showWin because it might crash during UI interaction where it is hidden
-                fesh.Fsi.OnCompletedOk.Add  ( fun m -> FeshPlugin.AfterEval false) // to unsure UI does not stay frozen if RedrawEnabled is false //showWin = false because might be running in background mode from rhino command line
-
-                //RhinoDoc.CloseDocument.Add (fun e -> fesh.Fsi.CancelIfAsync() ) // don't do that !! Allow rs.Command to open new files when called async.
-
-                RhinoApp.Closing.Add (fun _ ->
-                    fesh.Tabs.AskForFileSavingToKnowIfClosingWindowIsOk() |> ignore // to save unsaved files, canceling of closing not possible here, save dialog will show after rhino is closed
-                    fesh.Fsi.AskIfCancellingIsOk() |> ignore
-                    fesh.Fsi.CancelIfAsync()   //sync eval gets canceled anyway
-                    )
-
-                // Dummy attachment in sync mode  to prevent access violation exception if first access is in async mode
-                // Don't abort on esc, only on ctrl+break or Rhino.Scripting.EscapeTest()
-                RhinoApp.EscapeKeyPressed.Add(ignore)
-
-                // Add an Alias too if not taken already:
-                if not <| ApplicationSettings.CommandAliasList.IsAlias("fr") then
-                    if ApplicationSettings.CommandAliasList.Add("fr","FeshRunCurrentScript")then
-                        RhCmdLn.printn  "* Fesh.Rhino Plugin added the command alias 'fr' for 'FeshRunCurrentScript'"
-
-
-                // only now load and show the window:
-
-                RhCmdLn.printn  ("Fesh."+host + " plugin loaded.")
-                match FeshApp.showEditorWindow(Some fesh.Window) with
-                | Commands.Result.Success ->
-                    FeshApp.checkForNewRelease fesh
-                    PlugIns.LoadReturnCode.Success
-                | _   ->
-                    PlugIns.LoadReturnCode.ErrorShowDialog
-            with
-            | e ->
-                let errMsg =
+        #if NET8
+            if frameworkDescription.StartsWith ".NET Framework" then
+                MessageBox.Show(
                     [|
-                    "Fesh.Rhino Plugin failed to load."
-                    "Try to restart Rhino! That is often enough to make it work!"
-                    "If you still have problems,"
-                    "and you have other plugins loaded that are using older versions of 'Fsharp.Core'"
-                    "try to unload or disable them."
-                    |] |> String.concat Environment.NewLine
-                refErrs <- errMsg
-                RhCmdLn.printn e.Message
-                RhCmdLn.printn errMsg
-                PlugIns.LoadReturnCode.ErrorShowDialog
+                        $"The loaded Fesh.Rhino Plugin is compiled for .NETcore 8.0 but Rhino is running on {frameworkDescription}"
+                        "You can use the Rhino Command 'SetDotNetRuntime' to change Rhino's runtime to .NETcore 8.0"
+                    |] |> String.concat Environment.NewLine,
+                    "Fesh.Rhino Plugin | .NETcore 8.0 needed",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning)
+                |> ignore
+                PlugIns.LoadReturnCode.ErrorNoDialog
+            elif frameworkDescription.StartsWith ".NET 7" then
+                MessageBox.Show(
+                    [|
+                        $"The loaded Fesh.Rhino Plugin is compiled for .NETcore 8.0 but Rhino is running on {frameworkDescription}"
+                        "You can use the Rhino Command 'SetDotNetRuntime' to change Rhino's runtime to .NETcore 8.0"
+                    |] |> String.concat Environment.NewLine,
+                    "Fesh.Rhino Plugin | .NETcore 8.0 needed",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning)
+                |> ignore
+                PlugIns.LoadReturnCode.ErrorNoDialog
+        #else
+            if not <| frameworkDescription.StartsWith ".NET Framework" then
+                // Command: SetDotNetRuntime
+                // Currently running in .NET 7.0.7
+                // Select .NET Runtime ( Runtime=NETFramework  NetCoreVersion=v7 ): Runtime
+                // Runtime <NETFramework> ( NETCore  NETFramework ): NETFramework
+                // Select .NET Runtime ( Runtime=NETFramework  NetCoreVersion=v7 )
+                MessageBox.Show(
+                    [|
+                        $"The loaded Fesh.Rhino Plugin is compiled for .NET Framework 4.8 but Rhino is running on {frameworkDescription}"
+                        "You can use the Rhino Command 'SetDotNetRuntime' to change Rhino's runtime to .NET Framework 4.8"
+                    |] |> String.concat Environment.NewLine,
+                    "Fesh.Rhino Plugin | .NET Framework needed",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning)
+                |> ignore
+                PlugIns.LoadReturnCode.ErrorNoDialog
+        #endif
+
+            else
+                // proceed with loading
+                this.WhenLoading(&refErrs)
 
 
 

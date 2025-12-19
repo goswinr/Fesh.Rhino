@@ -4,7 +4,7 @@
     <TargetExt>.rhp</TargetExt>
     <UseWPF>true</UseWPF>
     <!-- <PlatformTarget>x64</PlatformTarget> -->
-    <!--  x64 might be required by Rhino, don't use just Platform tag -->
+    <!-- x64 might be required by Rhino, don't use just Platform tag -->
 
     <TargetFrameworks>net48;net8.0-windows</TargetFrameworks>
     <DefineConstants Condition="'$(TargetFramework)' != 'net48'">NET8</DefineConstants>
@@ -14,8 +14,14 @@
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>    <!--to only have the english resources-->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
-    <!-- <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>  -->
-    <!-- DisableImplicitFSharpCoreReference was needed so that the Fesh nuget can pull in  the latest version for dotnet-outdated tool -->
+    <!-- <PublishTrimmed Condition="'$(TargetFramework)' != 'net48'">true</PublishTrimmed>  -->
+    <!-- PublishTrimmed because -self-contained is used in dotnet publish ?  -->
+    <!-- but fails with:  ILLink : error IL1034: Root assembly Fesh.Rhino does not have entry point. -->
+    <!-- https://discourse.mcneel.com/t/all-f-plugins-fail-to-load-on-net-8/213721/5 -->
+
+    <!-- DisableImplicitFSharpCoreReference is needed so that not the currently used SDK but the Fesh nuget can dictate the versions of FSharp.Core and FSharp.Compiler.Service -->
+    <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
+
     <CopyDebugSymbolFilesFromPackages>true</CopyDebugSymbolFilesFromPackages>
     <CopyDocumentationFilesFromPackages>true</CopyDocumentationFilesFromPackages>
 
@@ -28,7 +34,7 @@
 
      <!-- <Version></Version> taken from CHANGELOG.md by Ionide.KeepAChangelog.Tasks -->
 
-    <Authors>GoswinR</Authors>
+    <Authors>Goswin Rothenthal</Authors>
     <Copyright>Goswin Rothenthal 2019-2026</Copyright>
     <Description>A Scripting Editor for F# in Rhino</Description>
 
@@ -41,27 +47,25 @@
   <ItemGroup>
 
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
-
-    <!-- <ProjectReference Include="../Fesh/FeshHosting.fsproj" /> -->
-    <PackageReference Include="Fesh" Version="0.29.3"      Condition="'$(TargetFramework)' == 'net48'" GeneratePathProperty="true" />
-    <PackageReference Include="Fesh" Version="0.29.3-net8" Condition="'$(TargetFramework)' != 'net48'" GeneratePathProperty="true" />
-
-     <!-- build the NET core nuget for F#8 so that dependencies like System.Diagnostics.DiagnosticSource are also for Net80 and load properly in Rhino and Revit:-->
-    <PackageReference Update="FSharp.Compiler.Service" Version="43.10.101" Condition="'$(TargetFramework)' == 'net48'" />
-    <PackageReference Update="FSharp.Compiler.Service" Version="43.8.403"  Condition="'$(TargetFramework)' != 'net48'" />
-    <PackageReference Update="FSharp.Core" Version="10.0.101"  Condition="'$(TargetFramework)' == 'net48'"/>
-    <PackageReference Update="FSharp.Core" Version="8.0.403"   Condition="'$(TargetFramework)' != 'net48'" GeneratePathProperty="true"  />
-
-    <!-- During debugging use the current Rhinocommon dll reference to avoid the ~20 sec of compatibility check when Rhino loads it the first time. -->
-    <!-- <Reference Include="RhinoCommon" HintPath="C:\Program Files\Rhino 7\System\RhinoCommon.dll" Private="False" /> -->
-    <PackageReference Include="RhinoCommon" Version="7.0.20314.3001" Condition="'$(TargetFramework)' == 'net48'" PrivateAssets="all" ExcludeAssets="runtime" /> <!--should be the same version as Rhino.Scripting and Rhino.Scripting.Extension -->
-    <PackageReference Include="RhinoCommon" Version="8.19.25132.1001" Condition="'$(TargetFramework)' == 'net8.0-windows'" PrivateAssets="all" ExcludeAssets="runtime" /><!--should be the same version as Rhino.Scripting and Rhino.Scripting.Extension -->
-
-
-    <!--this reference is needed for tooling only, it might not be installed on host PC. see also https://github.com/fsprojects/IfSharp/issues/213 -->
-    <PackageReference Include="NETStandard.Library" Version="2.0.3" Condition="'$(TargetFramework)' == 'net48'" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
     <PackageReference Include="Ionide.KeepAChangelog.Tasks" Version="0.1.8" PrivateAssets="all" />
+
+
+    <!-- to give the Fesh nuget  explicit control over FSharp.Core and FSharp.Compiler.Service versions use DisableImplicitFSharpCoreReference -->
+    <PackageReference Include="Fesh" Version="0.29.3"      Condition="'$(TargetFramework)' == 'net48'" GeneratePathProperty="true" />
+    <PackageReference Include="Fesh" Version="0.29.3-net8" Condition="'$(TargetFramework)' != 'net48'" GeneratePathProperty="true" />
+    <!-- <ProjectReference Include="../Fesh/FeshHosting.fsproj" /> -->
+
+
+    <!-- During debugging use the current Rhinocommon dll reference to avoid the ~20 sec of compatibility check when Rhino loads it the first time. -->
+    <!-- <Reference Include="RhinoCommon" HintPath="C:\Program Files\Rhino 8\System\RhinoCommon.dll" Private="False" /> -->
+
+    <!--RhinoCommon should be the same version as Rhino.Scripting and Rhino.Scripting.FSharp -->
+    <PackageReference Include="RhinoCommon" Version="7.0.20314.3001" Condition="'$(TargetFramework)' == 'net48'" PrivateAssets="all" ExcludeAssets="runtime" />
+    <PackageReference Include="RhinoCommon" Version="8.19.25132.1001" Condition="'$(TargetFramework)' == 'net8.0-windows'" PrivateAssets="all" ExcludeAssets="runtime" />
+
+    <!-- The NETStandard.Library reference is needed for tooling only, it might not be installed on host PC. see also https://github.com/fsprojects/IfSharp/issues/213 -->
+    <PackageReference Include="NETStandard.Library" Version="2.0.3" Condition="'$(TargetFramework)' == 'net48'" GeneratePathProperty="true" />
   </ItemGroup>
 
   <ItemGroup>
@@ -71,17 +75,16 @@
     <Content Include="Media/logo128.png" TargetPath="../logo.png" CopyToOutputDirectory="Always" />
     <Content Include="Src/yak.yml" TargetPath="../manifest.yml" CopyToOutputDirectory="Always" />
     <Content Include="$(PkgFesh)/SyntaxHighlightingFSharp.xshd" CopyToOutputDirectory="Always" />
+
     <Content Include="$(PkgNETStandard_Library)/build/netstandard2.0/ref/netstandard.dll" Condition="'$(TargetFramework)' == 'net48'" CopyToOutputDirectory="Always" />
     <Content Include="$(PkgNETStandard_Library)/build/netstandard2.0/ref/netstandard.xml" Condition="'$(TargetFramework)' == 'net48'" CopyToOutputDirectory="Always" />
 
     <Compile Include="Src/AssemblyInfo.fs" />
     <Compile Include="Src/PlugIn.fs" />
     <Compile Include="Src/Commands.fs" />
-
   </ItemGroup>
 
-
-  <Target Name="CopyFilesOverAfterBuild" AfterTargets="AfterBuild">
+  <Target Name="Create ChangelogVersion txt" AfterTargets="AfterBuild">
     <!-- to check output from Ionide.KeepAChangelog.Tasks current git tag in gh actions -->
     <WriteLinesToFile File="bin/ChangelogVersion.txt" Lines="@(CurrentReleaseChangelog)" Overwrite="true" ContinueOnError="false" />
   </Target>
