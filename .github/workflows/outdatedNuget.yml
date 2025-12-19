@@ -43,7 +43,8 @@ jobs:
       run: dotnet tool install -g dotnet-outdated-tool
 
     - name: Simulate Update NuGet packages to get JSON output
-      run: dotnet outdated --output outdated.json  --exclude RhinoCommon
+      # --exclude can be passed more than once: https://github.com/dotnet-outdated/dotnet-outdated/blob/5754b2b2feebe139f3bdef7562d747a9681cb234/CHANGELOG.md?plain=1#L73
+      run: dotnet outdated --output outdated.json --exclude RhinoCommon --exclude FSharp.Core
 
     - name: Parse JSON and concatenate unique versions
       shell: pwsh
