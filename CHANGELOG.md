@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.30.1] - 2025-12-14
+## [0.30.1] - 2025-12-19
 ### Changed
 - Update to [Fesh 0.30.1](https://github.com/goswinr/Fesh/blob/main/CHANGELOG.md#0301)
 - warn on if rhino .is in net7 runtime.

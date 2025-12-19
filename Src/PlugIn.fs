@@ -336,8 +336,8 @@ type FeshPlugin () =
             if frameworkDescription.StartsWith ".NET Framework" then
                 MessageBox.Show(
                     [|
-                        $"The loaded Fesh.Rhino Plugin is compiled for .NETcore 8.0 but Rhino is running on {frameworkDescription}"
-                        "You can use the Rhino Command 'SetDotNetRuntime' to change Rhino's runtime to .NETcore 8.0"
+                        $"The loaded Fesh.Rhino Plugin is compiled for .NET core 8.0 but Rhino is running on {frameworkDescription}"
+                        "You can use the Rhino Command 'SetDotNetRuntime' to change Rhino's runtime to .NET core 8.0"
                     |] |> String.concat Environment.NewLine,
                     "Fesh.Rhino Plugin | .NETcore 8.0 needed",
                     MessageBoxButton.OK,
@@ -347,8 +347,8 @@ type FeshPlugin () =
             elif frameworkDescription.StartsWith ".NET 7" then
                 MessageBox.Show(
                     [|
-                        $"The loaded Fesh.Rhino Plugin is compiled for .NETcore 8.0 but Rhino is running on {frameworkDescription}"
-                        "You can use the Rhino Command 'SetDotNetRuntime' to change Rhino's runtime to .NETcore 8.0"
+                        $"The loaded Fesh.Rhino Plugin is compiled for .NET core 8.0 but Rhino is running on {frameworkDescription}"
+                        "You can use the Rhino Command 'SetDotNetRuntime' to change Rhino's runtime to .NET core 8.0"
                     |] |> String.concat Environment.NewLine,
                     "Fesh.Rhino Plugin | .NETcore 8.0 needed",
                     MessageBoxButton.OK,
@@ -364,10 +364,12 @@ type FeshPlugin () =
                 // Select .NET Runtime ( Runtime=NETFramework  NetCoreVersion=v7 )
                 MessageBox.Show(
                     [|
-                        $"The loaded Fesh.Rhino Plugin is compiled for .NET Framework 4.8 but Rhino is running on {frameworkDescription}"
-                        "You can use the Rhino Command 'SetDotNetRuntime' to change Rhino's runtime to .NET Framework 4.8"
+                        $"Rhino is running on {frameworkDescription}"
+                        "But only .NET Framework 4.8 and .NET core 8.0 are supported by the Fesh.Rhino Plugin."
+                        "You can use the Rhino Command 'SetDotNetRuntime' to change Rhino's .NET runtime."
+                        ".NET core 8.0 is recommended."
                     |] |> String.concat Environment.NewLine,
-                    "Fesh.Rhino Plugin | .NET Framework needed",
+                    "Fesh.Rhino Plugin | Choose another .NET runtime",
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning)
                 |> ignore
