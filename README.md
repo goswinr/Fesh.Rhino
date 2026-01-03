@@ -23,12 +23,38 @@ As shown in my talk at [FSharpConf 2016](https://www.youtube.com/watch?v=ZY-bvZZ
 ![Screenshot](https://raw.githubusercontent.com/goswinr/Fesh.Rhino/main/Media/screen1.png)
 
 ## .NET Framework or .NET Core?
-
 This plugin supports .NET Framework 4.8.<br>
 .NET 8 is supported too if your Rhino version is higher than 8.19 (May 2025).<br>
+.NET 8 is actually recommended for better debugging. It has correct line numbers for exceptions.<br>
+
 If you installed Fesh via the [Package Manager](https://www.rhino3d.com/features/package-manager/) then the correct framework will be picked automatically.<br>
 In Rhino use the command [SetDotNetRuntime](https://www.rhino3d.com/en/docs/guides/netcore/) to switch between .NET Framework and .NET Core.
 If you are on the wrong runtime you will get an error message box when trying to load the plugin.
+
+### Don't open the `Rhino` namespace directly on .NET 8
+When on .NET 8 don't open  the `Rhino` namespace directly in your script!<br>
+Instead, open only the needed sub-namespaces like `Rhino.Geometry` or `Rhino.DocObjects`.<br>
+
+🚫 Don't do this:
+
+```fsharp
+open Rhino
+```
+
+✅ Do this instead:
+
+```fsharp
+// all of these can be open just fine
+open Rhino.Geometry
+open Rhino.FileIO
+open Rhino.DocObjects
+open Rhino.Commands
+open Rhino.Collections
+...
+```
+
+See this [issue](https://github.com/goswinr/Fesh.Rhino/issues/25) for details.
+
 
 ## Installation
 

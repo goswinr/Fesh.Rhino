@@ -1,4 +1,4 @@
-﻿namespace Fesh.Rhino // Don't change name  its used in Rhino.Scripting.dll via reflection
+namespace Fesh.Rhino // Don't change name  its used in Rhino.Scripting.dll via reflection
 
 open Rhino
 open System
@@ -116,10 +116,10 @@ module internal Util =
         """#r "nuget: Rhino.Scripting.FSharp" """
         """#r "nuget: ResizeArrayT" """
         ""
-        """open System """
-        """open ResizeArrayT """
-        """open Rhino.Scripting """
-        """open Rhino.Scripting.FSharp  """
+        """open System"""
+        """//open Rhino //don't do this! see https://github.com/goswinr/Fesh.Rhino/issues/25 """
+        """open Rhino.Scripting"""
+        """open Rhino.Scripting.FSharp //recommended for F# """
         ""
         """type rs = RhinoScriptSyntax """
         ""
