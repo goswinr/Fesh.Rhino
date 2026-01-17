@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.31.1] - 2026-01-16
+### Changed
+- Try fix Duplicate printing to Rhino command line.
+
 ## [0.31.0] - 2025-12-19
 ### Changed
 - Update to [Fesh 0.31.0](https://github.com/goswinr/Fesh/blob/main/CHANGELOG.md#0310)
@@ -147,8 +151,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [0.16.1]: https://github.com/goswinr/Fesh.Rhino/compare/0.13.0...0.16.1
 [0.13.0]: https://github.com/goswinr/Fesh.Rhino/compare/0.11.1...0.13.0
 [0.11.1]: https://github.com/goswinr/Fesh.Rhino/releases/tag/0.11.1
-
-<!-- use to get tag dates:
-<!-- use to get tag dates:
-git log --tags --simplify-by-decoration --pretty="format:%ci %d"
--->

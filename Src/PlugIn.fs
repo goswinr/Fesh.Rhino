@@ -270,7 +270,22 @@ type FeshPlugin () =
                 )
 
 
-            fesh.Fsi.OnCompiling.Add    ( fun m -> FeshPlugin.BeforeEval())     // https://github.com/mcneel/rhinocommon/blob/57c3967e33d18205efbe6a14db488319c276cbee/dotnet/rhino/rhinosdkdoc.cs#L857
+            // Redirect Console output to Fesh log when Fesh window gets
+            // Because otherwise it would go to Rhino command line because Rhino Python editor redirects Console.Out and Console.Error there.
+            fesh.Window.GotFocus.Add(fun _ ->
+                let l = fesh.Log
+                Console.SetOut   l.TextWriterConsoleOut
+                Console.SetError l.TextWriterConsoleError
+                )
+
+            // Restore Console output to Rhino command line when Fesh window is closed
+            fesh.Window.Closed.Add(fun _ ->
+                Console.SetOut   FeshPlugin.RhWriter.Value
+                Console.SetError FeshPlugin.RhWriter.Value
+                )
+
+
+            fesh.Fsi.OnCompiling.Add    ( fun m -> FeshPlugin.BeforeEval())    // https://github.com/mcneel/rhinocommon/blob/57c3967e33d18205efbe6a14db488319c276cbee/dotnet/rhino/rhinosdkdoc.cs#L857
             fesh.Fsi.OnRuntimeError.Add ( fun e -> FeshPlugin.AfterEval true)  // to unsure UI does not stay frozen if RedrawEnabled is false //showWin because it might crash during UI interaction where it is hidden
             fesh.Fsi.OnCanceled.Add     ( fun m -> FeshPlugin.AfterEval true)  // to unsure UI does not stay frozen if RedrawEnabled is false //showWin because it might crash during UI interaction where it is hidden
             fesh.Fsi.OnCompletedOk.Add  ( fun m -> FeshPlugin.AfterEval false) // to unsure UI does not stay frozen if RedrawEnabled is false //showWin = false because might be running in background mode from rhino command line
