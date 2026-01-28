@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.32.0] - 2026-01-28
+### Fixed
+- Include netstandard.xml in output, to show better tooltips in net10
+
 ## [0.31.1] - 2026-01-17
 ### Changed
 - Try fix Duplicate printing to Rhino command line.
