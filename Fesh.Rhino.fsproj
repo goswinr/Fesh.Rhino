@@ -52,7 +52,7 @@
 
     <!--RhinoCommon should be the same version as Rhino.Scripting and Rhino.Scripting.FSharp -->
     <PackageReference Include="RhinoCommon" Version="8.19.25132.1001" PrivateAssets="all" ExcludeAssets="runtime" />
-    <PackageReference Include="Fesh" Version="0.32.0-net8" GeneratePathProperty="true" />
+    <PackageReference Include="Fesh" Version="0.32.2-net8" GeneratePathProperty="true" />
 
     <!-- netstandard reference is needed for tooling only,
     in net 8 the F# Compiler.Service need the xml to show the tooltips, -->
@@ -64,7 +64,7 @@
   <ItemGroup Condition="'$(TargetFramework)' == 'net48'">
      <!--RhinoCommon should be the same version as Rhino.Scripting and Rhino.Scripting.FSharp -->
     <PackageReference Include="RhinoCommon" Version="7.0.20314.3001" PrivateAssets="all" ExcludeAssets="runtime" />
-    <PackageReference Include="Fesh" Version="0.32.0-net472" GeneratePathProperty="true" />
+    <PackageReference Include="Fesh" Version="0.32.2-net472" GeneratePathProperty="true" />
 
     <!-- netstandard reference is needed for tooling only,
     in net48 it might not be installed on host PC. (running the .NET Framework version) see also https://github.com/fsprojects/IfSharp/issues/213 -->
