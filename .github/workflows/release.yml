@@ -5,13 +5,23 @@ on:
     tags:
       - '[0-9]+.[0-9]+.[0-9]+'
 
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-yak-${{ github.ref_name }}
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: windows-latest
+    timeout-minutes: 30
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v6
+      with:
+        persist-credentials: false
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v5
@@ -46,35 +56,51 @@ jobs:
       # </Target>
       id: check_version
       shell: bash
+      env:
+        TAG_NAME: ${{ github.ref_name }}
       run: |
         CHANGELOG_VERSION=$(cat bin/ChangelogVersion.txt | tr -d '[:space:]')
         echo "CHANGELOG_VERSION=$CHANGELOG_VERSION"
-        echo "github.ref_name=${{ github.ref_name }}"  
-        if [ "${{ github.ref_name }}" != "$CHANGELOG_VERSION" ]; then
-          echo "Version mismatch: git tag (${{ github.ref_name }}) and version in CHANGELOG.md ($CHANGELOG_VERSION) are not the same."
+        echo "github.ref_name=$TAG_NAME"
+        if [ "$TAG_NAME" != "$CHANGELOG_VERSION" ]; then
+          echo "Version mismatch: git tag ($TAG_NAME) and version in CHANGELOG.md ($CHANGELOG_VERSION) are not the same."
           exit 1
         fi
 
     # https://discourse.mcneel.com/t/github-action-to-yak/120815/3
 
     - name: Download Yak
-      env:
-          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
-      run: curl -o bin\yak.exe http://files.mcneel.com/yak/tools/latest/yak.exe
+      shell: pwsh
+      run: |
+        $ErrorActionPreference = 'Stop'
+        Invoke-WebRequest `
+          -Uri 'https://files.mcneel.com/yak/tools/latest/yak.exe' `
+          -OutFile 'bin\yak.exe'
+
+        $signature = Get-AuthenticodeSignature -FilePath 'bin\yak.exe'
+        if ($signature.Status -ne 'Valid') {
+          throw "Downloaded yak.exe has an invalid Authenticode signature: $($signature.Status)"
+        }
 
     - name: Build Yak
+      shell: pwsh
       env:
-          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
-      run: ..\yak.exe build --platform win --version ${{ github.ref_name }}
-
+        TAG_NAME: ${{ github.ref_name }}
+      run: ..\yak.exe build --platform win --version $env:TAG_NAME
       working-directory: bin/Release
 
-
     - name: Push new version to YAK
+      shell: pwsh
       run: |
-        $YAK_FILE=$(ls *.yak)
-        echo $YAK_FILE
-        ..\yak.exe push $YAK_FILE
+        $ErrorActionPreference = 'Stop'
+        $yakFiles = @(Get-ChildItem -Path . -Filter '*.yak' -File)
+        if ($yakFiles.Count -ne 1) {
+          throw "Expected exactly one .yak file, found $($yakFiles.Count)."
+        }
+
+        Write-Host "Pushing $($yakFiles[0].Name)"
+        $yakFilePath = $yakFiles[0].FullName
+        ..\yak.exe push $yakFilePath
       working-directory: bin/Release
       # You should create a secret using the token from here: yak.exe login --ci
       env:
