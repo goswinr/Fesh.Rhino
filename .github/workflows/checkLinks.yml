@@ -15,3 +15,4 @@ jobs:
       - uses: JustinBeckwith/linkinator-action@v2
         with:
           paths: README.md CHANGELOG.md
+          linksToSkip: "https://www.food4rhino.com/en/app/fesh"

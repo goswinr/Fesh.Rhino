@@ -8,7 +8,7 @@
 ![latest tag](https://img.shields.io/github/v/tag/goswinr/Fesh.Rhino?label=Latest%20Tag)
 ![yak version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fyak.rhino3d.com%2Fpackages%2Ffesh&query=%24.version&logo=rhinoceros&label=Yak%20Package%20Manager&color=%23a3d6ff)
 
-[![license](https://img.shields.io/github/license/goswinr/Fesh.Rhino)](LICENSE)
+[![license](https://img.shields.io/github/license/goswinr/Fesh.Rhino)](LICENSE.md)
 ![code size](https://img.shields.io/github/languages/code-size/goswinr/Fesh.Rhino.svg)
 
 Fesh.Rhino is an F# scripting editor hosted inside [Rhino3D](https://www.rhino3d.com/) on Windows.<br>
@@ -127,4 +127,5 @@ If running async it will automatically marshal all calls that affect the UI to t
 See [CHANGELOG.md](https://github.com/goswinr/Fesh.Rhino/blob/main/CHANGELOG.md)
 
 ## License
-[MIT](https://github.com/goswinr/Fesh.Rhino/blob/main/LICENSE)
+[MIT](https://github.com/goswinr/Fesh.Rhino/blob/main/LICENSE.md)
+
