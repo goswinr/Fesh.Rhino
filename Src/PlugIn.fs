@@ -113,12 +113,13 @@ module internal Util =
     // "// The default code is saved at at " + filePath0
     let defaultCode =
         [|
-        $"""#I "{rhinoSystemFolder}" """
+        // $"""#I "{rhinoSystemFolder}" """
         """#r "RhinoCommon.dll"  """
         """#r "nuget: Rhino.Scripting.FSharp" """
         """#r "nuget: ResizeArrayT" """
         ""
         """open System"""
+        """open ResizeArrayT"""
         """//open Rhino //don't do this! see https://github.com/goswinr/Fesh.Rhino/issues/25 """
         """open Rhino.Scripting"""
         """open Rhino.Scripting.FSharp //recommended for F# """
@@ -294,6 +295,10 @@ type FeshPlugin () =
             fesh.Fsi.OnCompletedOk.Add  ( fun m -> FeshPlugin.AfterEval false) // to unsure UI does not stay frozen if RedrawEnabled is false //showWin = false because might be running in background mode from rhino command line
 
             //RhinoDoc.CloseDocument.Add (fun e -> fesh.Fsi.CancelIfAsync() ) // don't do that !! Allow rs.Command to open new files when called async.
+
+            // TODO make sure that the referenced RhinoCommen is the same one as running, e.g ther might be Rhino 8 and Rhino 9 WIP in use.
+            // fesh.Fsi.OnCompiling.Add ( fun m ->
+            //     let tx = m.editor.
 
             RhinoApp.Closing.Add (fun _ ->
                 fesh.Tabs.AskForFileSavingToKnowIfClosingWindowIsOk() |> ignore // to save unsaved files, canceling of closing not possible here, save dialog will show after rhino is closed
