@@ -1,0 +1,86 @@
+name: Package
+description: Publish both target frameworks and build the .yak package, without pushing it.
+
+# Used by build.yml and release.yml, so that the release path is tested on every push.
+# Needs a checkout and a .NET SDK set up before.
+
+outputs:
+  version:
+    description: Version of the latest release in CHANGELOG.md
+    value: ${{ steps.pack.outputs.version }}
+
+runs:
+  using: composite
+  steps:
+    # One step per framework, so that a failure in the first one is not masked by the second.
+    # --self-contained does not bundle the .NET runtime here, because this is a library project without a RuntimeIdentifier.
+    # Rhino comes with its own .NET runtime, so it should not be bundled anyway:
+    # https://discourse.mcneel.com/t/all-f-plugins-fail-to-load-on-net-8/213721/5
+    # *.deps.json seems to be not used in net8 in Rhino.
+    - name: Publish net48
+      shell: pwsh
+      run: dotnet publish --self-contained --configuration Release --framework net48
+
+    - name: Publish net8.0-windows
+      shell: pwsh
+      run: dotnet publish --self-contained --configuration Release --framework net8.0-windows
+
+    - name: Move publish files to root
+      # This is to make sure there is only one folder containing all files.
+      shell: pwsh
+      run: |
+        Move-Item   -Path "bin\Release\net48\publish\*" -Destination "bin\Release\net48" -Force
+        Remove-Item -Path "bin\Release\net48\publish" -Recurse -Force
+        Move-Item   -Path "bin\Release\net8.0-windows\publish\*" -Destination "bin\Release\net8.0-windows" -Force
+        Remove-Item -Path "bin\Release\net8.0-windows\publish" -Recurse -Force
+
+    # https://discourse.mcneel.com/t/github-action-to-yak/120815/3
+    - name: Download Yak
+      # The old https://files.mcneel.com/yak/tools/latest/yak.exe is deprecated since September 2026, and its 'yak build' crashes on this folder layout.
+      # The versioned downloads are listed at https://developer.rhino3d.com/guides/yak/yak-cli-reference/#downloads
+      # They are not Authenticode signed, so the file is pinned by its hash. Update both values together.
+      shell: pwsh
+      env:
+        YAK_VERSION: '0.19.1' # the build for .NET 10
+        YAK_SHA256: '656221A1E887A702191B9811A477517D02B5F663BE2CC6528F5E0C815DA37D12'
+      run: |
+        $ErrorActionPreference = 'Stop'
+        Invoke-WebRequest `
+          -Uri "https://files.mcneel.com/yak/tools/$env:YAK_VERSION/win-x64/yak.exe" `
+          -OutFile 'bin\yak.exe'
+
+        $hash = (Get-FileHash -Path 'bin\yak.exe' -Algorithm SHA256).Hash
+        if ($hash -ne $env:YAK_SHA256) {
+          throw "Downloaded yak.exe $env:YAK_VERSION has an unexpected SHA256 hash: $hash"
+        }
+
+    - name: Build Yak
+      # needs in fsproj:
+      # <Target Name="WriteChangelogVersion" AfterTargets="AfterBuild">
+      #   <WriteLinesToFile File="bin/ChangelogVersion.txt" Lines="@(CurrentReleaseChangelog)" Overwrite="true" ContinueOnError="false" />
+      # </Target>
+      id: pack
+      shell: pwsh
+      working-directory: bin/Release
+      run: |
+        $ErrorActionPreference = 'Stop'
+        $version = (Get-Content ..\ChangelogVersion.txt -Raw).Trim()
+        "version=$version" >> $env:GITHUB_OUTPUT
+        ..\yak.exe build --platform win --version $version
+        if ($LASTEXITCODE -ne 0) {
+          throw "yak build failed with exit code $LASTEXITCODE"
+        }
+
+        # yak infers the distribution tag from the RhinoCommon reference of the net8 build, e.g. fesh-0.32.3-rh8_19-win.yak
+        # All versions so far were published as 'any-win', to not restrict the package to Rhino 8.19 or higher.
+        # Renaming the file is the documented way to change the distribution tag:
+        # https://developer.rhino3d.com/guides/yak/creating-a-rhino-plugin-package/
+        $yakFiles = @(Get-ChildItem -Path . -Filter '*.yak' -File)
+        if ($yakFiles.Count -ne 1) {
+          throw "Expected exactly one .yak file, found $($yakFiles.Count)."
+        }
+        $anyName = $yakFiles[0].Name -replace '-rh\d+(_\d+)?-win\.yak$', '-any-win.yak'
+        if ($anyName -ne $yakFiles[0].Name) {
+          Rename-Item -Path $yakFiles[0].FullName -NewName $anyName
+        }
+        Write-Host "Built $anyName"

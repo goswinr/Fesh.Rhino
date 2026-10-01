@@ -19,75 +19,32 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v7.0.1
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         persist-credentials: false
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v6.0.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         dotnet-version: '10.x'
 
-    - name: Build
-      # use --self-contained to copy all dependencies into the publish folder
-      # *.deps.json seems to be not used in net8 in Rhino.
-      run: |
-        dotnet publish --self-contained --configuration Release --framework net48
-        dotnet publish --self-contained --configuration Release --framework net8.0-windows
-      # https://discourse.mcneel.com/t/all-f-plugins-fail-to-load-on-net-8/213721/5
-      # Self contained will include all dependencies for NET Core. It will be duplicated and potentially dangerous if you provide it with your plugin,
-      # since Rhino comes with NET 8 itself (but in a different minor version). However you can try to
-      # use -p:PublishTrimmed=true (or as an option in the csproj) to only get the relevant parts of NET 8 used in your plugin.
-      # You just need to be aware not to use Reflection. In this case its dangerous to publish trimmed.
-
-    - name: Move publish files to root
-      # This is to make sure there is only one folder containing all files.
-      shell: pwsh
-      run: |
-        Move-Item   -Path "bin\Release\net48\publish\*" -Destination "bin\Release\net48" -Force
-        Remove-Item -Path "bin\Release\net48\publish" -Recurse -Force      
-        Move-Item   -Path "bin\Release\net8.0-windows\publish\*" -Destination "bin\Release\net8.0-windows" -Force
-        Remove-Item -Path "bin\Release\net8.0-windows\publish" -Recurse -Force
+    # same steps as in build.yml
+    - name: Publish and build Yak package
+      id: package
+      uses: ./.github/actions/package
 
     - name: Check version consistency of git tag and CHANGELOG.md
-      # needs in fsproj:
-      # <Target Name="WriteChangelogVersion" AfterTargets="AfterBuild">
-      #   <WriteLinesToFile File="bin/ChangelogVersion.txt" Lines="@(CurrentReleaseChangelog)" Overwrite="true" ContinueOnError="false" />
-      # </Target>
-      id: check_version
       shell: bash
       env:
         TAG_NAME: ${{ github.ref_name }}
+        CHANGELOG_VERSION: ${{ steps.package.outputs.version }}
       run: |
-        CHANGELOG_VERSION=$(cat bin/ChangelogVersion.txt | tr -d '[:space:]')
         echo "CHANGELOG_VERSION=$CHANGELOG_VERSION"
         echo "github.ref_name=$TAG_NAME"
         if [ "$TAG_NAME" != "$CHANGELOG_VERSION" ]; then
           echo "Version mismatch: git tag ($TAG_NAME) and version in CHANGELOG.md ($CHANGELOG_VERSION) are not the same."
           exit 1
         fi
-
-    # https://discourse.mcneel.com/t/github-action-to-yak/120815/3
-
-    - name: Download Yak
-      shell: pwsh
-      run: |
-        $ErrorActionPreference = 'Stop'
-        Invoke-WebRequest `
-          -Uri 'https://files.mcneel.com/yak/tools/latest/yak.exe' `
-          -OutFile 'bin\yak.exe'
-
-        $signature = Get-AuthenticodeSignature -FilePath 'bin\yak.exe'
-        if ($signature.Status -ne 'Valid') {
-          throw "Downloaded yak.exe has an invalid Authenticode signature: $($signature.Status)"
-        }
-
-    - name: Build Yak
-      shell: pwsh
-      env:
-        TAG_NAME: ${{ github.ref_name }}
-      run: ..\yak.exe build --platform win --version $env:TAG_NAME
-      working-directory: bin/Release
 
     - name: Push new version to YAK
       shell: pwsh
@@ -108,4 +65,3 @@ jobs:
 
     # verify the package
     # "C:\Program Files\Rhino 8\System\Yak.exe" search fesh
-

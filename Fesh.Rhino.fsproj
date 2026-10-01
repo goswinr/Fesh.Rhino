@@ -83,8 +83,9 @@
     <EmbeddedResource Include="Media/logo.res" />  <!--  for Application Icon in explorer-->
     <EmbeddedResource Include="Media/logo.ico" /> <!--  used in Rhino Plugin assembly info -->
     <Resource Include="Media/logo.ico" /> <!-- used in HostedStartUpData -->
-    <Content Include="Media/logo128.png" TargetPath="../logo.png" CopyToOutputDirectory="Always" />
-    <Content Include="Src/yak.yml" TargetPath="../manifest.yml" CopyToOutputDirectory="Always" />
+    <!-- CopyToPublishDirectory="Never" so that dotnet publish does not add a second copy inside each framework folder of the yak package -->
+    <Content Include="Media/logo128.png" TargetPath="../logo.png" CopyToOutputDirectory="Always" CopyToPublishDirectory="Never" />
+    <Content Include="Src/yak.yml" TargetPath="../manifest.yml" CopyToOutputDirectory="Always" CopyToPublishDirectory="Never" />
     <Content Include="$(PkgFesh)/SyntaxHighlightingFSharp.xshd" CopyToOutputDirectory="Always" />
 
     <Compile Include="Src/AssemblyInfo.fs" />
