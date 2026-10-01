@@ -104,14 +104,16 @@ module internal FeshApp =
 
 module internal Util =
 
+    /// The folder of Rhino.exe and RhinoCommon.dll, e.g. "C:/Program Files/Rhino 8/System"
+    let rhinoSystemFolder = RhinoApp.GetExecutableDirectory().FullName.Replace("\\", "/")
+
     // Fesh wil add this before:
     // "// This is your default code for new files,"
     // "// you can change it by going to the menu: File -> Edit Template File"
     // "// The default code is saved at at " + filePath0
     let defaultCode =
-        let path = RhinoApp.GetExecutableDirectory().FullName.Replace("\\", "/")
         [|
-        $"""#I "{path}" """
+        $"""#I "{rhinoSystemFolder}" """
         """#r "RhinoCommon.dll"  """
         """#r "nuget: Rhino.Scripting.FSharp" """
         """#r "nuget: ResizeArrayT" """
@@ -204,6 +206,7 @@ type FeshPlugin () =
                 logo = Some (Uri "pack://application:,,,/Fesh.Rhino;component/Media/logo.ico")
                 hostAssembly = Some (Reflection.Assembly.GetAssembly typeof<FeshPlugin>)
                 canRunAsync = true // FSI can run async, so that it does not block the UI thread.
+                libFolders = [| Util.rhinoSystemFolder |] // so that #r "RhinoCommon.dll" resolves without a full path
                 }
 
             let fesh:Fesh = Fesh.App.createEditorForHosting hostData
