@@ -104,8 +104,29 @@ module internal FeshApp =
 
 module internal Util =
 
-    /// The folder of Rhino.exe and RhinoCommon.dll, e.g. "C:/Program Files/Rhino 8/System"
-    let rhinoSystemFolder = RhinoApp.GetExecutableDirectory().FullName.Replace("\\", "/")
+    /// The folder of Rhino.exe, e.g. "C:/Program Files/Rhino 8/System"
+    /// The RhinoCommon.dll in here is the .NET Framework build, even when Rhino is running on .NET Core.
+    let rhinoSystemFolder =
+        RhinoApp.GetExecutableDirectory().FullName.Replace("\\", "/")
+
+    /// The folder of the RhinoCommon.dll that is loaded in this process.
+    /// On .NET Framework that is the same as rhinoSystemFolder.
+    /// On .NET Core it is its 'netcore' subfolder, e.g. "C:/Program Files/Rhino 8/System/netcore"
+    /// Referencing the .NET Framework build on .NET Core fails to resolve System.Drawing.Bitmap as soon as the Rhino namespace is opened.
+    /// see https://discourse.mcneel.com/t/system-drawing-bitmap-in-assembly-system-drawing/223199/2
+    let rhinoCommonFolder =
+        let loc = typeof<RhinoApp>.Assembly.Location
+        if String.IsNullOrEmpty loc then rhinoSystemFolder // should never happen, RhinoCommon is always loaded from a file
+        else IO.Path.GetDirectoryName(loc).Replace("\\", "/")
+
+    /// The folders to resolve #r "RhinoCommon.dll" and others without a full path.
+    /// rhinoCommonFolder comes first so that it wins over the .NET Framework build in rhinoSystemFolder.
+    /// rhinoSystemFolder is still needed for the dlls that are shared by both runtimes, like Eto.dll
+    let libFolders =
+        [|
+        rhinoCommonFolder
+        // rhinoSystemFolder // not needed ?
+        |] |> Array.distinct
 
     // Fesh wil add this before:
     // "// This is your default code for new files,"
@@ -113,20 +134,20 @@ module internal Util =
     // "// The default code is saved at at " + filePath0
     let defaultCode =
         [|
-        // $"""#I "{rhinoSystemFolder}" """
+        // $"""#I "{rhinoCommonFolder}" """
         """#r "RhinoCommon.dll"  """
         """#r "nuget: Rhino.Scripting.FSharp" """
-        """#r "nuget: ResizeArrayT" """
+        """#r "nuget: ResizeArrayT" // optional"""
         ""
         """open System"""
         """open ResizeArrayT"""
-        """//open Rhino //don't do this! see https://github.com/goswinr/Fesh.Rhino/issues/25 """
+        """open Rhino"""
         """open Rhino.Scripting"""
-        """open Rhino.Scripting.FSharp //recommended for F# """
+        """open Rhino.Scripting.FSharp"""
         ""
         """type rs = RhinoScriptSyntax """
         ""
-        """// use the static members on rs to call RhinoScript functions like in python. e.g.:"""
+        """// use the static members on 'rs' to call RhinoScript functions like in python. e.g.:"""
         """let crv = rs.GetObject("Select a curve",  rs.Filter.Curve)"""
         ""
         "// press F5 to run the script"
@@ -207,7 +228,7 @@ type FeshPlugin () =
                 logo = Some (Uri "pack://application:,,,/Fesh.Rhino;component/Media/logo.ico")
                 hostAssembly = Some (Reflection.Assembly.GetAssembly typeof<FeshPlugin>)
                 canRunAsync = true // FSI can run async, so that it does not block the UI thread.
-                libFolders = [| Util.rhinoSystemFolder |] // so that #r "RhinoCommon.dll" resolves without a full path
+                libFolders = Util.libFolders // so that #r "RhinoCommon.dll" resolves without a full path
                 }
 
             let fesh:Fesh = Fesh.App.createEditorForHosting hostData

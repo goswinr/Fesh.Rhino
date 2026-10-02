@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Fixed
+- On .NET Core `#r "RhinoCommon.dll"` now resolves to the .NET Core build in the `System/netcore` folder instead of the .NET Framework build next to Rhino.exe. This fixes the error about resolving `System.Drawing.Bitmap` when opening the `Rhino` namespace.
+
 ## [0.33.3] - 2026-10-02
 ### Added
 - Build for .NET 10 for Rhino 9, using Fesh 0.33.2-net10. It is published as a separate `rh9-win` distribution of the yak package.
