@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+## [0.33.4] - 2026-10-02
 ### Fixed
 - On .NET Core `#r "RhinoCommon.dll"` now resolves to the .NET Core build in the `System/netcore` folder instead of the .NET Framework build next to Rhino.exe. This fixes the error about resolving `System.Drawing.Bitmap` when opening the `Rhino` namespace.
 
@@ -151,7 +152,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - first public release
 
-[Unreleased]: https://github.com/goswinr/Fesh.Rhino/compare/0.33.3...HEAD
+[Unreleased]: https://github.com/goswinr/Fesh.Rhino/compare/0.33.4...HEAD
+[0.33.4]: https://github.com/goswinr/Fesh.Rhino/compare/0.33.3...0.33.4
 [0.33.3]: https://github.com/goswinr/Fesh.Rhino/compare/0.33.2...0.33.3
 [0.33.2]: https://github.com/goswinr/Fesh.Rhino/compare/0.32.3...0.33.2
 [0.32.3]: https://github.com/goswinr/Fesh.Rhino/compare/0.32.2...0.32.3
