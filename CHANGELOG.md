@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+## [0.33.3] - 2026-10-02
+### Added
+- Build for .NET 10 for Rhino 9, using Fesh 0.33.2-net10. It is published as a separate `rh9-win` distribution of the yak package.
+
+### Changed
+- The yak package with the .NET 8 and .NET Framework 4.8 builds is now published as `rh8-win` instead of `any-win`, so it is only offered in Rhino 8.
+
 ## [0.33.2] - 2026-10-01
 ### Changed
 - Update to [Fesh 0.33.2](https://github.com/goswinr/Fesh/blob/main/CHANGELOG.md#0332)
@@ -141,7 +148,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - first public release
 
-[Unreleased]: https://github.com/goswinr/Fesh.Rhino/compare/0.33.2...HEAD
+[Unreleased]: https://github.com/goswinr/Fesh.Rhino/compare/0.33.3...HEAD
+[0.33.3]: https://github.com/goswinr/Fesh.Rhino/compare/0.33.2...0.33.3
 [0.33.2]: https://github.com/goswinr/Fesh.Rhino/compare/0.32.3...0.33.2
 [0.32.3]: https://github.com/goswinr/Fesh.Rhino/compare/0.32.2...0.32.3
 [0.32.2]: https://github.com/goswinr/Fesh.Rhino/compare/0.31.1...0.32.2

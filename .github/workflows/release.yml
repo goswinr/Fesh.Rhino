@@ -47,17 +47,22 @@ jobs:
         fi
 
     - name: Push new version to YAK
+      # one distribution for Rhino 8 (net48 and net8) and one for Rhino 9 (net10)
       shell: pwsh
       run: |
         $ErrorActionPreference = 'Stop'
-        $yakFiles = @(Get-ChildItem -Path . -Filter '*.yak' -File)
-        if ($yakFiles.Count -ne 1) {
-          throw "Expected exactly one .yak file, found $($yakFiles.Count)."
+        $yakFiles = @(Get-ChildItem -Path . -Filter '*.yak' -File | Sort-Object Name)
+        if ($yakFiles.Count -ne 2) {
+          throw "Expected exactly two .yak files (rh8 and rh9), found $($yakFiles.Count)."
         }
 
-        Write-Host "Pushing $($yakFiles[0].Name)"
-        $yakFilePath = $yakFiles[0].FullName
-        ..\yak.exe push $yakFilePath
+        foreach ($yakFile in $yakFiles) {
+          Write-Host "Pushing $($yakFile.Name)"
+          ..\yak.exe push $yakFile.FullName
+          if ($LASTEXITCODE -ne 0) {
+            throw "yak push of $($yakFile.Name) failed with exit code $LASTEXITCODE"
+          }
+        }
       working-directory: bin/Release
       # You should create a secret using the token from here: yak.exe login --ci
       env:

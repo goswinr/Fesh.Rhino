@@ -1,8 +1,14 @@
 name: Package
-description: Publish both target frameworks and build the .yak package, without pushing it.
+description: Publish all target frameworks and build the .yak packages for Rhino 8 and Rhino 9, without pushing them.
 
 # Used by build.yml and release.yml, so that the release path is tested on every push.
 # Needs a checkout and a .NET SDK set up before.
+#
+# Two distributions of the same version are built into bin/Release:
+#   fesh-x.y.z-rh8-win.yak  with net48 and net8.0-windows
+#   fesh-x.y.z-rh9-win.yak  with net10.0-windows
+# The package manager matches the major version of the distribution tag, so Rhino 8 only gets rh8 and Rhino 9 only gets rh9.
+# https://developer.rhino3d.com/guides/yak/the-anatomy-of-a-package/#distributions
 
 outputs:
   version:
@@ -25,14 +31,32 @@ runs:
       shell: pwsh
       run: dotnet publish --self-contained --configuration Release --framework net8.0-windows
 
-    - name: Move publish files to root
-      # This is to make sure there is only one folder containing all files.
+    - name: Publish net10.0-windows
+      shell: pwsh
+      run: dotnet publish --self-contained --configuration Release --framework net10.0-windows
+
+    - name: Arrange one folder per Rhino version
+      # Each folder gets its own manifest.yml outside of the framework folders:
+      # https://developer.rhino3d.com/guides/yak/the-anatomy-of-a-package/#a-note-on-net-multi-targeting
+      #   bin\Release\rh8 : manifest.yml, logo.png, net48\, net8.0-windows\
+      #   bin\Release\rh9 : manifest.yml, logo.png, net10.0-windows\
       shell: pwsh
       run: |
-        Move-Item   -Path "bin\Release\net48\publish\*" -Destination "bin\Release\net48" -Force
-        Remove-Item -Path "bin\Release\net48\publish" -Recurse -Force
-        Move-Item   -Path "bin\Release\net8.0-windows\publish\*" -Destination "bin\Release\net8.0-windows" -Force
-        Remove-Item -Path "bin\Release\net8.0-windows\publish" -Recurse -Force
+        $ErrorActionPreference = 'Stop'
+        $frameworks = [ordered]@{
+          rh8 = @('net48', 'net8.0-windows')
+          rh9 = @('net10.0-windows')
+        }
+        foreach ($rh in $frameworks.Keys) {
+          New-Item -ItemType Directory -Path "bin\Release\$rh" | Out-Null
+          Copy-Item -Path "bin\Release\manifest.yml", "bin\Release\logo.png" -Destination "bin\Release\$rh"
+          foreach ($tfm in $frameworks[$rh]) {
+            # Move publish files to root. This is to make sure there is only one folder containing all files.
+            Move-Item   -Path "bin\Release\$tfm\publish\*" -Destination "bin\Release\$tfm" -Force
+            Remove-Item -Path "bin\Release\$tfm\publish" -Recurse -Force
+            Move-Item   -Path "bin\Release\$tfm" -Destination "bin\Release\$rh"
+          }
+        }
 
     # https://discourse.mcneel.com/t/github-action-to-yak/120815/3
     - name: Download Yak
@@ -66,21 +90,30 @@ runs:
         $ErrorActionPreference = 'Stop'
         $version = (Get-Content ..\ChangelogVersion.txt -Raw).Trim()
         "version=$version" >> $env:GITHUB_OUTPUT
-        ..\yak.exe build --platform win --version $version
-        if ($LASTEXITCODE -ne 0) {
-          throw "yak build failed with exit code $LASTEXITCODE"
-        }
 
-        # yak infers the distribution tag from the RhinoCommon reference of the net8 build, e.g. fesh-0.32.3-rh8_19-win.yak
-        # All versions so far were published as 'any-win', to not restrict the package to Rhino 8.19 or higher.
-        # Renaming the file is the documented way to change the distribution tag:
-        # https://developer.rhino3d.com/guides/yak/creating-a-rhino-plugin-package/
-        $yakFiles = @(Get-ChildItem -Path . -Filter '*.yak' -File)
-        if ($yakFiles.Count -ne 1) {
-          throw "Expected exactly one .yak file, found $($yakFiles.Count)."
+        foreach ($rh in 'rh8', 'rh9') {
+          Push-Location $rh
+          ..\..\yak.exe build --platform win --version $version
+          if ($LASTEXITCODE -ne 0) {
+            throw "yak build for $rh failed with exit code $LASTEXITCODE"
+          }
+
+          # yak infers the distribution tag from the highest RhinoCommon reference in the framework folders, e.g. fesh-0.32.3-rh8_19-win.yak
+          # The minor version is dropped, to not restrict the package to Rhino 8.19 or higher.
+          # (Up to 0.33.2 there was only one distribution for all Rhino versions, published as 'any-win'.)
+          # Renaming the file is the documented way to change the distribution tag:
+          # https://developer.rhino3d.com/guides/yak/creating-a-rhino-plugin-package/
+          $yakFiles = @(Get-ChildItem -Path . -Filter '*.yak' -File)
+          if ($yakFiles.Count -ne 1) {
+            throw "Expected exactly one .yak file in $rh, found $($yakFiles.Count)."
+          }
+          $tagPattern = "-$rh(_\d+)?-win\.yak$"
+          if ($yakFiles[0].Name -notmatch $tagPattern) {
+            throw "Unexpected distribution tag in $($yakFiles[0].Name), expected one for $rh."
+          }
+          $name = $yakFiles[0].Name -replace $tagPattern, "-$rh-win.yak"
+          # all .yak files end up in bin\Release, release.yml pushes them from there
+          Move-Item -Path $yakFiles[0].FullName -Destination "..\$name"
+          Pop-Location
+          Write-Host "Built $name"
         }
-        $anyName = $yakFiles[0].Name -replace '-rh\d+(_\d+)?-win\.yak$', '-any-win.yak'
-        if ($anyName -ne $yakFiles[0].Name) {
-          Rename-Item -Path $yakFiles[0].FullName -NewName $anyName
-        }
-        Write-Host "Built $anyName"

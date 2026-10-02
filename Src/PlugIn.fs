@@ -355,6 +355,19 @@ type FeshPlugin () =
 
             let frameworkDescription = Runtime.InteropServices.RuntimeInformation.FrameworkDescription
 
+        #if NET10
+            if Environment.Version.Major < 10 then // .NET Framework has major version 4 here
+                MessageBox.Show(
+                    [|
+                        $"The loaded Fesh.Rhino Plugin is compiled for .NET 10 but Rhino is running on {frameworkDescription}"
+                        "You can use the Rhino Command 'SetDotNetRuntime' to change Rhino's runtime to .NET 10"
+                    |] |> String.concat Environment.NewLine,
+                    "Fesh.Rhino Plugin | .NET 10 needed",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning)
+                |> ignore
+                PlugIns.LoadReturnCode.ErrorNoDialog
+        #else
         #if NET8
             if frameworkDescription.StartsWith ".NET Framework" then
                 MessageBox.Show(
@@ -397,6 +410,7 @@ type FeshPlugin () =
                     MessageBoxImage.Warning)
                 |> ignore
                 PlugIns.LoadReturnCode.ErrorNoDialog
+        #endif
         #endif
 
             else

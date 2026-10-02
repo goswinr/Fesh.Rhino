@@ -25,6 +25,7 @@ As shown in my talk at [FSharpConf 2016](https://www.youtube.com/watch?v=ZY-bvZZ
 This plugin supports .NET Framework 4.8.<br>
 .NET 8 is supported too if your Rhino version is higher than 8.19 (May 2025).<br>
 .NET 8 is actually recommended for better debugging. It has correct line numbers for exceptions.<br>
+In Rhino 9 the plugin runs on .NET 10 only.<br>
 
 If you installed Fesh via the [Package Manager](https://www.rhino3d.com/features/package-manager/) then the correct framework will be picked automatically.<br>
 In Rhino use the command [SetDotNetRuntime](https://www.rhino3d.com/en/docs/guides/netcore/) to switch between .NET Framework and .NET Core.
