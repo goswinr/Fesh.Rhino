@@ -5,7 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.33.5] - 2026-10-04
+### Changed
+- Update Fesh to 0.33.5 for all target frameworks.
+- Update SourceLink to 10.0.401 to remove the vulnerable Microsoft.Build.Tasks.Git dependency.
+
+### Fixed
+- End the script undo record when FSI reports an evaluation error without a runtime exception; ignore undo records that failed to start and clear consumed records even after a document change.
+- Restore lookup of shared Rhino assemblies such as Eto.dll while keeping the loaded RhinoCommon assembly folder first.
+- Restore console output to Rhino when closing the editor, which hides the window instead of raising its Closed event.
+
 ## [0.33.4] - 2026-10-02
 ### Fixed
 - On .NET Core `#r "RhinoCommon.dll"` now resolves to the .NET Core build in the `System/netcore` folder instead of the .NET Framework build next to Rhino.exe. This fixes the error about resolving `System.Drawing.Bitmap` when opening the `Rhino` namespace.

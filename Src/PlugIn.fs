@@ -125,7 +125,7 @@ module internal Util =
     let libFolders =
         [|
         rhinoCommonFolder
-        // rhinoSystemFolder // not needed ?
+        rhinoSystemFolder
         |] |> Array.distinct
 
     // Fesh wil add this before:
@@ -180,26 +180,31 @@ type FeshPlugin () =
         async{
             do! Async.SwitchToContext Sync.syncContext
             lastDoc <- RhinoDoc.ActiveDoc
-            FeshPlugin.UndoRecordSerial <- Some (RhinoDoc.ActiveDoc.BeginUndoRecord "F# script run by Fesh.Rhino")
+            FeshPlugin.UndoRecordSerial <-
+                if isNull lastDoc then None
+                else
+                    let serial = lastDoc.BeginUndoRecord "F# script run by Fesh.Rhino"
+                    if serial = 0u then None else Some serial
         }
         |> Async.StartImmediate // fails :Async.RunSynchronously
 
     static member AfterEval (showWin) : unit =
         async{
             do! Async.SwitchToContext Sync.syncContext
-            //if FeshPlugin.UndoRecordSerial <> 0u then
+            let doc = RhinoDoc.ActiveDoc
+            let undoRecord = FeshPlugin.UndoRecordSerial
+            FeshPlugin.UndoRecordSerial <- None // consume once, even if the script changed documents
 
-            if lastDoc = RhinoDoc.ActiveDoc then // it might have changed during script run
-                match FeshPlugin.UndoRecordSerial with
-                | None -> ()
-                | Some serial ->
-                    FeshPlugin.UndoRecordSerial <- None // so a record is only eneded once
-                    if not <| RhinoDoc.ActiveDoc.EndUndoRecord(serial) then
+            if not (isNull doc) then
+                match undoRecord with
+                | Some serial when lastDoc = doc ->
+                    if not <| doc.EndUndoRecord(serial) then
                         RhCmdLn.printn " * Fesh.Rhino | failed to set RhinoDoc.ActiveDoc.EndUndoRecord"
                         eprintfn " * Fesh.Rhino | failed to set RhinoDoc.ActiveDoc.EndUndoRecord(FeshPlugin.UndoRecordSerial:%d)" serial
+                | _ -> ()
 
-            RhinoDoc.ActiveDoc.Views.RedrawEnabled <- true
-            RhinoDoc.ActiveDoc.Views.Redraw()
+                doc.Views.RedrawEnabled <- true
+                doc.Views.Redraw()
             if showWin then Sync.showEditor.Invoke() //Action //because it might crash during UI interaction where it is hidden
         }
         |> Async.StartImmediate // fails :Async.RunSynchronously
@@ -279,6 +284,10 @@ type FeshPlugin () =
                 if not e.Cancel then // closing might be already cancelled in Fesh.fs as a result of asking to save unsaved files.
                     // even if closing is not canceled, don't close, just hide window
                     fesh.Window.Visibility <- Windows.Visibility.Hidden
+                    // Closed does not fire when closing is canceled below.
+                    // Keep temporary hides during script UI interaction separate from closing the editor.
+                    Console.SetOut   FeshPlugin.RhWriter.Value
+                    Console.SetError FeshPlugin.RhWriter.Value
                     e.Cancel <- true
                     )
 
@@ -303,15 +312,9 @@ type FeshPlugin () =
                 Console.SetError l.TextWriterConsoleError
                 )
 
-            // Restore Console output to Rhino command line when Fesh window is closed
-            fesh.Window.Closed.Add(fun _ ->
-                Console.SetOut   FeshPlugin.RhWriter.Value
-                Console.SetError FeshPlugin.RhWriter.Value
-                )
-
-
             fesh.Fsi.OnCompiling.Add    ( fun m -> FeshPlugin.BeforeEval())    // https://github.com/mcneel/rhinocommon/blob/57c3967e33d18205efbe6a14db488319c276cbee/dotnet/rhino/rhinosdkdoc.cs#L857
             fesh.Fsi.OnRuntimeError.Add ( fun e -> FeshPlugin.AfterEval true)  // to unsure UI does not stay frozen if RedrawEnabled is false //showWin because it might crash during UI interaction where it is hidden
+            fesh.Fsi.OnFsiEvalError.Add ( fun e -> FeshPlugin.AfterEval true)  // parser errors can be returned as diagnostics without a runtime exception
             fesh.Fsi.OnCanceled.Add     ( fun m -> FeshPlugin.AfterEval true)  // to unsure UI does not stay frozen if RedrawEnabled is false //showWin because it might crash during UI interaction where it is hidden
             fesh.Fsi.OnCompletedOk.Add  ( fun m -> FeshPlugin.AfterEval false) // to unsure UI does not stay frozen if RedrawEnabled is false //showWin = false because might be running in background mode from rhino command line
 
