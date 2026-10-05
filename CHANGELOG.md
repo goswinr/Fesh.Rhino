@@ -5,9 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.34.0] - 2026-10-05
+### Changed
+- Update Fesh to 0.34.0 for all target frameworks.
+
 ### Fixed
 - On .NET 8 and 10, values defined in earlier evaluations failed with a `TypeLoadException`, and after a reset could silently be those of an old session. With `--multiemit+` each evaluation is an assembly named `FSI-ASSEMBLY`, and Rhino's assembly resolver returned the first one of the process. Fesh.Rhino now resolves them first, from the current session.
+- Re-initializing Rhino.Scripting when it was loaded before Fesh.Rhino failed: it looked for a public property `initialize` of `Rhino.RhinoSync`, but `initialize` is a private static field, and since Rhino.Scripting 0.7 the class is `Rhino.Scripting.RhinoSync`.
 
 ## [0.33.5] - 2026-10-04
 ### Changed

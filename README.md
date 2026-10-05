@@ -31,31 +31,6 @@ If you installed Fesh via the [Package Manager](https://www.rhino3d.com/features
 In Rhino use the command [SetDotNetRuntime](https://www.rhino3d.com/en/docs/guides/netcore/) to switch between .NET Framework and .NET Core.
 If you are on the wrong runtime you will get an error message box when trying to load the plugin.
 
-### Don't open the `Rhino` namespace directly on .NET 8
-When on .NET 8 don't open  the `Rhino` namespace directly in your script!<br>
-Instead, open only the needed sub-namespaces like `Rhino.Geometry` or `Rhino.DocObjects`.<br>
-
-🚫 Don't do this:
-
-```fsharp
-open Rhino
-```
-
-✅ Do this instead:
-
-```fsharp
-// all of these can be open just fine
-open Rhino.Geometry
-open Rhino.FileIO
-open Rhino.DocObjects
-open Rhino.Commands
-open Rhino.Collections
-...
-```
-
-See this [issue](https://github.com/goswinr/Fesh.Rhino/issues/25) for details.
-
-
 ## Installation
 
 ### Food for Rhino

@@ -318,8 +318,14 @@ type FeshPlugin () =
                     |> Seq.tryFind (fun a -> a.GetName().Name = "Rhino.Scripting")
                     |> Option.iter (fun rsAss ->
                         try
-                            let rhinoSyncModule = rsAss.GetType "Rhino.RhinoSync"
-                            let init = rhinoSyncModule.GetProperty("initialize").GetValue rsAss :?> Action
+                            // 'initialize' is a private static field of the class RhinoSync,
+                            // which is in the namespace Rhino.Scripting since Rhino.Scripting 0.7, and in Rhino before.
+                            let rhinoSync =
+                                match rsAss.GetType "Rhino.Scripting.RhinoSync" with
+                                | null -> rsAss.GetType("Rhino.RhinoSync", true)
+                                | t -> t
+                            let flags = Reflection.BindingFlags.NonPublic ||| Reflection.BindingFlags.Static
+                            let init = rhinoSync.GetField("initialize", flags).GetValue null :?> Action
                             init.Invoke()
                             RhCmdLn.printn "Rhino.Scripting.RhinoSync re-initialized."
                         with e ->
