@@ -156,6 +156,50 @@ module internal Util =
         |> String.concat Environment.NewLine
 
 
+#if NETCOREAPP
+/// On .NET Core Fesh runs FSI with --multiemit+, so FSI loads one assembly per evaluation, all named 'FSI-ASSEMBLY',
+/// with versions that start again in each session. Later evaluations reference the earlier ones by that name.
+/// FSI resolves them in its own AssemblyResolve handler, but Rhino's handler comes first and matches only the simple name:
+/// it returns the first FSI-ASSEMBLY of the process. Then a value of an earlier evaluation fails with a TypeLoadException,
+/// or after a reset silently is the value of an old session.
+/// This handler goes first and resolves by full name among the assemblies of the current Fesh session.
+/// (On .NET Framework Fesh uses --multiemit-, one assembly for all evaluations.)
+module internal FsiAssemblyResolver =
+    open System.Reflection
+    open FSharp.Compiler.Interactive.Shell
+
+    let mutable private getSession: unit -> FsiEvaluationSession option = fun () -> None
+
+    let private resolve (args: ResolveEventArgs) : Assembly =
+        if not (args.Name.StartsWith("FSI-ASSEMBLY,", StringComparison.Ordinal)) then
+            null
+        else
+            match getSession () with
+            | None -> null
+            | Some session ->
+                let assemblies = session.DynamicAssemblies
+                let fromThisSession =
+                    match args.RequestingAssembly with
+                    | null -> true
+                    | requester -> assemblies |> Array.exists (fun a -> obj.ReferenceEquals(a, requester))
+                if fromThisSession then assemblies |> Array.tryFind (fun a -> a.FullName = args.Name) |> Option.toObj
+                else null // e.g. from an FSI session of another plugin
+
+    let private handler = ResolveEventHandler(fun _ args -> resolve args)
+
+    /// Puts the handler first in AppDomain.AssemblyResolve, before Rhino's.
+    /// The event has no public way to insert at the front, so this sets its backing field in AssemblyLoadContext.
+    let install (session: unit -> FsiEvaluationSession option) =
+        getSession <- session
+        match typeof<Runtime.Loader.AssemblyLoadContext>.GetField("AssemblyResolve", BindingFlags.NonPublic ||| BindingFlags.Static) with
+        | null -> failwith "the field AssemblyLoadContext.AssemblyResolve was not found"
+        | field ->
+            lock handler (fun () ->
+                let others = Delegate.Remove(field.GetValue null :?> Delegate, handler)
+                field.SetValue(null, Delegate.Combine(handler, others)))
+#endif
+
+
 // the Plugin  and Commands Singletons:
 // Every RhinoCommon .rhp assembly must have one and only one PlugIn-derived
 // class. DO NOT create instances of this class yourself. It is the
@@ -238,6 +282,11 @@ type FeshPlugin () =
 
             let fesh:Fesh = Fesh.App.createEditorForHosting hostData
             FeshPlugin.Fesh <- fesh
+
+            #if NETCOREAPP
+            try FsiAssemblyResolver.install (fun () -> fesh.Fsi.Session)
+            with e -> RhCmdLn.printn $" * Fesh.Rhino | values of earlier evaluations might not be found, setting up the resolver for FSI assemblies failed: {e.Message}"
+            #endif
 
             fesh.Window.Loaded.Add (fun _ ->
 

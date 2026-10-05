@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+### Fixed
+- On .NET 8 and 10, values defined in earlier evaluations failed with a `TypeLoadException`, and after a reset could silently be those of an old session. With `--multiemit+` each evaluation is an assembly named `FSI-ASSEMBLY`, and Rhino's assembly resolver returned the first one of the process. Fesh.Rhino now resolves them first, from the current session.
+
 ## [0.33.5] - 2026-10-04
 ### Changed
 - Update Fesh to 0.33.5 for all target frameworks.
