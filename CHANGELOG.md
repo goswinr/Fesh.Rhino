@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+### Fixed
+- On .NET 10 (Rhino 9) values defined in earlier evaluations could still fail or come from an old session: FSharp.Compiler.Service 43.12 names the assemblies of evaluations `FSI-ASSEMBLY-MULTI` instead of `FSI-ASSEMBLY`, which the resolver of 0.34.0 did not match.
+
 ## [0.34.0] - 2026-10-05
 ### Changed
 - Update Fesh to 0.34.0 for all target frameworks.

@@ -157,8 +157,8 @@ module internal Util =
 
 
 #if NETCOREAPP
-/// On .NET Core Fesh runs FSI with --multiemit+, so FSI loads one assembly per evaluation, all named 'FSI-ASSEMBLY',
-/// with versions that start again in each session. Later evaluations reference the earlier ones by that name.
+/// On .NET Core Fesh runs FSI with --multiemit+, so FSI loads one assembly per evaluation, all named 'FSI-ASSEMBLY'
+/// ('FSI-ASSEMBLY-MULTI' since FSharp.Compiler.Service 43.12, used by the net10 build), with versions that start again in each session. Later evaluations reference the earlier ones by that name.
 /// FSI resolves them in its own AssemblyResolve handler, but Rhino's handler comes first and matches only the simple name:
 /// it returns the first FSI-ASSEMBLY of the process. Then a value of an earlier evaluation fails with a TypeLoadException,
 /// or after a reset silently is the value of an old session.
@@ -171,7 +171,8 @@ module internal FsiAssemblyResolver =
     let mutable private getSession: unit -> FsiEvaluationSession option = fun () -> None
 
     let private resolve (args: ResolveEventArgs) : Assembly =
-        if not (args.Name.StartsWith("FSI-ASSEMBLY,", StringComparison.Ordinal)) then
+        // 'FSI-ASSEMBLY,' or 'FSI-ASSEMBLY-MULTI,', the full name is compared below
+        if not (args.Name.StartsWith("FSI-ASSEMBLY", StringComparison.Ordinal)) then
             null
         else
             match getSession () with
