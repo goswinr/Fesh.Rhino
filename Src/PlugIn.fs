@@ -156,6 +156,28 @@ module internal Util =
         |> String.concat Environment.NewLine
 
 
+module internal RhinoScripting =
+
+    /// Rhino.Scripting remembers an Esc press even when no script is running, e.g. to deselect objects.
+    /// Then rs.EscapeTest() in the next script would raise right away.
+    /// So this clears that flag before each script, via reflection, because Fesh.Rhino does not reference Rhino.Scripting.
+    /// The flag is the static property 'EscapePressed' of the internal class 'Rhino.Scripting.State', it exists since at least Rhino.Scripting 0.8.
+    /// There can be several versions of Rhino.Scripting loaded, e.g. after resetting FSI, so this clears it in all of them.
+    let resetEscapePressed () =
+        for a in AppDomain.CurrentDomain.GetAssemblies() do
+            if a.GetName().Name = "Rhino.Scripting" then
+                try
+                    match a.GetType "Rhino.Scripting.State" with
+                    | null -> () // a very old Rhino.Scripting
+                    | state ->
+                        let flags = Reflection.BindingFlags.Public ||| Reflection.BindingFlags.NonPublic ||| Reflection.BindingFlags.Static
+                        match state.GetProperty("EscapePressed", flags) with
+                        | null -> ()
+                        | prop -> prop.SetValue(null, false)
+                with e ->
+                    RhCmdLn.printn (sprintf "* Fesh.Rhino Plugin resetting Rhino.Scripting.State.EscapePressed failed with %A" e)
+
+
 #if NETCOREAPP
 /// On .NET Core Fesh runs FSI with --multiemit+, so FSI loads one assembly per evaluation, all named 'FSI-ASSEMBLY'
 /// ('FSI-ASSEMBLY-MULTI' since FSharp.Compiler.Service 43.12, used by the net10 build), with versions that start again in each session. Later evaluations reference the earlier ones by that name.
@@ -222,6 +244,8 @@ type FeshPlugin () =
     static member val Fesh = Unchecked.defaultof<Fesh> with get,set
 
     static member BeforeEval () =
+        // Not inside the async below, that is posted to the UI thread and might only run once the script is running already.
+        RhinoScripting.resetEscapePressed()
         async{
             do! Async.SwitchToContext Sync.syncContext
             lastDoc <- RhinoDoc.ActiveDoc
