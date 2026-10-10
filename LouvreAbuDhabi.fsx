@@ -9,7 +9,7 @@
     |]
 let map2 f = Array.map <| Array.map f
 
-#r "C:/Program Files/Rhino 8/System/RhinoCommon.dll"
+#r "RhinoCommon"
 //#r "nuget:Rhino.Scripting.FSharp"
 open Rhino.Geometry
 

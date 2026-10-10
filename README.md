@@ -55,7 +55,7 @@ Please report any issues you encounter.
 All you need is to add a reference to RhinoCommon.dll:
 
 ```fsharp
-#r "C:/Program Files/Rhino 8/System/RhinoCommon.dll" // adapt path if needed
+#r "RhinoCommon"
 open Rhino
 ```
 
@@ -65,7 +65,7 @@ It provides useful extensions and curried functions for piping and partial appli
 
 
 ```fsharp
-#r "C:/Program Files/Rhino 8/System/RhinoCommon.dll"
+#r "RhinoCommon"
 #r "nuget:Rhino.Scripting.FSharp" // includes Rhino.Scripting
 
 open System
