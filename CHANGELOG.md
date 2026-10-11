@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [0.35.0] - 2026-10-11
+### Changed
+- Update to [Fesh 0.35.0](https://github.com/goswinr/Fesh/blob/main/CHANGELOG.md#0350) for all target frameworks. It adds a dark theme.
+
 ### Fixed
 - On .NET 10 (Rhino 9) values defined in earlier evaluations could still fail or come from an old session: FSharp.Compiler.Service 43.12 names the assemblies of evaluations `FSI-ASSEMBLY-MULTI` instead of `FSI-ASSEMBLY`, which the resolver of 0.34.0 did not match.
 - `rs.EscapeTest()` of Rhino.Scripting raised right at the start of a script if Esc had been pressed in Rhino before, e.g. to deselect objects. Fesh.Rhino now clears that Esc state before each script.
@@ -174,7 +179,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - first public release
 
-[Unreleased]: https://github.com/goswinr/Fesh.Rhino/compare/0.33.4...HEAD
+[Unreleased]: https://github.com/goswinr/Fesh.Rhino/compare/0.35.0...HEAD
+[0.35.0]: https://github.com/goswinr/Fesh.Rhino/compare/0.34.0...0.35.0
 [0.33.4]: https://github.com/goswinr/Fesh.Rhino/compare/0.33.3...0.33.4
 [0.33.3]: https://github.com/goswinr/Fesh.Rhino/compare/0.33.2...0.33.3
 [0.33.2]: https://github.com/goswinr/Fesh.Rhino/compare/0.32.3...0.33.2
