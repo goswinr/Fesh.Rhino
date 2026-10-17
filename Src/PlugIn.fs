@@ -179,6 +179,103 @@ module internal RhinoScripting =
 
 
 #if NETCOREAPP
+// Don't use types of Fesh or FSharp.Compiler.Service in module-level values of this file, or in static fields of FeshPlugin like 'static member val'.
+// Compiling the initialization of this file would load those assemblies before OnLoad installs PluginFolderResolver,
+// and then they could come from the folder of another plugin.
+
+/// Rhino's AssemblyResolve handler does not look next to the assembly that asks.
+/// It returns a loaded assembly with the same simple name, of any version,
+/// or else the highest version it finds in the folders of all registered plugins.
+/// So the net8 build could get FSharp.Compiler.Service 43.12 and FSharp.Core 10 from another plugin or an old net48 build,
+/// instead of FSharp.Compiler.Service 43.8 and FSharp.Core 8 next to it, and fail with a MissingMethodException for FSharpChecker.Create.
+/// This handler resolves from the folder of Fesh.Rhino.rhp. It is on the Resolving event of the load context,
+/// which .NET raises before AppDomain.AssemblyResolve, so before Rhino's handler.
+/// That event doesn't tell which assembly asks. So it serves any request for the same or a lower version than the one in the folder,
+/// like the exact versions that Fesh asks for. A request for a higher version, e.g. FSharp.Core 10 from another plugin, stays Rhino's.
+/// So do the assemblies that Rhino or .NET have too, like Newtonsoft.Json and NuGet.Protocol.
+/// FSharp.Core is loaded before any code of Fesh.Rhino runs, when Rhino reads the attributes of the .rhp, so 'conflicts' can only report a wrong one.
+module internal PluginFolderResolver =
+    open System.IO
+    open System.Reflection
+    open System.Runtime.Loader
+
+    /// The folder of Fesh.Rhino.rhp, with Fesh, FSharp.Core and FSharp.Compiler.Service
+    let folder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+
+    /// The load context of Fesh.Rhino.rhp. Only one assembly of a given name can load into it.
+    let private context = AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly())
+
+    let private hostFolders = [|
+        Util.rhinoCommonFolder
+        Util.rhinoSystemFolder
+        Path.GetDirectoryName(typeof<obj>.Assembly.Location) // the .NET runtime
+        |]
+
+    /// The path of the assembly in the folder of Fesh.Rhino.rhp, if Rhino and .NET don't have it too.
+    let private ownPath (name: string) =
+        let file = name + ".dll"
+        let path = Path.Combine(folder, file)
+        if File.Exists path && not (hostFolders |> Array.exists (fun d -> File.Exists(Path.Combine(d, file)))) then Some path
+        else None
+
+    let private loadedInContext (name: string) =
+        AppDomain.CurrentDomain.GetAssemblies()
+        |> Array.filter (fun a ->
+            String.Equals(a.GetName().Name, name, StringComparison.OrdinalIgnoreCase)
+            && obj.ReferenceEquals(AssemblyLoadContext.GetLoadContext a, context))
+
+    /// If the assembly in the folder can stand in for the requested one: the same public key token, and the same or a higher version.
+    let private satisfies (requested: AssemblyName) (own: AssemblyName) =
+        let token (n: AssemblyName) = match n.GetPublicKeyToken() with null -> [||] | t -> t
+        (isNull requested.Version || own.Version >= requested.Version)
+        && (isNull (requested.GetPublicKeyToken()) || token requested = token own)
+
+    let private resolve (requested: AssemblyName) : Assembly =
+        match ownPath requested.Name with
+        | None -> null // e.g. RhinoCommon or NuGet.Protocol
+        | Some path ->
+            let own = AssemblyName.GetAssemblyName path
+            if not (satisfies requested own) then
+                null // e.g. another plugin asks for FSharp.Core 10
+            else
+                match loadedInContext requested.Name with
+                | [||] -> Rhino.Runtime.HostUtils.LoadAssemblyFrom path // like Rhino's handler, but from this folder
+                | loaded ->
+                    // This one, or the same version from another plugin, e.g. Caddis has the same FSharp.Compiler.Service.
+                    // Another version can't be replaced anymore, then Rhino's handler returns it and 'conflicts' reports it.
+                    loaded |> Array.tryFind (fun a -> a.FullName = own.FullName) |> Option.toObj
+
+    let private handler = Func<AssemblyLoadContext, AssemblyName, Assembly>(fun _ requested -> try resolve requested with _ -> null)
+
+    /// Call before Fesh or FSharp.Compiler.Service is loaded.
+    let install () =
+        context.remove_Resolving handler // in case OnLoad runs twice
+        context.add_Resolving handler
+
+    /// Messages about assemblies of Fesh.Rhino that are loaded already in another version, e.g. FSharp.Core.
+    /// With other versions of FSharp.Core or FSharp.Compiler.Service Fesh might fail with a MissingMethodException.
+    /// Never raises an exception.
+    let conflicts () : string list =
+        let conflict (file: string) =
+            try
+                let name = Path.GetFileNameWithoutExtension file
+                match loadedInContext name, ownPath name with
+                | [||], _ | _, None -> None
+                | loaded, Some path ->
+                    let own = AssemblyName.GetAssemblyName(path).Version // raises for a native dll
+                    loaded
+                    |> Array.tryFind (fun a -> a.GetName().Version <> own)
+                    |> Option.map (fun a -> $"{name} {a.GetName().Version} is loaded from '{Path.GetDirectoryName a.Location}', but Fesh.Rhino needs {own} from '{folder}'.")
+            with _ ->
+                None
+        match (try Directory.GetFiles(folder, "*.dll") |> Array.toList |> List.choose conflict with _ -> []) with
+        | [] -> []
+        | found ->
+            found @ [
+                "Another plugin loaded it first, or Rhino took it from the folder of another plugin because its version is higher."
+                "Fesh might fail. Disable or uninstall that plugin in Rhino's options under Plug-ins, then restart Rhino." ]
+
+
 /// On .NET Core Fesh runs FSI with --multiemit+, so FSI loads one assembly per evaluation, all named 'FSI-ASSEMBLY'
 /// ('FSI-ASSEMBLY-MULTI' since FSharp.Compiler.Service 43.12, used by the net10 build), with versions that start again in each session. Later evaluations reference the earlier ones by that name.
 /// FSI resolves them in its own AssemblyResolve handler, but Rhino's handler comes first and matches only the simple name:
@@ -188,32 +285,31 @@ module internal RhinoScripting =
 /// (On .NET Framework Fesh uses --multiemit-, one assembly for all evaluations.)
 module internal FsiAssemblyResolver =
     open System.Reflection
-    open FSharp.Compiler.Interactive.Shell
 
-    let mutable private getSession: unit -> FsiEvaluationSession option = fun () -> None
+    /// The DynamicAssemblies of the current FSI session.
+    /// Not the FsiEvaluationSession itself, see the note above PluginFolderResolver.
+    let mutable private getAssemblies: unit -> Assembly[] = fun () -> [||]
 
     let private resolve (args: ResolveEventArgs) : Assembly =
         // 'FSI-ASSEMBLY,' or 'FSI-ASSEMBLY-MULTI,', the full name is compared below
         if not (args.Name.StartsWith("FSI-ASSEMBLY", StringComparison.Ordinal)) then
             null
         else
-            match getSession () with
-            | None -> null
-            | Some session ->
-                let assemblies = session.DynamicAssemblies
-                let fromThisSession =
-                    match args.RequestingAssembly with
-                    | null -> true
-                    | requester -> assemblies |> Array.exists (fun a -> obj.ReferenceEquals(a, requester))
-                if fromThisSession then assemblies |> Array.tryFind (fun a -> a.FullName = args.Name) |> Option.toObj
-                else null // e.g. from an FSI session of another plugin
+            let assemblies = getAssemblies ()
+            let fromThisSession =
+                match args.RequestingAssembly with
+                | null -> true
+                | requester -> assemblies |> Array.exists (fun a -> obj.ReferenceEquals(a, requester))
+            if fromThisSession then assemblies |> Array.tryFind (fun a -> a.FullName = args.Name) |> Option.toObj
+            else null // e.g. from an FSI session of another plugin
 
     let private handler = ResolveEventHandler(fun _ args -> resolve args)
 
     /// Puts the handler first in AppDomain.AssemblyResolve, before Rhino's.
     /// The event has no public way to insert at the front, so this sets its backing field in AssemblyLoadContext.
-    let install (session: unit -> FsiEvaluationSession option) =
-        getSession <- session
+    /// (The Resolving event of AssemblyLoadContext would come first too, but it doesn't tell which assembly asks.)
+    let install (dynamicAssemblies: unit -> Assembly[]) =
+        getAssemblies <- dynamicAssemblies
         match typeof<Runtime.Loader.AssemblyLoadContext>.GetField("AssemblyResolve", BindingFlags.NonPublic ||| BindingFlags.Static) with
         | null -> failwith "the field AssemblyLoadContext.AssemblyResolve was not found"
         | field ->
@@ -241,7 +337,10 @@ type FeshPlugin () =
 
     static member val UndoRecordSerial: Option<uint32> = None with get,set
 
-    static member val Fesh = Unchecked.defaultof<Fesh> with get,set
+    /// Not 'static member val', its initialization would load Fesh.dll too early, see the note above PluginFolderResolver.
+    [<DefaultValue(false)>] static val mutable private fesh: Fesh
+
+    static member Fesh with get() = FeshPlugin.fesh and set v = FeshPlugin.fesh <- v
 
     static member BeforeEval () =
         // Not inside the async below, that is posted to the UI thread and might only run once the script is running already.
@@ -282,6 +381,11 @@ type FeshPlugin () =
 
     member this.WhenLoading(refErrs:byref<string>): PlugIns.LoadReturnCode  =
         RhCmdLn.printn  "loading Fesh.Rhino Plugin ..."
+        #if NETCOREAPP
+        // e.g. if another plugin loaded another FSharp.Core first, printed again in the Fesh log below
+        let conflicts = PluginFolderResolver.conflicts ()
+        for c in conflicts do RhCmdLn.printn $" * Fesh.Rhino | {c}"
+        #endif
         try
             let canRun () = not <| Rhino.Commands.Command.InCommand()
             let feshHost =
@@ -309,7 +413,9 @@ type FeshPlugin () =
             FeshPlugin.Fesh <- fesh
 
             #if NETCOREAPP
-            try FsiAssemblyResolver.install (fun () -> fesh.Fsi.Session)
+            for c in conflicts do fesh.Log.PrintfnAppErrorMsg "%s" c
+
+            try FsiAssemblyResolver.install (fun () -> match fesh.Fsi.Session with Some s -> s.DynamicAssemblies | None -> [||])
             with e -> RhCmdLn.printn $" * Fesh.Rhino | values of earlier evaluations might not be found, setting up the resolver for FSI assemblies failed: {e.Message}"
             #endif
 
@@ -519,6 +625,11 @@ type FeshPlugin () =
 
             else
                 // proceed with loading
+                #if NETCOREAPP
+                // Before WhenLoading, compiling it loads Fesh and FSharp.Compiler.Service already.
+                try PluginFolderResolver.install ()
+                with e -> RhCmdLn.printn $" * Fesh.Rhino | Fesh might get the wrong FSharp.Compiler.Service, setting up the resolver for its own folder failed: {e.Message}"
+                #endif
                 this.WhenLoading(&refErrs)
 
 

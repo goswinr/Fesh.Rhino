@@ -24,6 +24,10 @@
     <!-- DisableImplicitFSharpCoreReference is needed so that not the currently used SDK but the Fesh nuget can dictate the versions of FSharp.Core and FSharp.Compiler.Service -->
     <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
 
+    <!-- Also copy the dlls of the packages to the build output on net8 and net10, like on net48 and like dotnet publish does.
+    Otherwise a Debug build loaded into Rhino gets FSharp.Core and FSharp.Compiler.Service from the folder of any other plugin. -->
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+
     <CopyDebugSymbolFilesFromPackages>true</CopyDebugSymbolFilesFromPackages>
     <CopyDocumentationFilesFromPackages>true</CopyDocumentationFilesFromPackages>
 
@@ -89,7 +93,7 @@
 
   <ItemGroup>
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.401" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
+    <!-- SourceLink is built into the .NET 8+ SDK, no Microsoft.SourceLink.GitHub package needed -->
     <PackageReference Include="Ionide.KeepAChangelog.Tasks" Version="0.3.3" PrivateAssets="all" />
   </ItemGroup>
 
