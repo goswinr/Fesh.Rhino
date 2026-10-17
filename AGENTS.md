@@ -47,7 +47,7 @@ Rhino keeps the folders of all registered plugins in its assembly search path, a
 - `Src/PlugIn.fs`: the `FeshPlugin` singleton and its helper modules. `OnLoad` checks that Rhino's runtime matches the build. `WhenLoading` creates the editor with `Fesh.App.createEditorForHosting` and wires up all events.
 - `Src/Commands.fs`: the Rhino commands `Fesh` and `FeshRunCurrentScript`. On load, the plugin also adds the alias `fr` for `FeshRunCurrentScript` if it is free. Both commands use `Style.ScriptRunner`, so scripts can call `RhinoApp.RunScript` (`rs.Command`).
 
-`Util.libFolders` in `PlugIn.fs` are the folders where `#r "RhinoCommon.dll"` resolves without a path. The folder of the loaded RhinoCommon must come first: on .NET it is `System/netcore`, and the .NET Framework build in `System` fails to resolve `System.Drawing.Bitmap`. `Util.defaultCode` is the template for new script files.
+`Util.libFolders` in `PlugIn.fs` are the folders where `#r "RhinoCommon.dll"` resolves without a path. The folder of the loaded RhinoCommon must come first: on .NET it is `System/netcore`, and the .NET Framework build in `System` fails to resolve `System.Drawing.Bitmap`. `Util.defines` are the conditional compilation symbols for scripts: `FESHRHINO` and `RHINO8` or `RHINO9`, from the version of the running Rhino. `Util.defaultCode` is the template for new script files.
 
 ## How the plugin works with Rhino
 

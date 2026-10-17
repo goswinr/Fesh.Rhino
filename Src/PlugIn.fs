@@ -128,6 +128,14 @@ module internal Util =
         rhinoSystemFolder
         |] |> Array.distinct
 
+    /// The conditional compilation symbols for scripts, for '#if FESHRHINO' and '#if RHINO8' or '#if RHINO9'.
+    /// The Rhino version is the one that is running, not the one the plugin was compiled for.
+    let defines =
+        [|
+        "FESHRHINO"
+        $"RHINO{RhinoApp.ExeVersion}"
+        |]
+
     // Fesh wil add this before:
     // "// This is your default code for new files,"
     // "// you can change it by going to the menu: File -> Edit Template File"
@@ -407,6 +415,7 @@ type FeshPlugin () =
                 hostAssembly = Some (Reflection.Assembly.GetAssembly typeof<FeshPlugin>)
                 canRunAsync = true // FSI can run async, so that it does not block the UI thread.
                 libFolders = Util.libFolders // so that #r "RhinoCommon.dll" resolves without a full path
+                defines = Util.defines // for #if FESHRHINO and #if RHINO8 or RHINO9, in FSI and in the type checker
                 }
 
             let fesh:Fesh = Fesh.App.createEditorForHosting hostData

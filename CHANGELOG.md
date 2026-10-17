@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Scripts can use `#if FESHRHINO` and `#if RHINO8` or `#if RHINO9`: Fesh.Rhino defines these symbols for F# Interactive and for the type checker. The Rhino version is the one that is running.
+
 ### Fixed
 - On .NET 8 (Rhino 8) and .NET 10 (Rhino 9) Fesh could fail with a `MissingMethodException` for `FSharpChecker.Create` if another installed plugin, or an old net48 build, had a newer FSharp.Compiler.Service: Rhino loads the highest version it finds in the folders of all installed plugins. Fesh.Rhino now loads Fesh, FSharp.Compiler.Service and its other dependencies from its own folder.
 - If another plugin loaded other versions of FSharp.Core or FSharp.Compiler.Service before Fesh.Rhino, Fesh.Rhino now names them and their folder in the Rhino command line and in the Fesh log.
