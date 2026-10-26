@@ -6,8 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [0.36.1] - 2026-10-26
 ### Added
-- Fesh doesn't start a script while [Caddis](https://github.com/goswinr/Caddis) runs one for an AI agent in Rhino, and says so in its log. Caddis newer than 0.3.2 also doesn't start a run while Fesh runs a script. Before, with either in async or background mode, both could change the document at the same time.
+- Fesh doesn't start a script while [Caddis](https://github.com/goswinr/Caddis) runs one for an AI agent in Rhino, and says so in its log. Caddis 0.3.3 and later also don't start a run while Fesh runs a script. Before, with either in async or background mode, both could change the document at the same time.
 
 ### Fixed
 - `rs.Print` and `rs.ClearLog()` in scripts that Caddis runs no longer write to or clear the Fesh log, and the Fesh window no longer takes their `printfn` output when it gets the focus. Caddis returns that output to the AI agent.
@@ -196,7 +198,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - first public release
 
-[Unreleased]: https://github.com/goswinr/Fesh.Rhino/compare/0.36.0...HEAD
+[Unreleased]: https://github.com/goswinr/Fesh.Rhino/compare/0.36.1...HEAD
+[0.36.1]: https://github.com/goswinr/Fesh.Rhino/compare/0.36.0...0.36.1
 [0.36.0]: https://github.com/goswinr/Fesh.Rhino/compare/0.35.0...0.36.0
 [0.35.0]: https://github.com/goswinr/Fesh.Rhino/compare/0.34.0...0.35.0
 [0.34.0]: https://github.com/goswinr/Fesh.Rhino/compare/0.33.5...0.34.0
