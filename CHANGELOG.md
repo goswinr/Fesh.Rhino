@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Fesh doesn't start a script while [Caddis](https://github.com/goswinr/Caddis) runs one for an AI agent in Rhino, and says so in its log. Caddis newer than 0.3.2 also doesn't start a run while Fesh runs a script. Before, with either in async or background mode, both could change the document at the same time.
+
+### Fixed
+- `rs.Print` and `rs.ClearLog()` in scripts that Caddis runs no longer write to or clear the Fesh log, and the Fesh window no longer takes their `printfn` output when it gets the focus. Caddis returns that output to the AI agent.
+- When the window loads, Fesh.Rhino re-initializes every loaded copy of Rhino.Scripting, not only the first one, e.g. when another plugin loaded a second version.
 
 ## [0.36.0] - 2026-10-17
 ### Added

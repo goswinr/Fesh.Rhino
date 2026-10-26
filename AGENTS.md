@@ -54,7 +54,8 @@ Rhino keeps the folders of all registered plugins in its assembly search path, a
 - **UI thread:** `Sync.syncContext` is captured when `PlugIn.fs` initializes on Rhino's UI thread. FSI callbacks that touch `RhinoDoc` or the views switch to it with `Async.SwitchToContext Sync.syncContext`. Scripts run on the UI thread by default, or on a background thread if the user turns on async mode.
 - **Script runs:** `fesh.Fsi.OnCompiling` calls `FeshPlugin.BeforeEval`, which clears Rhino.Scripting's Esc flag and begins an undo record, so the user can undo a whole script in one step. Every way a run ends (`OnCompletedOk`, `OnRuntimeError`, `OnFsiEvalError`, `OnCanceled`) calls `FeshPlugin.AfterEval`, which ends the undo record and turns `Views.RedrawEnabled` back on. If you add another way for a run to end, it must call `AfterEval` too, or Rhino's views stay frozen.
 - **`FeshRunCurrentScript`** waits until its own Rhino command has finished before it evaluates. Otherwise `BeginUndoRecord` returns 0.
-- **Window:** closing the editor only hides it (`Closing` is cancelled), so the FSI session survives. `Closed` never fires. `Console.Out` and `Console.Error` go to the Fesh log while its window has focus, and back to the Rhino command line when it is closed. While the window is minimized, the log is also written to the Rhino command line.
+- **`fsiCanRun`** blocks a run while a Rhino command or a run of Caddis is in progress, see [Reflection contract with Caddis](#reflection-contract-with-caddis).
+- **Window:** closing the editor only hides it (`Closing` is cancelled), so the FSI session survives. `Closed` never fires. `Console.Out` and `Console.Error` go to the Fesh log while its window has focus, except during a run of Caddis, and back to the Rhino command line when it is closed. While the window is minimized, the log is also written to the Rhino command line.
 - **Rhino's assembly resolver on .NET:** Rhino's `AssemblyResolve` handler matches only the simple name. It returns a loaded assembly of any version, or else the highest version it finds in the folders of all registered plugins, never the folder of the assembly that asks. The two handlers below must run before it.
 - **Own dependencies on .NET:** `OnLoad` installs `PluginFolderResolver` on the `Resolving` event of the plugin's `AssemblyLoadContext`. .NET raises that event before `AppDomain.AssemblyResolve`, so it runs before Rhino's handler without reflection. It serves the DLLs of the plugin folder: Fesh, FSharp.Compiler.Service, AvalonEditB and the others. The event doesn't say which assembly asks, so it serves only requests for the same or a lower version, with the same public key token. A request for a higher version, e.g. another plugin's for FSharp.Core 10, stays Rhino's. So do the DLLs that Rhino or .NET have too, like Newtonsoft.Json and NuGet.\*. Without it the net8 build could get FCS 43.12 from another plugin and fail with a `MissingMethodException` for `FSharpChecker.Create`. It must be installed before Fesh or FCS loads, so don't use their types in module-level values of `PlugIn.fs` or in static fields of `FeshPlugin` (`static member val`): just JIT-compiling the initialization of the file would load them. FSharp.Core loads before any plugin code runs, when Rhino reads the assembly attributes, so `PluginFolderResolver.conflicts` can only report a wrong one, in the Rhino command line and the Fesh log.
 - **FSI assemblies on .NET:** Fesh runs FSI with `--multiemit+`, so each evaluation is a separate dynamic assembly named `FSI-ASSEMBLY`, or `FSI-ASSEMBLY-MULTI` since FSharp.Compiler.Service 43.12 (the net10 build). Rhino's handler would return the wrong one, so `FsiAssemblyResolver` resolves them by full name among the dynamic assemblies of the current session. It needs `RequestingAssembly`, to ignore the FSI sessions of other plugins, so it can't use `Resolving`. Instead it goes in front of Rhino's handler by setting the private static `AssemblyResolve` field of `AssemblyLoadContext`. If a Fesh update changes FCS, check that the name prefix still matches.
@@ -68,12 +69,28 @@ Rhino.Scripting reads from Fesh.Rhino:
 - the Release assembly Guid `01dab273-99ae-4760-8695-3f29f4887831` in `Src/AssemblyInfo.fs`, to detect the hosting editor
 - the namespace `Fesh.Rhino` and the module `Sync`, with `syncContext`, `showEditor`, `hideEditor`, `isEditorVisible`, `printFeshLogColor`, `printnFeshLogColor` and `clearFeshLog`. Keep their names and delegate types.
 
+Rhino.Scripting reads these once, the first time it needs them, and keeps the delegates. So the print hooks do nothing until the window has loaded, because Rhino.Scripting writes the text to the Rhino command line itself, and once set they check on each call whether Caddis is running.
+
 Fesh.Rhino reads from Rhino.Scripting:
 
-- the private static field `initialize` of `Rhino.Scripting.RhinoSync` (`Rhino.RhinoSync` before Rhino.Scripting 0.7). Fesh.Rhino invokes it when the window loads, so that a Rhino.Scripting that another plugin loaded first picks up the `Sync` hooks.
+- the private static field `initialize` of `Rhino.Scripting.RhinoSync` (`Rhino.RhinoSync` before Rhino.Scripting 0.7). Fesh.Rhino invokes it when the window loads, in every loaded copy of Rhino.Scripting, so that a Rhino.Scripting that another plugin loaded first picks up the `Sync` hooks.
 - the static property `EscapePressed` of the internal class `Rhino.Scripting.State`, cleared before each run, in every loaded copy of Rhino.Scripting (there can be several after an FSI reset)
 
 These lookups must tolerate older Rhino.Scripting versions in which the type or member is missing.
+
+## Reflection contract with Caddis
+
+[Caddis](https://github.com/goswinr/Caddis) is a plugin that runs F# scripts for AI agents in Rhino, in its own FSI session. Its runs and the scripts of Fesh must not overlap: in async or background mode both would change the document from two threads and nest their undo records, and Caddis redirects `Console.Out` for the whole process during its runs. Neither references the other.
+
+Caddis reads `Sync.isEvaluating`, a `Func<bool>` that is true while Fesh compiles or evaluates, and refuses to run then. `WhenLoading` sets it. Keep its name and delegate type.
+
+Fesh.Rhino reads the public static property `isRunning` (a `bool`) of the module `Caddis.Rhino.Interop` in the assembly `Caddis.Rhino`, which loads before or after Fesh.Rhino. The module `Caddis` in `PlugIn.fs` finds it when that assembly loads. While Caddis runs:
+
+- `fsiCanRun` returns false and says why in the Fesh log
+- the print hooks and `clearFeshLog` don't touch the Fesh log: Rhino.Scripting also writes the text to the Rhino command line, where Caddis collects it for the agent
+- the window doesn't take `Console.Out` and `Console.Error` when it gets the focus
+
+Caddis 0.3.2 and older don't have `Interop`, then `Caddis.isRunning` is always false.
 
 ## Target frameworks and dependencies
 

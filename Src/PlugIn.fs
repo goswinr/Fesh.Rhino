@@ -24,14 +24,19 @@ module Sync =  //Don't change name its used in Rhino.Scripting.dll via reflectio
     let mutable isEditorVisible = new Func<bool>(fun () -> false) // Don't change name  its used in Rhino.Scripting.dll via reflection
 
     /// Red green blue text
+    /// Does nothing until the window has loaded: Rhino.Scripting writes the text to the Rhino command line itself.
     let mutable printFeshLogColor  = // Don't change name  its used in Rhino.Scripting.dll via reflection
-        new Action<int,int,int,string> (fun r g b s -> RhCmdLn.print s)
+        new Action<int,int,int,string> (fun _ _ _ _ -> ())
 
     /// Red green blue text
+    /// Does nothing until the window has loaded: Rhino.Scripting writes the text to the Rhino command line itself.
     let mutable printnFeshLogColor  = // Don't change name  its used in Rhino.Scripting.dll via reflection
-        new Action<int,int,int,string> (fun r g b s -> RhCmdLn.printn s)
+        new Action<int,int,int,string> (fun _ _ _ _ -> ())
 
     let mutable clearFeshLog = Action(fun() -> ()) // Don't change name  its used in Rhino.Scripting.dll via reflection
+
+    /// True while Fesh compiles or evaluates a script, so that Caddis doesn't start a run then.
+    let mutable isEvaluating = new Func<bool>(fun () -> false) // Don't change name  its used in Caddis.Rhino.rhp via reflection
 
 
 module internal FeshApp =
@@ -184,6 +189,39 @@ module internal RhinoScripting =
                         | prop -> prop.SetValue(null, false)
                 with e ->
                     RhCmdLn.printn (sprintf "* Fesh.Rhino Plugin resetting Rhino.Scripting.State.EscapePressed failed with %A" e)
+
+
+/// Caddis is a plugin that runs F# scripts for AI agents in Rhino, see https://github.com/goswinr/Caddis
+/// Its runs and the scripts of Fesh must not overlap: both would change the document and open undo records,
+/// and Caddis redirects Console.Out during its runs.
+/// Fesh.Rhino does not reference Caddis. It reads the static property 'isRunning' of the module 'Caddis.Rhino.Interop' via reflection.
+/// Caddis reads Sync.isEvaluating the same way.
+module internal Caddis =
+
+    let mutable private isRunningProperty: Reflection.PropertyInfo = null
+
+    let private hookUp (a: Reflection.Assembly) =
+        if a.GetName().Name = "Caddis.Rhino" then
+            try
+                match a.GetType "Caddis.Rhino.Interop" with
+                | null -> () // an older Caddis
+                | interop ->
+                    match interop.GetProperty("isRunning", Reflection.BindingFlags.Public ||| Reflection.BindingFlags.Static) with
+                    | null -> ()
+                    | prop -> isRunningProperty <- prop
+            with e ->
+                RhCmdLn.printn (sprintf "* Fesh.Rhino Plugin finding the state of Caddis failed with %A" e)
+
+    /// Call once when the plugin loads. Caddis might load before or after Fesh.Rhino.
+    let install () =
+        AppDomain.CurrentDomain.AssemblyLoad.Add(fun e -> hookUp e.LoadedAssembly)
+        for a in AppDomain.CurrentDomain.GetAssemblies() do hookUp a
+
+    /// True while Caddis runs a script. Never raises.
+    let isRunning () =
+        match isRunningProperty with
+        | null -> false
+        | prop -> try prop.GetValue null :?> bool with _ -> false
 
 
 #if NETCOREAPP
@@ -395,7 +433,15 @@ type FeshPlugin () =
         for c in conflicts do RhCmdLn.printn $" * Fesh.Rhino | {c}"
         #endif
         try
-            let canRun () = not <| Rhino.Commands.Command.InCommand()
+            Caddis.install ()
+            let canRun () =
+                if Rhino.Commands.Command.InCommand() then
+                    false
+                elif Caddis.isRunning () then
+                    FeshPlugin.Fesh.Log.PrintfnAppErrorMsg "Caddis is running a script for an AI agent. Run again once it has finished."
+                    false
+                else
+                    true
             let feshHost =
                 #if DEBUG
                     "RhinoDebug"
@@ -421,6 +467,12 @@ type FeshPlugin () =
             let fesh:Fesh = Fesh.App.createEditorForHosting hostData
             FeshPlugin.Fesh <- fesh
 
+            Sync.isEvaluating <- new Func<bool>(fun () ->
+                match fesh.Fsi.State with
+                | Compiling | Evaluating -> true
+                | Ready | Initializing | NotLoaded -> false
+                )
+
             #if NETCOREAPP
             for c in conflicts do fesh.Log.PrintfnAppErrorMsg "%s" c
 
@@ -444,33 +496,31 @@ type FeshPlugin () =
                     | Windows.WindowState.Normal  | Windows.WindowState.Maximized | _   -> true
                     )
 
-                Sync.printFeshLogColor  <- new Action<int,int,int,string> (fun r g b s -> fesh.Log.AvalonLog.AppendWithColor(r,g,b,s))
-                Sync.printnFeshLogColor <- new Action<int,int,int,string> (fun r g b s -> fesh.Log.AvalonLog.AppendLineWithColor(r,g,b,s))
-                Sync.clearFeshLog       <- Action(fun () -> fesh.Log.AvalonLog.Clear())
+                // Not while Caddis runs a script: its prints and log clearing are not for the Fesh log.
+                // Rhino.Scripting writes the text to the Rhino command line too, Caddis returns it from there to the AI agent.
+                Sync.printFeshLogColor  <- new Action<int,int,int,string> (fun r g b s -> if not (Caddis.isRunning()) then fesh.Log.AvalonLog.AppendWithColor(r,g,b,s))
+                Sync.printnFeshLogColor <- new Action<int,int,int,string> (fun r g b s -> if not (Caddis.isRunning()) then fesh.Log.AvalonLog.AppendLineWithColor(r,g,b,s))
+                Sync.clearFeshLog       <- Action(fun () -> if not (Caddis.isRunning()) then fesh.Log.AvalonLog.Clear())
 
                 async {
-                    // Reinitialize Rhino.Scripting just in case it is loaded already in the current AppDomain by another plugin.
+                    // Reinitialize Rhino.Scripting just in case it is loaded already in the current AppDomain by another plugin, e.g. Caddis.
                     // This is needed to have showEditor() and hideEditor() actions for Fesh setup correctly.
-                    // let assemblies = AppDomain.CurrentDomain.GetAssemblies()
-                    // let loadedFsCoreVersion = assemblies |> Seq.tryFind (fun a -> a.GetName().Name = "Fsharp.Core") |> Option.map (fun a -> a.GetName().Version.ToString() )
-                    let assemblies = AppDomain.CurrentDomain.GetAssemblies()
-                    assemblies
-                    |> Seq.tryFind (fun a -> a.GetName().Name = "Rhino.Scripting")
-                    |> Option.iter (fun rsAss ->
-                        try
-                            // 'initialize' is a private static field of the class RhinoSync,
-                            // which is in the namespace Rhino.Scripting since Rhino.Scripting 0.7, and in Rhino before.
-                            let rhinoSync =
-                                match rsAss.GetType "Rhino.Scripting.RhinoSync" with
-                                | null -> rsAss.GetType("Rhino.RhinoSync", true)
-                                | t -> t
-                            let flags = Reflection.BindingFlags.NonPublic ||| Reflection.BindingFlags.Static
-                            let init = rhinoSync.GetField("initialize", flags).GetValue null :?> Action
-                            init.Invoke()
-                            RhCmdLn.printn "Rhino.Scripting.RhinoSync re-initialized."
-                        with e ->
-                            RhCmdLn.printn (sprintf "* Fesh.Rhino Plugin Rhino.Scripting.Initialize() failed with %A" e)
-                        )
+                    // There can be several versions of Rhino.Scripting loaded, e.g. after resetting FSI, so this does it for all of them.
+                    for rsAss in AppDomain.CurrentDomain.GetAssemblies() do
+                        if rsAss.GetName().Name = "Rhino.Scripting" then
+                            try
+                                // 'initialize' is a private static field of the class RhinoSync,
+                                // which is in the namespace Rhino.Scripting since Rhino.Scripting 0.7, and in Rhino before.
+                                let rhinoSync =
+                                    match rsAss.GetType "Rhino.Scripting.RhinoSync" with
+                                    | null -> rsAss.GetType("Rhino.RhinoSync", true)
+                                    | t -> t
+                                let flags = Reflection.BindingFlags.NonPublic ||| Reflection.BindingFlags.Static
+                                let init = rhinoSync.GetField("initialize", flags).GetValue null :?> Action
+                                init.Invoke()
+                                RhCmdLn.printn $"Rhino.Scripting.RhinoSync {rsAss.GetName().Version} re-initialized."
+                            with e ->
+                                RhCmdLn.printn (sprintf "* Fesh.Rhino Plugin Rhino.Scripting.Initialize() failed with %A" e)
                     } |> Async.Start
                 )
 
@@ -501,10 +551,12 @@ type FeshPlugin () =
 
             // Redirect Console output to Fesh log when Fesh window gets
             // Because otherwise it would go to Rhino command line because Rhino Python editor redirects Console.Out and Console.Error there.
+            // Not while Caddis runs a script: it redirects Console.Out to return the output to the AI agent, and restores it afterwards.
             fesh.Window.GotFocus.Add(fun _ ->
-                let l = fesh.Log
-                Console.SetOut   l.TextWriterConsoleOut
-                Console.SetError l.TextWriterConsoleError
+                if not (Caddis.isRunning()) then
+                    let l = fesh.Log
+                    Console.SetOut   l.TextWriterConsoleOut
+                    Console.SetError l.TextWriterConsoleError
                 )
 
             fesh.Fsi.OnCompiling.Add    ( fun m -> FeshPlugin.BeforeEval())    // https://github.com/mcneel/rhinocommon/blob/57c3967e33d18205efbe6a14db488319c276cbee/dotnet/rhino/rhinosdkdoc.cs#L857
