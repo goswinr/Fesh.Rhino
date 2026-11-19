@@ -69,7 +69,7 @@
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-windows'">
     <!-- for Rhino 9 -->
-    <PackageReference Include="RhinoCommon" Version="9.0.26209.18303-beta" PrivateAssets="all" ExcludeAssets="runtime" />
+    <PackageReference Include="RhinoCommon" Version="9.0.26300.9401" PrivateAssets="all" ExcludeAssets="runtime" />
     <PackageReference Include="Fesh" Version="0.37.0-net10" GeneratePathProperty="true" />
 
     <!-- netstandard reference is needed for tooling only,

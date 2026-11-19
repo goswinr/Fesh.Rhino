@@ -27,6 +27,10 @@ This plugin supports .NET Framework 4.8.<br>
 .NET 8 is actually recommended for better debugging. It has correct line numbers for exceptions.<br>
 In Rhino 9 the plugin runs on .NET 10 only.<br>
 
+The F# version depends on the runtime: F# 8 on .NET 8, and F# 10 on .NET Framework 4.8 and on .NET 10.<br>
+Newer F# compilers need newer versions of `System.Reflection.Metadata` and other parts of .NET than .NET 8 has, and a plugin can't bring its own.<br>
+F# 11 in Rhino 8 on .NET 8 fails with a `MissingMethodException`. If you need F# 10 in Rhino 8, switch it to .NET Framework.<br>
+
 If you installed Fesh via the [Package Manager](https://www.rhino3d.com/features/package-manager/) then the correct framework will be picked automatically.<br>
 In Rhino use the command [SetDotNetRuntime](https://www.rhino3d.com/en/docs/guides/netcore/) to switch between .NET Framework and .NET Core.
 If you are on the wrong runtime you will get an error message box when trying to load the plugin.
